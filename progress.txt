@@ -3,6 +3,8 @@
 ## Learnings
 (Patterns discovered during implementation)
 - Python 3.13 does not have PyTorch or neurokit2 available via pip. Made these optional dependencies (`[torch]`, `[signal]` extras).
+- ECGRecord uses scipy.signal.resample (Fourier method) for resampling; scipy is already a core dependency.
+- to_millivolts() supports µV, uV (ASCII), mV, and V unit strings.
 - Use `setuptools.packages.find` with `include = ["aortica*"]` to auto-discover subpackages.
 
 ---
@@ -35,4 +37,15 @@
   - README already had CI badge from US-001, pointing to `.github/workflows/ci.yml`
   - ruff auto-fix (`ruff check --fix`) handles import sorting issues cleanly
   - CI matrix tests Python 3.10, 3.11, 3.12 — only installs `.[dev]` extras (no torch/tf/signal in CI)
+---
+
+## Iteration 3 - US-003: Canonical ECG Data Representation
+- Implemented: Full ECGRecord dataclass with resample(), select_leads(), to_millivolts() methods
+- Files changed:
+  - aortica/io/ecg_record.py (modified) - added resample, select_leads, to_millivolts methods; uses scipy.signal.resample
+  - tests/io/test_ecg_record.py (new) - 30 tests covering construction, validation, properties, resample, select_leads, to_millivolts
+- Learnings for future iterations:
+  - ECGRecord.resample uses scipy.signal.resample (Fourier method) — already a core dep
+  - to_millivolts() handles µV, uV (ASCII fallback), mV, V
+  - All utility methods return new ECGRecord copies, never mutate in place
 ---

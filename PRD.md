@@ -58,11 +58,11 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a developer, I want a standardized in-memory ECG representation so that all format readers produce a consistent object for downstream processing.
 
 **Acceptance Criteria:**
-- [ ] `ECGRecord` dataclass with fields: `signals` (numpy array, shape [leads, samples]), `sample_rate` (Hz), `lead_names` (list), `duration_seconds`, `patient_metadata` (optional dict), `source_format` (str), `units` (str, default µV)
-- [ ] Utility methods: `resample(target_hz)`, `select_leads(lead_list)`, `to_millivolts()`, `num_leads`, `num_samples`
-- [ ] Validation on construction: checks lead count matches signal shape, sample_rate > 0
-- [ ] Unit tests covering construction, validation errors, resampling, and lead selection
-- [ ] Typecheck passes
+- [x] `ECGRecord` dataclass with fields: `signals` (numpy array, shape [leads, samples]), `sample_rate` (Hz), `lead_names` (list), `duration_seconds`, `patient_metadata` (optional dict), `source_format` (str), `units` (str, default µV)
+- [x] Utility methods: `resample(target_hz)`, `select_leads(lead_list)`, `to_millivolts()`, `num_leads`, `num_samples`
+- [x] Validation on construction: checks lead count matches signal shape, sample_rate > 0
+- [x] Unit tests covering construction, validation errors, resampling, and lead selection
+- [x] Typecheck passes
 
 ---
 
