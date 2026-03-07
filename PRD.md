@@ -33,12 +33,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a developer, I want a well-organized monorepo with standard Python packaging so that the team can collaborate effectively from day one.
 
 **Acceptance Criteria:**
-- [ ] Repository initialized with `pyproject.toml` (or `setup.cfg`) supporting `pip install -e .`
-- [ ] Package structure: `aortica/` with subpackages `io/`, `signal/`, `models/`, `xai/`, `evaluation/`, `data/`, `utils/`
-- [ ] `.gitignore`, `LICENSE` (Apache 2.0), `README.md` with project overview
-- [ ] `tests/` directory mirroring source structure with `conftest.py`
-- [ ] `requirements.txt` and `requirements-dev.txt` (or equivalent in pyproject.toml)
-- [ ] Typecheck passes
+- [x] Repository initialized with `pyproject.toml` (or `setup.cfg`) supporting `pip install -e .`
+- [x] Package structure: `aortica/` with subpackages `io/`, `signal/`, `models/`, `xai/`, `evaluation/`, `data/`, `utils/`
+- [x] `.gitignore`, `LICENSE` (Apache 2.0), `README.md` with project overview
+- [x] `tests/` directory mirroring source structure with `conftest.py`
+- [x] `requirements.txt` and `requirements-dev.txt` (or equivalent in pyproject.toml)
+- [x] Typecheck passes
 
 ---
 

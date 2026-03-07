@@ -2,5 +2,26 @@
 
 ## Learnings
 (Patterns discovered during implementation)
+- Python 3.13 does not have PyTorch or neurokit2 available via pip. Made these optional dependencies (`[torch]`, `[signal]` extras).
+- Use `setuptools.packages.find` with `include = ["aortica*"]` to auto-discover subpackages.
 
+---
+
+## Iteration 1 - US-001: Project Scaffolding and Repository Structure
+- Implemented: Full project scaffolding with pyproject.toml, Apache 2.0 LICENSE, README.md with CI badge
+- Files changed:
+  - pyproject.toml (new) - project config with deps, mypy, ruff, pytest settings
+  - LICENSE (new) - Apache 2.0
+  - README.md (new, overwrote placeholder) - project overview, install instructions, structure
+  - .gitignore (new) - comprehensive Python/ML ignores
+  - aortica/__init__.py (new) - root package with version
+  - aortica/{io,signal,models,xai,evaluation,data,utils}/__init__.py (new) - subpackage inits
+  - aortica/io/ecg_record.py (new) - minimal ECGRecord dataclass placeholder for conftest
+  - tests/conftest.py (new) - shared fixtures
+  - tests/{__init__,io/__init__,signal/__init__,models/__init__,xai/__init__,evaluation/__init__,data/__init__,utils/__init__}.py (new) - test package structure
+  - tests/test_scaffolding.py (new) - smoke tests for package structure
+- Learnings for future iterations:
+  - torch and neurokit2 are optional extras due to Python 3.13 incompatibility
+  - ECGRecord is already stubbed in aortica/io/ecg_record.py — US-003 should flesh it out
+  - mypy configured with ignore_missing_imports=true for optional deps
 ---
