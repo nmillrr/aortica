@@ -25,3 +25,14 @@
   - ECGRecord is already stubbed in aortica/io/ecg_record.py — US-003 should flesh it out
   - mypy configured with ignore_missing_imports=true for optional deps
 ---
+
+## Iteration 2 - US-002: CI/CD Pipeline Setup
+- Implemented: GitHub Actions CI workflow (.github/workflows/ci.yml)
+- Files changed:
+  - .github/workflows/ci.yml (new) - CI workflow with ruff, mypy, pytest across Python 3.10–3.12
+  - tests/test_scaffolding.py (modified) - auto-fixed import sorting via ruff --fix
+- Learnings for future iterations:
+  - README already had CI badge from US-001, pointing to `.github/workflows/ci.yml`
+  - ruff auto-fix (`ruff check --fix`) handles import sorting issues cleanly
+  - CI matrix tests Python 3.10, 3.11, 3.12 — only installs `.[dev]` extras (no torch/tf/signal in CI)
+---

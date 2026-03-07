@@ -46,11 +46,11 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a developer, I want automated linting, type checking, and testing on every push so that code quality is enforced continuously.
 
 **Acceptance Criteria:**
-- [ ] GitHub Actions workflow running on push and PR to `main`
-- [ ] Steps: `ruff` lint, `mypy` type check, `pytest` test suite
-- [ ] Workflow fails on any lint error, type error, or test failure
-- [ ] Badge in README showing CI status
-- [ ] Typecheck passes
+- [x] GitHub Actions workflow running on push and PR to `main`
+- [x] Steps: `ruff` lint, `mypy` type check, `pytest` test suite
+- [x] Workflow fails on any lint error, type error, or test failure
+- [x] Badge in README showing CI status
+- [x] Typecheck passes
 
 ---
 

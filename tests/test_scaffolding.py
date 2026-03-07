@@ -1,13 +1,13 @@
 """Smoke test to verify package is importable and structured correctly."""
 
 import aortica
-import aortica.io
-import aortica.signal
-import aortica.models
-import aortica.xai
-import aortica.evaluation
 import aortica.data
+import aortica.evaluation
+import aortica.io
+import aortica.models
+import aortica.signal
 import aortica.utils
+import aortica.xai
 
 
 def test_version() -> None:
