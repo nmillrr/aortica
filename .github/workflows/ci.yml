@@ -26,8 +26,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Lint with ruff
-        run: ruff check aortica tests
+      - name: Lint with ruff (auto-fix imports)
+        run: |
+          ruff check --fix aortica tests
+          ruff check aortica tests
 
       - name: Type check with mypy
         run: mypy aortica
