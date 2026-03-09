@@ -49,3 +49,18 @@
   - to_millivolts() handles µV, uV (ASCII fallback), mV, V
   - All utility methods return new ECGRecord copies, never mutate in place
 ---
+
+## Iteration 4 - US-004: WFDB Format Reader
+- Implemented: `aortica.io.read_wfdb(path)` function that loads WFDB .hea/.dat files into ECGRecord
+- Files changed:
+  - aortica/io/wfdb_reader.py (new) - read_wfdb() with unit normalization (mV→µV), multi-segment support via m2s=True
+  - aortica/io/__init__.py (modified) - exports read_wfdb and ECGRecord
+  - tests/io/test_wfdb_reader.py (new) - 15 fast tests (synthetic WFDB fixtures) + 3 slow PhysioNet integration tests (MIT-BIH 100, PTB-XL 00001_hr)
+- Learnings for future iterations:
+  - wfdb.rdrecord() with m2s=True automatically flattens multi-segment records into a single Record
+  - wfdb returns signals as [samples, channels] — must transpose to [leads, samples] for ECGRecord
+  - wfdb records store physical units per-channel; reader normalizes all to µV using a lookup table
+  - wfdb.wrsamp() can create synthetic WFDB records for testing without needing real data files
+  - wfdb.dl_database() can download specific records from PhysioNet for integration tests
+---
+

@@ -70,11 +70,11 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a researcher, I want to load ECG recordings in WFDB format (.hea/.dat) so that I can use PhysioNet datasets directly.
 
 **Acceptance Criteria:**
-- [ ] `aortica.io.read_wfdb(path)` returns an `ECGRecord`
-- [ ] Handles single-segment and multi-segment records
-- [ ] Correctly reads lead names, sample rate, and physical units from header
-- [ ] Tested with at least 2 real PhysioNet WFDB files (MIT-BIH, PTB-XL samples)
-- [ ] Typecheck passes
+- [x] `aortica.io.read_wfdb(path)` returns an `ECGRecord`
+- [x] Handles single-segment and multi-segment records
+- [x] Correctly reads lead names, sample rate, and physical units from header
+- [x] Tested with at least 2 real PhysioNet WFDB files (MIT-BIH, PTB-XL samples)
+- [x] Typecheck passes
 
 ---
 

@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This PRD covers the remaining phases of the Aortica roadmap — transforming the core ML pipeline from PRD.md into a fully deployable platform with API/CLI packaging, web UI, edge/mobile deployment, federated learning, EHR integration, and regulatory scaffolding.
+This PRD covers the remaining phases of the Aortica roadmap — transforming the core ML pipeline from PRD.md into a fully deployable ECG copilot for clinicians with API/CLI packaging, web UI, edge/mobile deployment, federated learning, EHR integration, and regulatory scaffolding.
 
 **Phase 2 (Months 9–14):** Edge & Rural Deployment — INT8 quantization, ONNX export, Android app, Raspberry Pi deployment, offline sync infrastructure, and initial LMIC pilot sites.
 
