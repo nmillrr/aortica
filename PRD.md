@@ -106,10 +106,10 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a developer, I want to load HL7 aECG (FDA XML) format files so that Aortica can support regulatory submission datasets.
 
 **Acceptance Criteria:**
-- [ ] `aortica.io.read_hl7_aecg(path)` returns an `ECGRecord`
-- [ ] Parses lead waveforms, timing info, and demographic annotations from the XML structure
-- [ ] Unit tests with a synthetic HL7 aECG XML file
-- [ ] Typecheck passes
+- [x] `aortica.io.read_hl7_aecg(path)` returns an `ECGRecord`
+- [x] Parses lead waveforms, timing info, and demographic annotations from the XML structure
+- [x] Unit tests with a synthetic HL7 aECG XML file
+- [x] Typecheck passes
 
 ---
 
