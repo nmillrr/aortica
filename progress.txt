@@ -64,3 +64,17 @@
   - wfdb.dl_database() can download specific records from PhysioNet for integration tests
 ---
 
+## Iteration 5 - US-005: CSV and MAT Format Readers
+- Implemented: `read_csv()` with `CSVConfig` and `read_mat()` with `MATConfig`, both returning ECGRecord
+- Files changed:
+  - aortica/io/csv_reader.py (new) - read_csv() with CSVConfig dataclass, supports column-per-lead and row-per-lead orientations, time column exclusion, custom delimiter, skip rows
+  - aortica/io/mat_reader.py (new) - read_mat() with MATConfig dataclass, supports leads_first/samples_first orientation, optional lead names and sample rate variables from MAT file
+  - aortica/io/__init__.py (modified) - exports read_csv, CSVConfig, read_mat, MATConfig
+  - tests/io/test_csv_mat_readers.py (new) - 27 tests covering both readers: basic loading, orientations, metadata, error handling, ECGRecord integration
+- Learnings for future iterations:
+  - scipy.io.loadmat is already available as scipy is a core dep — no new dependency needed for MAT files
+  - numpy.genfromtxt is simpler than pandas for pure-numeric CSV reading
+  - MATLAB cell arrays of strings come back as nested object ndarrays from loadmat — _extract_lead_names helper handles the various nested forms
+  - CSVConfig and MATConfig use dataclasses with sensible defaults for clean API
+  - Both readers follow the same pattern as wfdb_reader.py: validate path, load data, normalize to ECGRecord
+---

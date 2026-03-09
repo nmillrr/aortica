@@ -82,11 +82,11 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a researcher, I want to load ECG data from CSV and MATLAB .mat files so that I can work with common research data exports.
 
 **Acceptance Criteria:**
-- [ ] `aortica.io.read_csv(path, config)` returns an `ECGRecord`; config specifies column mapping, sample rate, and units
-- [ ] `aortica.io.read_mat(path, config)` returns an `ECGRecord`; config specifies variable names for signals and metadata
-- [ ] Handles both row-per-sample and column-per-lead orientations for CSV
-- [ ] Unit tests with synthetic CSV and MAT files
-- [ ] Typecheck passes
+- [x] `aortica.io.read_csv(path, config)` returns an `ECGRecord`; config specifies column mapping, sample rate, and units
+- [x] `aortica.io.read_mat(path, config)` returns an `ECGRecord`; config specifies variable names for signals and metadata
+- [x] Handles both row-per-sample and column-per-lead orientations for CSV
+- [x] Unit tests with synthetic CSV and MAT files
+- [x] Typecheck passes
 
 ---
 
