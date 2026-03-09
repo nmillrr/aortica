@@ -94,11 +94,11 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a developer, I want to load ECG files in DICOM (Supplement 30/130) and SCP-ECG formats so that Aortica can ingest clinical ECG exports.
 
 **Acceptance Criteria:**
-- [ ] `aortica.io.read_dicom(path)` returns an `ECGRecord` from a DICOM ECG waveform object
-- [ ] `aortica.io.read_scp(path)` returns an `ECGRecord` from SCP-ECG files
-- [ ] Extracts lead data, sample rate, patient demographics (if present), and acquisition metadata
-- [ ] Unit tests with sample DICOM and SCP-ECG files (synthetic or from public sources)
-- [ ] Typecheck passes
+- [x] `aortica.io.read_dicom(path)` returns an `ECGRecord` from a DICOM ECG waveform object
+- [x] `aortica.io.read_scp(path)` returns an `ECGRecord` from SCP-ECG files
+- [x] Extracts lead data, sample rate, patient demographics (if present), and acquisition metadata
+- [x] Unit tests with sample DICOM and SCP-ECG files (synthetic or from public sources)
+- [x] Typecheck passes
 
 ---
 
