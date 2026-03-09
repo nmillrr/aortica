@@ -1,10 +1,23 @@
 # PRD-2: Aortica — Full Platform, Edge Deployment & Federated Learning (Phase 2–4)
 
-> **Prerequisite:** Complete all user stories in [PRD.md](file:///c:/Users/bigwh/OneDrive/Documents/GitHub/aortica/PRD.md) (Phase 0 + Phase 1) before beginning this PRD.
+> **Prerequisite:** Complete all user stories in [PRD.md](PRD.md) (Phase 0 + Phase 1) before beginning this PRD.
 
 ## Introduction
 
 This PRD covers the remaining phases of the Aortica roadmap — transforming the core ML pipeline from PRD.md into a fully deployable ECG copilot for clinicians with API/CLI packaging, web UI, edge/mobile deployment, federated learning, EHR integration, and regulatory scaffolding.
+
+## Clinical Mission: AI ECG Copilot for Cardiologists
+
+Aortica's primary clinical identity is an **AI ECG copilot** — a decision-support tool that sits alongside cardiologists and catches the subtle, edge-case findings that are most dangerous when missed.
+
+Cardiologists are highly skilled at routine ECG interpretation, but certain patterns are reliably difficult for even experienced readers:
+
+- **Edge-case arrhythmias:** Intermittent pre-excitation (WPW), Brugada pattern (type 2/3), subtle atrial flutter with variable block, junctional rhythms masquerading as sinus, fascicular VT, short-coupled PVCs with malignant potential
+- **Strain patterns:** Early/subclinical LV strain from hypertension or aortic stenosis, RV strain in pulmonary embolism (S1Q3T3 variants), apical ballooning (Takotsubo) vs. ACS, and diffuse strain from infiltrative cardiomyopathies (amyloid, sarcoid)
+- **Signals hiding in plain sight:** Early repolarization vs. STEMI mimics, de Winter T-waves, Wellens syndrome (biphasic T-wave warning of LAD lesion), aVR ST-elevation suggesting left main/3-vessel disease, subtle QTc prolongation, and Sgarbossa criteria in paced/LBBB rhythms
+- **Risk signals:** ECG-derived markers of future AF onset, subclinical LV dysfunction (normal ECG with reduced EF), and progressive conduction disease before symptomatic block
+
+Every feature in this PRD—from edge deployment to federated learning—serves this mission: making a copilot that is **accurate on the hard cases**, **trustworthy in its confidence estimates**, **explainable in clinical language**, and **accessible everywhere cardiologists practice**.
 
 **Phase 2 (Months 9–14):** Edge & Rural Deployment — INT8 quantization, ONNX export, Android app, Raspberry Pi deployment, offline sync infrastructure, and initial LMIC pilot sites.
 
@@ -61,6 +74,13 @@ The following story areas will be broken into individual user stories when this 
 - Batch processing dashboard
 - User authentication (OAuth 2.0 / local API key)
 
+#### AI Copilot & Second Reader Mode
+- **Copilot overlay:** When viewing an ECG, the AI surfaces a ranked list of findings with confidence levels, highlighting regions of clinical concern directly on the waveform
+- **Second reader workflow:** Cardiologist enters their initial interpretation; Aortica compares it against model output and flags discrepancies (e.g., cardiologist reads "normal sinus rhythm" but model detects subtle pre-excitation or early strain)
+- **Edge-case spotlight:** Dedicated panel showing low-prevalence findings the model detected with moderate-to-high confidence — specifically designed to catch what routine reads miss
+- **Explanation cards:** For each flagged finding, the copilot provides: the named ECG feature(s) driving the detection (from US-025 XAI), a confidence interval (from US-024 conformal prediction), and optionally similar historical cases (from Phase 4 case-based retrieval)
+- **Feedback loop:** Cardiologist can accept, reject, or modify AI findings — logged for future model improvement and calibration monitoring
+
 #### Edge Optimization
 - ONNX export pipeline for the full and edge model variants
 - Knowledge distillation: train MobileNet-1D edge model from full AorticaModel
@@ -103,10 +123,12 @@ The following story areas will be broken into individual user stories when this 
 - Public performance card generator (markdown + CSV) for every model release
 - Minimum 2 non-Western site validations before v-stable tagging
 
-#### Additional Task Capabilities
-- Expand ischaemia head with territory-specific STEMI subtypes
-- Add metabolic detection classes if new training data becomes available
-- Risk prediction model refinement with federated data
+#### Additional Task Capabilities — Edge-Case & Subtle Pattern Expansion
+- **Rare arrhythmia subtypes:** Add detection classes for Brugada pattern (types 1–3), short QT syndrome, catecholaminergic polymorphic VT (CPVT), fascicular VT, atypical atrial flutter, and inappropriate sinus tachycardia
+- **STEMI mimics & subtle ischaemia:** Expand ischaemia head with early repolarization vs. STEMI classifier, de Winter T-wave pattern, Wellens syndrome subtypes (type A/B), aVR ST-elevation pattern, and Sgarbossa criteria in LBBB/paced rhythms
+- **Strain pattern refinement:** Train dedicated sub-classifiers for LV strain grade (mild/moderate/severe), RV strain in PE (S1Q3T3 + right axis + T-wave inversions V1-V4), Takotsubo vs. ACS differentiation, and infiltrative cardiomyopathy strain signatures
+- **Metabolic & drug effects:** Add detection for hyperkalaemia severity grading, hypothermia (Osborn waves), tricyclic antidepressant toxicity (wide QRS + right axis), and digoxin effect vs. toxicity
+- **Risk prediction refinement:** Improve models for subclinical LVSD detection (ECG-predicted EF), progressive conduction disease trajectory, and sudden cardiac death risk stratification using federated multi-site data
 
 ---
 
