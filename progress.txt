@@ -132,3 +132,19 @@
   - WFDB can be referenced by base path (no extension) — dispatcher checks for .hea sibling file
   - Pre-existing bugs found and fixed in ecg_record.py: missing @ on @dataclass, and """""" instead of """ closing docstring
 ---
+
+## Iteration 9 - US-009: QRS Detection Module
+- Implemented: `aortica.signal.detect_qrs(ecg_record, method, lead)` with two backends
+- Files changed:
+  - aortica/signal/qrs_detection.py (new) - detect_qrs() with NeuroKit2 and Pan-Tompkins backends, lead selection, sorted R-peak indices
+  - aortica/signal/__init__.py (modified) - exports detect_qrs
+  - tests/signal/test_qrs_detection.py (new) - 19 tests covering both backends, edge cases (high/low HR, short signal, fallback lead), dispatch errors
+  - PRD.md (modified) - marked US-009 complete
+- Learnings for future iterations:
+  - neurokit2 is optional ([signal] extra) and not installed in the dev environment — tests use pytest.importorskip to gracefully skip
+  - Pan-Tompkins backend is pure SciPy: bandpass (5-15 Hz) → derivative → squaring → moving-window integration → find_peaks
+  - mypy complains about `no-any-return` from ndarray indexing — assign to typed local variable first
+  - _select_lead() defaults to Lead II if available, else first lead — consistent with clinical convention
+  - Synthetic ECG fixture uses Gaussian-shaped QRS complexes at fixed HR with baseline wander — good enough for testing peak detection
+  - ruff auto-fix (`ruff check --fix`) handles import sorting for numpy.typing.NDArray addition
+---

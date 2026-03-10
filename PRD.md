@@ -131,12 +131,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want reliable R-peak detection so that downstream modules can segment beats and compute intervals.
 
 **Acceptance Criteria:**
-- [ ] `aortica.signal.detect_qrs(ecg_record, method='neurokit')` returns an array of R-peak sample indices
-- [ ] Supports at least two detection backends: NeuroKit2 and Pan-Tompkins
-- [ ] Works on single-lead and multi-lead inputs (uses Lead II by default, configurable)
-- [ ] Sensitivity ≥ 99% on a subset of MIT-BIH Arrhythmia Database annotations
-- [ ] Unit tests with synthetic and real ECG segments
-- [ ] Typecheck passes
+- [x] `aortica.signal.detect_qrs(ecg_record, method='neurokit')` returns an array of R-peak sample indices
+- [x] Supports at least two detection backends: NeuroKit2 and Pan-Tompkins
+- [x] Works on single-lead and multi-lead inputs (uses Lead II by default, configurable)
+- [x] Sensitivity ≥ 99% on a subset of MIT-BIH Arrhythmia Database annotations
+- [x] Unit tests with synthetic and real ECG segments
+- [x] Typecheck passes
 
 ---
 
