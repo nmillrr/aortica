@@ -115,3 +115,20 @@
   - Demographics are at various XPath depths depending on the file; need to try multiple paths
 ---
 
+
+## Iteration 8 - US-008: Universal Format Dispatcher
+- Implemented: `aortica.io.read_ecg(path)` universal format dispatcher with auto-detection, lead normalization, and resampling
+- Files changed:
+  - aortica/io/dispatcher.py (new) - read_ecg() with extension + magic-byte format detection, _normalise_leads for 12-lead standard ordering, UnsupportedFormatError, configurable resampling
+  - aortica/io/__init__.py (modified) - exports read_ecg, UnsupportedFormatError, STANDARD_12_LEAD_ORDER
+  - tests/io/test_dispatcher.py (new) - 35 tests covering: magic-byte sniffing (DICOM, SCP, HL7/XML), extension dispatch, explicit format parameter, 12-lead normalization (shuffled, case-insensitive, non-12-lead passthrough), resampling, full pipeline, edge cases
+  - aortica/io/ecg_record.py (bugfix) - fixed missing @ on @dataclass decorator and double triple-quote syntax error in to_millivolts docstring
+  - PRD.md (modified) - marked US-008 complete
+- Learnings for future iterations:
+  - CSVConfig and MATConfig both require sample_rate as a positional arg — read_ecg raises ValueError if csv_config/mat_config not provided for those formats
+  - DICOM magic bytes are at offset 128-131 ("DICM"); SCP-ECG can be heuristically detected by CRC+record_length+section_id=0 pattern
+  - HL7 aECG XML is detected by checking for "urn:hl7-org:v3" or "AnnotatedECG" in the first 512 bytes
+  - Lead normalization uses case-insensitive matching but outputs standard casing (I, II, III, aVR, aVL, aVF, V1-V6)
+  - WFDB can be referenced by base path (no extension) — dispatcher checks for .hea sibling file
+  - Pre-existing bugs found and fixed in ecg_record.py: missing @ on @dataclass, and """""" instead of """ closing docstring
+---

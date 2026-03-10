@@ -117,13 +117,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a user, I want a single `aortica.io.read_ecg(path)` function that auto-detects the file format and dispatches to the correct reader.
 
 **Acceptance Criteria:**
-- [ ] `read_ecg(path)` detects format by extension and/or file magic bytes
-- [ ] Falls back to explicit `format=` parameter if auto-detection fails
-- [ ] Raises clear `UnsupportedFormatError` for unknown formats
-- [ ] Returns a normalized `ECGRecord` with consistent lead ordering (I, II, III, aVR, aVL, aVF, V1-V6 for 12-lead)
-- [ ] Resamples to a configurable target rate (default 500 Hz)
-- [ ] Unit tests covering each format dispatch and the fallback path
-- [ ] Typecheck passes
+- [x] `read_ecg(path)` detects format by extension and/or file magic bytes
+- [x] Falls back to explicit `format=` parameter if auto-detection fails
+- [x] Raises clear `UnsupportedFormatError` for unknown formats
+- [x] Returns a normalized `ECGRecord` with consistent lead ordering (I, II, III, aVR, aVL, aVF, V1-V6 for 12-lead)
+- [x] Resamples to a configurable target rate (default 500 Hz)
+- [x] Unit tests covering each format dispatch and the fallback path
+- [x] Typecheck passes
 
 ---
 

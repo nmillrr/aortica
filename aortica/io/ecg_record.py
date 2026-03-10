@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 from scipy import signal as scipy_signal
 
 
-dataclass
+@dataclass
 class ECGRecord:
     """Standardized in-memory ECG representation.
 
@@ -167,7 +167,7 @@ class ECGRecord:
 
         Raises:
             ValueError: If the current ``units`` value is not recognised.
-        """"""
+        """
         unit = self.units.strip()
         if unit in ("mV",):
             scale = 1.0
