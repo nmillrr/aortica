@@ -229,12 +229,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want a multi-head attention module that captures inter-lead relationships so that the model can reason about axis, ischaemia territory, and conduction patterns.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.CrossLeadAttention` module: 4-head attention, 64-dim per head
-- [ ] Takes backbone feature output, applies cross-lead attention, returns enriched representation
-- [ ] Attention weights are extractable for XAI purposes
-- [ ] Implemented in both PyTorch and TensorFlow/Keras
-- [ ] Unit tests verifying output shapes and attention weight dimensions
-- [ ] Typecheck passes
+- [x] `aortica.models.CrossLeadAttention` module: 4-head attention, 64-dim per head
+- [x] Takes backbone feature output, applies cross-lead attention, returns enriched representation
+- [x] Attention weights are extractable for XAI purposes
+- [x] Implemented in both PyTorch and TensorFlow/Keras
+- [x] Unit tests verifying output shapes and attention weight dimensions
+- [x] Typecheck passes
 
 ---
 
