@@ -144,13 +144,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want to remove baseline wander, powerline interference, and high-frequency noise so that model inputs are clean.
 
 **Acceptance Criteria:**
-- [ ] `aortica.signal.denoise(ecg_record, methods=['baseline', 'powerline', 'highfreq'])` returns a cleaned `ECGRecord`
-- [ ] Baseline wander removal via wavelet or highpass filter (configurable cutoff, default 0.5 Hz)
-- [ ] Powerline noise removal via notch filter (50/60 Hz, auto-detected or configurable)
-- [ ] High-frequency noise via lowpass filter (default 40 Hz cutoff)
-- [ ] Each filter can be applied independently or in combination
-- [ ] Unit tests verifying SNR improvement on synthetically corrupted signals
-- [ ] Typecheck passes
+- [x] `aortica.signal.denoise(ecg_record, methods=['baseline', 'powerline', 'highfreq'])` returns a cleaned `ECGRecord`
+- [x] Baseline wander removal via wavelet or highpass filter (configurable cutoff, default 0.5 Hz)
+- [x] Powerline noise removal via notch filter (50/60 Hz, auto-detected or configurable)
+- [x] High-frequency noise via lowpass filter (default 40 Hz cutoff)
+- [x] Each filter can be applied independently or in combination
+- [x] Unit tests verifying SNR improvement on synthetically corrupted signals
+- [x] Typecheck passes
 
 ---
 

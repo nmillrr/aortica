@@ -148,3 +148,18 @@
   - Synthetic ECG fixture uses Gaussian-shaped QRS complexes at fixed HR with baseline wander — good enough for testing peak detection
   - ruff auto-fix (`ruff check --fix`) handles import sorting for numpy.typing.NDArray addition
 ---
+
+## Iteration 10 - US-010: Signal Denoising Module
+- Implemented: `aortica.signal.denoise(ecg_record, methods)` with three configurable filter stages
+- Files changed:
+  - aortica/signal/denoising.py (new) - denoise() with baseline wander (highpass Butterworth), powerline (notch filter with auto-detect 50/60 Hz), high-frequency noise (lowpass Butterworth); all zero-phase via sosfiltfilt/filtfilt
+  - aortica/signal/__init__.py (modified) - exports denoise
+  - tests/signal/test_denoising.py (new) - 23 tests: baseline removal, powerline 50/60 Hz, auto-detection, highfreq removal, combined pipeline, SNR verification (>6 dB improvement), edge cases (low sample rate, above-Nyquist), metadata preservation
+  - PRD.md (modified) - marked US-010 complete
+- Learnings for future iterations:
+  - scipy.signal.butter + sosfiltfilt provides zero-phase IIR filtering — no phase distortion on the ECG waveform
+  - scipy.signal.iirnotch + filtfilt for powerline removal; Q=30 gives a narrow notch that doesn't affect adjacent frequencies
+  - Auto-detection of 50/60 Hz powerline works by comparing FFT spectral peaks around each candidate frequency
+  - Filters degrade gracefully when cutoff exceeds Nyquist (silently skip rather than crash)
+  - ruff auto-fix handles unused imports and import sorting
+---
