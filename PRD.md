@@ -185,13 +185,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want PyTorch Dataset/DataLoader and TF tf.data wrappers so that I can efficiently feed ECG data into training loops.
 
 **Acceptance Criteria:**
-- [ ] `aortica.data.ECGDataset` (PyTorch `Dataset` subclass) wrapping a list of `ECGRecord` + labels with configurable augmentations
-- [ ] `aortica.data.create_tf_dataset()` producing a `tf.data.Dataset` from the same data
-- [ ] Augmentations: random lead dropout, Gaussian noise injection, time-shift, amplitude scaling
-- [ ] Configurable window length (2.5s, 5s, 10s) with padding/truncation
-- [ ] Both produce tensors of shape `[batch, leads, samples]` with corresponding label tensors
-- [ ] Unit tests verifying shapes, augmentation effects, and batch iteration
-- [ ] Typecheck passes
+- [x] `aortica.data.ECGDataset` (PyTorch `Dataset` subclass) wrapping a list of `ECGRecord` + labels with configurable augmentations
+- [x] `aortica.data.create_tf_dataset()` producing a `tf.data.Dataset` from the same data
+- [x] Augmentations: random lead dropout, Gaussian noise injection, time-shift, amplitude scaling
+- [x] Configurable window length (2.5s, 5s, 10s) with padding/truncation
+- [x] Both produce tensors of shape `[batch, leads, samples]` with corresponding label tensors
+- [x] Unit tests verifying shapes, augmentation effects, and batch iteration
+- [x] Typecheck passes
 
 ---
 

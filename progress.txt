@@ -194,3 +194,19 @@
   - Using `ast.literal_eval` to parse `scp_codes` dict strings from PTB-XL metadata is robust.
   - `scp_statements.csv`'s index corresponds to the keys in `scp_codes` dict. 
 ---
+
+## Iteration 13 - US-013: ECG Dataset and DataLoader Utilities
+- Implemented: PyTorch and TensorFlow dataset wrappers for ECG data along with augmentation utilities.
+- Files changed:
+  - aortica/data/augmentations.py (new) - apply_lead_dropout, apply_gaussian_noise, apply_time_shift, apply_amplitude_scale, pad_or_truncate
+  - aortica/data/dataset.py (new) - ECGDataset (for torch), create_tf_dataset (for tf)
+  - aortica/data/__init__.py (modified) - exports ECGDataset, create_tf_dataset
+  - tests/data/test_augmentations.py (new) - tests for augmentation functions
+  - tests/data/test_dataset.py (new) - tests for PyTorch and TF datasets (skipped gracefully if uninstalled)
+  - tests/data/test_ptbxl.py (modified) - added type hints to existing tests fixing mypy errors
+  - PRD.md (modified) - marked US-013 complete
+- Learnings for future iterations:
+  - Dataset augmentations operate on NumPy arrays before tensor conversion, making it easier to share logic between PyTorch (ECGDataset) and TensorFlow (tf.data via generator).
+  - PyTorch Dataset subclassing handles missing torch dependency gracefully with a dummy base class for typing purposes.
+  - tf.data.Dataset.from_generator is effective for yielding from memory records while allowing parallel downstream ops.
+---
