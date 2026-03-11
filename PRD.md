@@ -242,13 +242,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a clinician, I want AI detection of 22 rhythm and conduction abnormalities from a single ECG so that a comprehensive rhythm assessment is produced.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.RhythmHead`: multi-label classification head producing 22 sigmoid outputs
-- [ ] Classes: AF, AFL, SVT, AVNRT, AVRT, VT, VF, idioventricular, sinus brady/tachy, PAC, PVC, 1st/2nd/3rd AV block, LBBB, RBBB, LAFB, LPFB, WPW, pacemaker rhythm, normal sinus rhythm
-- [ ] Connects to backbone + attention output
-- [ ] Loss: binary cross-entropy with class-weight balancing
-- [ ] Implemented in both PyTorch and TensorFlow/Keras
-- [ ] Unit tests verifying output shape and loss computation
-- [ ] Typecheck passes
+- [x] `aortica.models.RhythmHead`: multi-label classification head producing 22 sigmoid outputs
+- [x] Classes: AF, AFL, SVT, AVNRT, AVRT, VT, VF, idioventricular, sinus brady/tachy, PAC, PVC, 1st/2nd/3rd AV block, LBBB, RBBB, LAFB, LPFB, WPW, pacemaker rhythm, normal sinus rhythm
+- [x] Connects to backbone + attention output
+- [x] Loss: binary cross-entropy with class-weight balancing
+- [x] Implemented in both PyTorch and TensorFlow/Keras
+- [x] Unit tests verifying output shape and loss computation
+- [x] Typecheck passes
 
 ---
 

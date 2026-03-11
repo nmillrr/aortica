@@ -210,3 +210,67 @@
   - PyTorch Dataset subclassing handles missing torch dependency gracefully with a dummy base class for typing purposes.
   - tf.data.Dataset.from_generator is effective for yielding from memory records while allowing parallel downstream ops.
 ---
+
+## Iteration 14 - US-014: Baseline Rhythm Classification Model (PTB-XL)
+- Implemented: 1D ResNet-18 model and training script for PTB-XL rhythm classification
+- Files changed:
+  - aortica/models/resnet1d.py (new) - ResNet1D with ResidualBlock1D, 4 stages [64,128,256,512], adaptive pooling, sigmoid output
+  - aortica/models/train_baseline.py (new) - train() function with CLI, configurable hyperparameters, set_seed() for reproducibility, per-epoch F1/loss tracking, best checkpoint saving, JSON metrics export
+  - aortica/models/__init__.py (modified) - exports ResNet1D
+  - tests/models/test_baseline.py (new) - 20 tests covering: ResidualBlock1D shapes, ResNet1D output shapes/range/variable-length/gradient/param-count/reproducibility, F1 computation (perfect/wrong/partial), training utils (seed, train_one_epoch, evaluate, checkpoint save/load, metrics JSON)
+  - PRD.md (modified) - marked US-014 complete
+- Learnings for future iterations:
+  - When torch is not installed, class definitions inheriting nn.Module fail at import time — provide a dummy Module base class via `types.ModuleType` stubs (same pattern used in dataset.py)
+  - ResNet1D uses AdaptiveAvgPool1d(1) so it handles any input signal length without changes
+  - `_compute_f1` uses manual TP/FP/FN counting for macro-F1 — no sklearn dependency needed
+  - All torch-dependent tests use `pytest.importorskip("torch")` to skip gracefully on Python 3.13
+  - ruff auto-fix handles import sorting for noqa: E402 lines after pytest.importorskip
+---
+
+## Iteration 15 - US-015: Shared ResNet Backbone Encoder
+- Implemented: `AorticaBackbone` (PyTorch) and `build_aortica_backbone_tf()` (TensorFlow/Keras) shared encoder
+- Also fixed: US-013 PRD checkboxes were not marked complete in a prior iteration — fixed now
+- Files changed:
+  - aortica/models/backbone.py (new) - AorticaBackbone with ResidualBlock1D, 3 stages [64, 128, 256], adaptive pooling, configurable feature_dim (default 256)
+  - aortica/models/backbone_tf.py (new) - build_aortica_backbone_tf() Keras functional API model, identical architecture, channels-last format
+  - aortica/models/__init__.py (modified) - exports AorticaBackbone
+  - tests/models/test_backbone.py (new) - 18 tests covering PyTorch (shapes, varying lengths/rates, gradient flow, reproducibility, eval mode, param count) and TF (shapes, variable-length, summary)
+  - PRD.md (modified) - marked US-013 and US-015 complete
+- Learnings for future iterations:
+  - AorticaBackbone uses 3 stages (64, 128, 256) vs ResNet1D's 4 stages (64, 128, 256, 512) — lighter for multi-task sharing
+  - feature_dim defaults to 256 (last stage width); optional fc projection layer added only when feature_dim differs
+  - TF/Keras uses functional API with channels-last (batch, samples, leads) — caller must transpose from PyTorch's (batch, leads, samples)
+  - AdaptiveAvgPool1d(1) in PyTorch / GlobalAveragePooling1D in Keras makes backbone handle any signal length
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 16 - US-013 Quality Refactor
+- Reviewed and rewrote US-013 code for production quality
+- Files changed:
+  - aortica/data/augmentations.py (rewritten) - migrated np.random.RandomState → np.random.Generator, added input validation (dropout_prob range, negative std_dev, min>max scale, target_samples<=0), empty signal guards, docstring documenting recommended augmentation order
+  - aortica/data/dataset.py (rewritten) - migrated to Generator, ensured float32 label dtypes in both PyTorch and TF paths, extracted shared `_apply_augmentations()` helper, added empty records guard for TF, simplified TF output_signature construction
+  - tests/data/test_augmentations.py (rewritten) - expanded from 5 tests to 34: organized by class, covers shape preservation, boundary conditions, reproducibility, input validation errors, empty signals
+  - tests/data/test_dataset.py (rewritten) - expanded from 2 tests to 15: covers output shapes/dtypes, augmentation effects, reproducibility, windowing, resampling, error cases, scalar labels, TF dataset shapes
+- Learnings for future iterations:
+  - np.random.Generator uses `rng.integers()` instead of `randint()` — different API from legacy RandomState
+  - `.gitignore` has `data/` which catches `aortica/data/` and `tests/data/` — must use `git add -f`
+  - `np.asarray(labels, dtype=np.float32)` ensures consistent label dtypes regardless of input type
+  - Factoring augmentation logic into a shared helper eliminates code duplication between PyTorch Dataset and TF generator
+---
+
+## Iteration 17 - US-016: Cross-Lead Temporal Attention Module
+- Implemented: `CrossLeadAttention` (PyTorch) and `build_cross_lead_attention_tf()` (TF/Keras)
+- Files changed:
+  - aortica/models/attention.py (new) - CrossLeadAttention: multi-head self-attention across ECG leads with extractable attention weights, residual + LayerNorm, configurable num_heads/head_dim/dropout
+  - aortica/models/attention_tf.py (new) - build_cross_lead_attention_tf(): Keras functional API model returning (enriched_features, attention_weights)
+  - aortica/models/__init__.py (modified) - exports CrossLeadAttention
+  - tests/models/test_attention.py (new) - 22 tests: output shapes, attention weight properties (sum-to-1, non-negative, detached), gradient flow, reproducibility, dropout, backbone integration, TF equivalents
+  - PRD.md (modified) - marked US-016 complete
+- Learnings for future iterations:
+  - CrossLeadAttention reshapes backbone features [batch, feature_dim] → [batch, num_leads, lead_token_dim] to create per-lead tokens for attention
+  - feature_dim must be divisible by num_leads — enforce with ValueError
+  - Attention weights are stored detached from the computation graph for XAI extraction
+  - TF/Keras functional API returns a tuple (enriched, attn_weights) as model outputs — different from PyTorch where weights are accessed via property
+  - ruff auto-fix handles import sorting (numpy before aortica imports in TF test methods)
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
