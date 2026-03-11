@@ -270,13 +270,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a clinician, I want AI detection of ischaemic and metabolic ECG patterns so that acute MI and electrolyte disorders are caught early.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.IschaemiaHead`: multi-label classification head producing 10 sigmoid outputs
-- [ ] Classes: STEMI (per territory), posterior MI, occlusive NSTEMI, old MI, hyperkalaemia, hypokalaemia, hypercalcaemia, hypothyroidism pattern, digitalis effect, QTc prolongation
-- [ ] Connects to backbone + attention output
-- [ ] Loss: binary cross-entropy with class weighting
-- [ ] Implemented in both PyTorch and TensorFlow/Keras
-- [ ] Unit tests verifying output shape and loss computation
-- [ ] Typecheck passes
+- [x] `aortica.models.IschaemiaHead`: multi-label classification head producing 10 sigmoid outputs
+- [x] Classes: STEMI (per territory), posterior MI, occlusive NSTEMI, old MI, hyperkalaemia, hypokalaemia, hypercalcaemia, hypothyroidism pattern, digitalis effect, QTc prolongation
+- [x] Connects to backbone + attention output
+- [x] Loss: binary cross-entropy with class weighting
+- [x] Implemented in both PyTorch and TensorFlow/Keras
+- [x] Unit tests verifying output shape and loss computation
+- [x] Typecheck passes
 
 ---
 
