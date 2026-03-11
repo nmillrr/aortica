@@ -256,13 +256,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a clinician, I want AI screening for 15 structural and functional cardiac abnormalities so that subclinical disease can be flagged for further workup.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.StructuralHead`: multi-label classification head producing 15 sigmoid outputs
-- [ ] Classes: LVH, RVH, LVSD, HFpEF risk, DCM, HCM, ARVC, amyloidosis, aortic stenosis, mitral regurgitation, pulmonary HTN, LA enlargement, RA enlargement, pericarditis pattern, myocarditis pattern
-- [ ] Connects to backbone + attention output
-- [ ] Loss: binary cross-entropy with focal loss option for rare classes
-- [ ] Implemented in both PyTorch and TensorFlow/Keras
-- [ ] Unit tests verifying output shape and loss computation
-- [ ] Typecheck passes
+- [x] `aortica.models.StructuralHead`: multi-label classification head producing 15 sigmoid outputs
+- [x] Classes: LVH, RVH, LVSD, HFpEF risk, DCM, HCM, ARVC, amyloidosis, aortic stenosis, mitral regurgitation, pulmonary HTN, LA enlargement, RA enlargement, pericarditis pattern, myocarditis pattern
+- [x] Connects to backbone + attention output
+- [x] Loss: binary cross-entropy with focal loss option for rare classes
+- [x] Implemented in both PyTorch and TensorFlow/Keras
+- [x] Unit tests verifying output shape and loss computation
+- [x] Typecheck passes
 
 ---
 
