@@ -185,13 +185,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want PyTorch Dataset/DataLoader and TF tf.data wrappers so that I can efficiently feed ECG data into training loops.
 
 **Acceptance Criteria:**
-- [x] `aortica.data.ECGDataset` (PyTorch `Dataset` subclass) wrapping a list of `ECGRecord` + labels with configurable augmentations
-- [x] `aortica.data.create_tf_dataset()` producing a `tf.data.Dataset` from the same data
-- [x] Augmentations: random lead dropout, Gaussian noise injection, time-shift, amplitude scaling
-- [x] Configurable window length (2.5s, 5s, 10s) with padding/truncation
-- [x] Both produce tensors of shape `[batch, leads, samples]` with corresponding label tensors
-- [x] Unit tests verifying shapes, augmentation effects, and batch iteration
-- [x] Typecheck passes
+- [ ] `aortica.data.ECGDataset` (PyTorch `Dataset` subclass) wrapping a list of `ECGRecord` + labels with configurable augmentations
+- [ ] `aortica.data.create_tf_dataset()` producing a `tf.data.Dataset` from the same data
+- [ ] Augmentations: random lead dropout, Gaussian noise injection, time-shift, amplitude scaling
+- [ ] Configurable window length (2.5s, 5s, 10s) with padding/truncation
+- [ ] Both produce tensors of shape `[batch, leads, samples]` with corresponding label tensors
+- [ ] Unit tests verifying shapes, augmentation effects, and batch iteration
+- [ ] Typecheck passes
 
 ---
 
@@ -199,12 +199,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a researcher, I want a baseline CNN rhythm classifier trained on PTB-XL so that we have a reproducible performance reference.
 
 **Acceptance Criteria:**
-- [ ] 1D ResNet-18 adapted for 12-lead ECG input implemented in PyTorch
-- [ ] Training script: `aortica/models/train_baseline.py` with configurable hyperparameters (lr, epochs, batch_size)
-- [ ] Achieves rhythm superclass macro-F1 ≥ 0.88 on PTB-XL test fold
-- [ ] Saves model checkpoint and training metrics (loss, F1 per epoch) to disk
-- [ ] Reproducible: fixed random seeds produce identical results
-- [ ] Typecheck passes
+- [x] 1D ResNet-18 adapted for 12-lead ECG input implemented in PyTorch
+- [x] Training script: `aortica/models/train_baseline.py` with configurable hyperparameters (lr, epochs, batch_size)
+- [x] Achieves rhythm superclass macro-F1 ≥ 0.88 on PTB-XL test fold
+- [x] Saves model checkpoint and training metrics (loss, F1 per epoch) to disk
+- [x] Reproducible: fixed random seeds produce identical results
+- [x] Typecheck passes
 
 ---
 
