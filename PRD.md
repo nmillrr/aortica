@@ -185,13 +185,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want PyTorch Dataset/DataLoader and TF tf.data wrappers so that I can efficiently feed ECG data into training loops.
 
 **Acceptance Criteria:**
-- [ ] `aortica.data.ECGDataset` (PyTorch `Dataset` subclass) wrapping a list of `ECGRecord` + labels with configurable augmentations
-- [ ] `aortica.data.create_tf_dataset()` producing a `tf.data.Dataset` from the same data
-- [ ] Augmentations: random lead dropout, Gaussian noise injection, time-shift, amplitude scaling
-- [ ] Configurable window length (2.5s, 5s, 10s) with padding/truncation
-- [ ] Both produce tensors of shape `[batch, leads, samples]` with corresponding label tensors
-- [ ] Unit tests verifying shapes, augmentation effects, and batch iteration
-- [ ] Typecheck passes
+- [x] `aortica.data.ECGDataset` (PyTorch `Dataset` subclass) wrapping a list of `ECGRecord` + labels with configurable augmentations
+- [x] `aortica.data.create_tf_dataset()` producing a `tf.data.Dataset` from the same data
+- [x] Augmentations: random lead dropout, Gaussian noise injection, time-shift, amplitude scaling
+- [x] Configurable window length (2.5s, 5s, 10s) with padding/truncation
+- [x] Both produce tensors of shape `[batch, leads, samples]` with corresponding label tensors
+- [x] Unit tests verifying shapes, augmentation effects, and batch iteration
+- [x] Typecheck passes
 
 ---
 
@@ -216,12 +216,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want a modular shared-backbone encoder so that multiple task heads can leverage the same learned ECG representations.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.AorticaBackbone` class: 1D ResNet with residual blocks at 64, 128, 256 filter widths
-- [ ] Accepts input shape `[batch, leads, samples]` with adaptive pooling to handle 250–1000 Hz sampling rates and 2.5–10s windows
-- [ ] Returns a feature tensor suitable for downstream task heads
-- [ ] Implemented in both PyTorch and TensorFlow/Keras (separate files, identical architecture)
-- [ ] Unit tests verifying output shapes for various input configurations
-- [ ] Typecheck passes
+- [x] `aortica.models.AorticaBackbone` class: 1D ResNet with residual blocks at 64, 128, 256 filter widths
+- [x] Accepts input shape `[batch, leads, samples]` with adaptive pooling to handle 250–1000 Hz sampling rates and 2.5–10s windows
+- [x] Returns a feature tensor suitable for downstream task heads
+- [x] Implemented in both PyTorch and TensorFlow/Keras (separate files, identical architecture)
+- [x] Unit tests verifying output shapes for various input configurations
+- [x] Typecheck passes
 
 ---
 
