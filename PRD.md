@@ -284,13 +284,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a clinician, I want continuous risk scores for mortality, heart failure hospitalization, and AF onset so that high-risk patients can be identified proactively.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.RiskHead`: regression head producing 3 continuous outputs (sigmoid-scaled 0–1)
-- [ ] Outputs: 1-year all-cause mortality score, 12-month HF hospitalization probability, 12-month AF onset risk
-- [ ] Connects to backbone + attention output
-- [ ] Loss: combined MSE + ranking loss (concordance index proxy)
-- [ ] Implemented in both PyTorch and TensorFlow/Keras
-- [ ] Unit tests verifying output shape and loss computation
-- [ ] Typecheck passes
+- [x] `aortica.models.RiskHead`: regression head producing 3 continuous outputs (sigmoid-scaled 0–1)
+- [x] Outputs: 1-year all-cause mortality score, 12-month HF hospitalization probability, 12-month AF onset risk
+- [x] Connects to backbone + attention output
+- [x] Loss: combined MSE + ranking loss (concordance index proxy)
+- [x] Implemented in both PyTorch and TensorFlow/Keras
+- [x] Unit tests verifying output shape and loss computation
+- [x] Typecheck passes
 
 ---
 

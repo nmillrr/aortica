@@ -274,3 +274,46 @@
   - ruff auto-fix handles import sorting (numpy before aortica imports in TF test methods)
   - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
 ---
+
+## Iteration 18 - US-017: Rhythm & Conduction Task Head (22 Classes)
+- Implemented: `RhythmHead` (PyTorch) and `build_rhythm_head_tf()` (TF/Keras) for 22-class multi-label rhythm classification
+- Files changed:
+  - aortica/models/rhythm_head.py (new) - RhythmHead with forward/forward_logits, compute_rhythm_loss with optional class weights, RHYTHM_CLASSES canonical list
+  - aortica/models/rhythm_head_tf.py (new) - build_rhythm_head_tf() Keras functional model with Dense→ReLU→Dropout→Dense→Sigmoid
+  - aortica/models/__init__.py (modified) - exports RhythmHead
+  - tests/models/test_rhythm_head.py (new) - 18 tests: constants, shapes, ranges, loss computation, gradient flow, backbone+attention integration, TF equivalents
+  - PRD.md (modified) - marked US-017 complete
+- Learnings for future iterations:
+  - RhythmHead exposes both forward() (sigmoid probs) and forward_logits() (raw logits for BCEWithLogitsLoss)
+  - compute_rhythm_loss wraps nn.functional.binary_cross_entropy_with_logits with optional per-class weight tensor
+  - TF/Keras version uses Activation("sigmoid") as a separate layer for clearer architecture
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 19 - US-018: Structural & Functional Task Head (15 Classes)
+- Implemented: `StructuralHead` (PyTorch) and `build_structural_head_tf()` (TF/Keras) for 15-class multi-label structural classification
+- Files changed:
+  - aortica/models/structural_head.py (new) - StructuralHead with forward/forward_logits, compute_structural_loss with optional focal loss for rare classes, STRUCTURAL_CLASSES canonical list
+  - aortica/models/structural_head_tf.py (new) - build_structural_head_tf() Keras functional model with Dense→ReLU→Dropout→Dense→Sigmoid
+  - aortica/models/__init__.py (modified) - exports StructuralHead
+  - tests/models/test_structural_head.py (new) - 22 tests: constants, shapes, ranges, BCE loss, focal loss (gamma/alpha/gradient), backbone+attention integration, TF equivalents
+  - PRD.md (modified) - marked US-018 complete
+- Learnings for future iterations:
+  - Focal loss implementation: (1-p_t)^gamma * BCE, where p_t = p for positive and (1-p) for negative class
+  - With gamma=0, focal loss reduces exactly to standard BCE — useful sanity check
+  - focal_alpha applies per-class balancing: alpha_t for positives, (1-alpha_t) for negatives
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 20 - US-019: Ischaemia & Metabolic Task Head (10 Classes)
+- Implemented: `IschaemiaHead` (PyTorch) and `build_ischaemia_head_tf()` (TF/Keras) for 10-class multi-label ischaemia/metabolic classification
+- Files changed:
+  - aortica/models/ischaemia_head.py (new) - IschaemiaHead with forward/forward_logits, compute_ischaemia_loss with optional class weights, ISCHAEMIA_CLASSES canonical list
+  - aortica/models/ischaemia_head_tf.py (new) - build_ischaemia_head_tf() Keras functional model with Dense→ReLU→Dropout→Dense→Sigmoid
+  - aortica/models/__init__.py (modified) - exports IschaemiaHead
+  - tests/models/test_ischaemia_head.py (new) - 18 tests: constants, shapes, ranges, loss computation, gradient flow, backbone+attention integration, TF equivalents
+  - PRD.md (modified) - marked US-019 complete
+- Learnings for future iterations:
+  - IschaemiaHead follows exactly the same pattern as RhythmHead (BCE loss with class weights) — no focal loss needed here since class weighting handles it
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
