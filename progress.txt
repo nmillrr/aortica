@@ -180,3 +180,17 @@
   - A single flatline penalty (40) yields score 60 = 'marginal', not 'poor'; need multiple artefacts to reach 'poor' (<40)
   - QualityReport.recommendation maps directly: good→accept, marginal→review, poor→reject
 ---
+
+## Iteration 12 - US-012: PTB-XL Dataset Loader
+- Implemented: `aortica.data.load_ptbxl(path, sampling_rate=500)` returning `train/val/test` tuples (`records, labels`).
+- Files changed:
+  - aortica/data/ptbxl.py (new) - load_ptbxl(), _parse_scp_statements()
+  - aortica/data/__init__.py (modified) - exports load_ptbxl
+  - tests/data/test_ptbxl.py (new) - tests with synthetic scp_statements.csv, ptbxl_database.csv, and wfdb files
+  - PRD.md (modified) - marked US-012 complete
+- Learnings for future iterations:
+  - `load_ptbxl` eager loads the dataset by iterating `ptbxl_database.csv` and calling `read_ecg()`.
+  - The universal format dispatcher `read_ecg(path, target_rate=X)` implicitly resamples, meaning 100 Hz files request resample cleanly.
+  - Using `ast.literal_eval` to parse `scp_codes` dict strings from PTB-XL metadata is robust.
+  - `scp_statements.csv`'s index corresponds to the keys in `scp_codes` dict. 
+---

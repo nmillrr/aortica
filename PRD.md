@@ -171,13 +171,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a researcher, I want a convenient loader for the PTB-XL dataset so that I can train and benchmark models without manual data wrangling.
 
 **Acceptance Criteria:**
-- [ ] `aortica.data.load_ptbxl(path, sampling_rate=500)` returns train/val/test splits as lists of `ECGRecord` objects with labels
-- [ ] Uses the official PTB-XL recommended folds (1-8 train, 9 val, 10 test)
-- [ ] Parses SCP statement codes into Aortica's label taxonomy (rhythm, structural, ischaemia superclasses)
-- [ ] Supports loading at 100 Hz or 500 Hz
-- [ ] Returns label vectors compatible with PyTorch Dataset and TF tf.data pipelines
-- [ ] Unit tests verifying correct split sizes, label distributions, and data shapes
-- [ ] Typecheck passes
+- [x] `aortica.data.load_ptbxl(path, sampling_rate=500)` returns train/val/test splits as lists of `ECGRecord` objects with labels
+- [x] Uses the official PTB-XL recommended folds (1-8 train, 9 val, 10 test)
+- [x] Parses SCP statement codes into Aortica's label taxonomy (rhythm, structural, ischaemia superclasses)
+- [x] Supports loading at 100 Hz or 500 Hz
+- [x] Returns label vectors compatible with PyTorch Dataset and TF tf.data pipelines
+- [x] Unit tests verifying correct split sizes, label distributions, and data shapes
+- [x] Typecheck passes
 
 ---
 
