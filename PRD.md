@@ -158,12 +158,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a clinician, I want each ECG segment scored for signal quality so that unreliable segments can be flagged or excluded before AI analysis.
 
 **Acceptance Criteria:**
-- [ ] `aortica.signal.score_quality(ecg_record)` returns a per-lead quality score (0–100) and an overall score
-- [ ] Detects and flags: lead-off / flatline, excessive baseline wander, motion artifact, saturation / clipping
-- [ ] Quality classification: 'good' (≥70), 'marginal' (40–69), 'poor' (<40) with configurable thresholds
-- [ ] Returns a `QualityReport` object with per-lead scores, flags, and an overall accept/review/reject recommendation
-- [ ] Unit tests with synthetic clean, noisy, and lead-off signals
-- [ ] Typecheck passes
+- [x] `aortica.signal.score_quality(ecg_record)` returns a per-lead quality score (0–100) and an overall score
+- [x] Detects and flags: lead-off / flatline, excessive baseline wander, motion artifact, saturation / clipping
+- [x] Quality classification: 'good' (≥70), 'marginal' (40–69), 'poor' (<40) with configurable thresholds
+- [x] Returns a `QualityReport` object with per-lead scores, flags, and an overall accept/review/reject recommendation
+- [x] Unit tests with synthetic clean, noisy, and lead-off signals
+- [x] Typecheck passes
 
 ---
 
