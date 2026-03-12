@@ -312,14 +312,14 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want a training pipeline that jointly optimizes all task heads with configurable loss weighting so that the multi-task model converges effectively.
 
 **Acceptance Criteria:**
-- [ ] Training script accepting config (YAML) with per-task loss weights, learning rate schedule, epochs, batch size
-- [ ] Weighted sum of task losses with configurable coefficients (default: equal weighting)
-- [ ] Learning rate: cosine annealing with warmup
-- [ ] Gradient clipping (configurable, default max_norm=1.0)
-- [ ] Logs per-task loss, overall loss, and per-task metrics (F1 for classification, C-index for risk) each epoch
-- [ ] Saves best checkpoint by validation metric (configurable which metric)
-- [ ] Works with both PyTorch and TF/Keras backends
-- [ ] Typecheck passes
+- [x] Training script accepting config (YAML) with per-task loss weights, learning rate schedule, epochs, batch size
+- [x] Weighted sum of task losses with configurable coefficients (default: equal weighting)
+- [x] Learning rate: cosine annealing with warmup
+- [x] Gradient clipping (configurable, default max_norm=1.0)
+- [x] Logs per-task loss, overall loss, and per-task metrics (F1 for classification, C-index for risk) each epoch
+- [x] Saves best checkpoint by validation metric (configurable which metric)
+- [x] Works with both PyTorch and TF/Keras backends
+- [x] Typecheck passes
 
 ---
 

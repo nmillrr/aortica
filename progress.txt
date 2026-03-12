@@ -317,3 +317,50 @@
   - IschaemiaHead follows exactly the same pattern as RhythmHead (BCE loss with class weights) — no focal loss needed here since class weighting handles it
   - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
 ---
+
+## Iteration 21 - US-020: Risk Prediction Task Head (3 Continuous Outputs)
+- Implemented: `RiskHead` (PyTorch) and `build_risk_head_tf()` (TF/Keras) for 3-output risk score regression
+- Files changed:
+  - aortica/models/risk_head.py (new) - RiskHead with forward/forward_logits, compute_risk_loss with combined MSE + pairwise ranking loss (concordance index proxy), RISK_OUTPUTS canonical list
+  - aortica/models/risk_head_tf.py (new) - build_risk_head_tf() Keras functional model with Dense→ReLU→Dropout→Dense→Sigmoid
+  - aortica/models/__init__.py (modified) - exports RiskHead
+  - tests/models/test_risk_head.py (new) - 25 tests: constants, shapes, ranges, MSE+ranking loss, pairwise ranking (single sample, ordered, reversed, equal targets, gradient), backbone+attention integration, TF equivalents
+  - PRD.md (modified) - marked US-020 complete
+- Learnings for future iterations:
+  - RiskHead uses sigmoid-scaled outputs (0–1) for regression, unlike classification heads that also use sigmoid but for multi-label classification
+  - Pairwise ranking loss as concordance proxy: log(1 + exp(-(pred_i - pred_j))) for pairs where target_i > target_j
+  - Ranking loss is clamped to [-50, 50] for numerical stability before exp()
+  - compute_risk_loss combines MSE + ranking_weight * mean(per-task ranking loss) — default ranking_weight=0.1
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 22 - US-021: Unified Multi-Task Model Assembly
+- Implemented: `AorticaModel` (PyTorch) and `build_aortica_model_tf()` (TF/Keras) composing backbone + attention + 4 task heads
+- Files changed:
+  - aortica/models/aortica_model.py (new) - AorticaModel nn.Module with MultiTaskOutput dataclass, configurable enabled_tasks, freeze/unfreeze backbone, per-forward-pass task selection
+  - aortica/models/aortica_model_tf.py (new) - build_aortica_model_tf() Keras functional API with dict outputs for enabled task heads
+  - aortica/models/__init__.py (modified) - exports AorticaModel, MultiTaskOutput
+  - tests/models/test_aortica_model.py (new) - 22 tests: construction (all/subset/unknown tasks), forward pass shapes/ranges/subset, backbone freeze/unfreeze, gradient flow (full/frozen), attention weights, reproducibility, variable input lengths, TF model shapes/subset/summary
+  - PRD.md (modified) - marked US-021 complete
+- Learnings for future iterations:
+  - MultiTaskOutput is a dataclass with Optional[Tensor] fields — None for disabled tasks
+  - AorticaModel uses lazy imports for submodules to avoid circular import issues
+  - forward() accepts optional tasks= parameter to run a subset of enabled heads at inference time
+  - feature_dim must be divisible by num_leads (for CrossLeadAttention) — default 252 works for 12 leads
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 23 - US-022: Multi-Task Training Pipeline
+- Implemented: `train_multitask.py` — full multi-task training pipeline for AorticaModel
+- Files changed:
+  - aortica/models/train_multitask.py (new) - MultiTaskTrainConfig (YAML-loadable), cosine annealing with warmup LR, gradient clipping, per-task weighted loss (compute_rhythm_loss/structural/ischaemia/risk), per-task metrics (F1 + C-index), configurable best checkpoint saving, CLI, PyTorch + TF/Keras backend support
+  - tests/models/test_train_multitask.py (new) - 30 tests covering: config defaults/YAML/serialisation, LR schedule (warmup/cosine/midpoint/peak), F1 metrics (perfect/random), C-index (perfect/reversed/single/multi), label splitting, multi-task loss (all/weighted/subset/gradient), train_one_epoch, evaluate, gradient clipping, checkpoint save logic, TF backend structure
+  - PRD.md (modified) - marked US-022 complete
+- Learnings for future iterations:
+  - _split_labels assumes labels are concatenated in enabled_tasks order with widths from _TASK_NUM_OUTPUTS
+  - cosine_annealing_with_warmup takes a 0-indexed epoch and manually sets optimizer param_groups LR
+  - _compute_multitask_loss forwards features through each head's forward_logits (classification) or forward (risk) separately to use the proper per-task loss functions
+  - yaml import needs `type: ignore[import-untyped]` for mypy
+  - C-index concordant/discordant must be typed as float (not int) to avoid mypy float/int assignment errors when adding 0.5 for ties
+  - Same torch-optional pattern: pytest.importorskip, graceful skip on Python 3.13
+---
