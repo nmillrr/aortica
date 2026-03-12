@@ -158,9 +158,9 @@ class TestIschaemiaHeadIntegration:
         from aortica.models.attention import CrossLeadAttention
         from aortica.models.backbone import AorticaBackbone
 
-        backbone = AorticaBackbone(in_channels=12, feature_dim=256)
-        attention = CrossLeadAttention(feature_dim=256, num_leads=12)
-        head = IschaemiaHead(feature_dim=256)
+        backbone = AorticaBackbone(in_channels=12, feature_dim=240)
+        attention = CrossLeadAttention(feature_dim=240, num_leads=12)
+        head = IschaemiaHead(feature_dim=240)
 
         x = torch.randn(2, 12, 2500)
         features = backbone(x)
@@ -172,9 +172,9 @@ class TestIschaemiaHeadIntegration:
         from aortica.models.attention import CrossLeadAttention
         from aortica.models.backbone import AorticaBackbone
 
-        backbone = AorticaBackbone(in_channels=12, feature_dim=256)
-        attention = CrossLeadAttention(feature_dim=256, num_leads=12)
-        head = IschaemiaHead(feature_dim=256, dropout=0.0)
+        backbone = AorticaBackbone(in_channels=12, feature_dim=240)
+        attention = CrossLeadAttention(feature_dim=240, num_leads=12)
+        head = IschaemiaHead(feature_dim=240, dropout=0.0)
 
         x = torch.randn(2, 12, 2500, requires_grad=True)
         features = backbone(x)

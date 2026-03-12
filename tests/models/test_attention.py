@@ -19,7 +19,7 @@ from aortica.models.attention import CrossLeadAttention  # noqa: E402
 def attn() -> CrossLeadAttention:
     """Default 12-lead, 4-head, 64-dim attention module."""
     return CrossLeadAttention(
-        feature_dim=256, num_leads=12, num_heads=4, head_dim=64,
+        feature_dim=240, num_leads=12, num_heads=4, head_dim=64,
     )
 
 
@@ -34,7 +34,7 @@ def attn_small() -> CrossLeadAttention:
 @pytest.fixture
 def features_12lead() -> torch.Tensor:
     torch.manual_seed(0)
-    return torch.randn(4, 256)
+    return torch.randn(4, 240)
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ class TestCrossLeadAttention:
         self, attn: CrossLeadAttention, features_12lead: torch.Tensor,
     ) -> None:
         out = attn(features_12lead)
-        assert out.shape == (4, 256)
+        assert out.shape == (4, 240)
 
     def test_output_shape_small(
         self, attn_small: CrossLeadAttention, features_small: torch.Tensor,
@@ -62,9 +62,9 @@ class TestCrossLeadAttention:
         assert out.shape == (4, 24)
 
     def test_single_sample(self, attn: CrossLeadAttention) -> None:
-        x = torch.randn(1, 256)
+        x = torch.randn(1, 240)
         out = attn(x)
-        assert out.shape == (1, 256)
+        assert out.shape == (1, 240)
 
     def test_attention_weights_shape(
         self, attn: CrossLeadAttention, features_12lead: torch.Tensor,
@@ -94,7 +94,7 @@ class TestCrossLeadAttention:
         assert (w >= 0).all()
 
     def test_attention_weights_none_before_forward(self) -> None:
-        attn = CrossLeadAttention(feature_dim=256, num_leads=12)
+        attn = CrossLeadAttention(feature_dim=240, num_leads=12)
         assert attn.attention_weights is None
 
     def test_attention_weights_detached(
@@ -109,7 +109,7 @@ class TestCrossLeadAttention:
     def test_gradient_flow(
         self, attn: CrossLeadAttention,
     ) -> None:
-        x = torch.randn(2, 256, requires_grad=True)
+        x = torch.randn(2, 240, requires_grad=True)
         out = attn(x)
         loss = out.sum()
         loss.backward()
@@ -117,7 +117,7 @@ class TestCrossLeadAttention:
         assert x.grad.shape == x.shape
 
     def test_feature_dim_attribute(self, attn: CrossLeadAttention) -> None:
-        assert attn.feature_dim == 256
+        assert attn.feature_dim == 240
 
     def test_num_heads_attribute(self, attn: CrossLeadAttention) -> None:
         assert attn.num_heads == 4
@@ -128,29 +128,29 @@ class TestCrossLeadAttention:
 
     def test_reproducibility(self) -> None:
         torch.manual_seed(42)
-        m1 = CrossLeadAttention(feature_dim=256, num_leads=12)
+        m1 = CrossLeadAttention(feature_dim=240, num_leads=12)
         torch.manual_seed(42)
-        m2 = CrossLeadAttention(feature_dim=256, num_leads=12)
+        m2 = CrossLeadAttention(feature_dim=240, num_leads=12)
 
-        x = torch.randn(2, 256)
+        x = torch.randn(2, 240)
         assert torch.allclose(m1(x), m2(x))
 
     def test_eval_mode(self, attn: CrossLeadAttention) -> None:
         """Attention should work in eval mode."""
         attn.eval()
-        x = torch.randn(1, 256)
+        x = torch.randn(1, 240)
         out = attn(x)
-        assert out.shape == (1, 256)
+        assert out.shape == (1, 240)
 
     def test_with_dropout(self) -> None:
         """Module with dropout should still produce correct shapes."""
         attn = CrossLeadAttention(
-            feature_dim=256, num_leads=12, num_heads=4, head_dim=64,
+            feature_dim=240, num_leads=12, num_heads=4, head_dim=64,
             dropout=0.1,
         )
-        x = torch.randn(4, 256)
+        x = torch.randn(4, 240)
         out = attn(x)
-        assert out.shape == (4, 256)
+        assert out.shape == (4, 240)
 
     def test_parameter_count(self, attn: CrossLeadAttention) -> None:
         """Should have a reasonable number of parameters."""
@@ -163,23 +163,23 @@ class TestCrossLeadAttention:
         """Different head_dim values should work."""
         for hd in [16, 32, 64, 128]:
             attn = CrossLeadAttention(
-                feature_dim=256, num_leads=12, num_heads=4, head_dim=hd,
+                feature_dim=240, num_leads=12, num_heads=4, head_dim=hd,
             )
-            x = torch.randn(2, 256)
+            x = torch.randn(2, 240)
             out = attn(x)
-            assert out.shape == (2, 256)
+            assert out.shape == (2, 240)
 
     def test_backbone_integration(self) -> None:
         """Test that attention works with actual backbone output."""
         from aortica.models.backbone import AorticaBackbone
 
-        backbone = AorticaBackbone(in_channels=12, feature_dim=256)
-        attn = CrossLeadAttention(feature_dim=256, num_leads=12)
+        backbone = AorticaBackbone(in_channels=12, feature_dim=240)
+        attn = CrossLeadAttention(feature_dim=240, num_leads=12)
 
         x = torch.randn(2, 12, 5000)
         features = backbone(x)
         enriched = attn(features)
-        assert enriched.shape == (2, 256)
+        assert enriched.shape == (2, 240)
 
 
 # ---------------------------------------------------------------------------
