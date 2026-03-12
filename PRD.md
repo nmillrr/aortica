@@ -298,13 +298,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want a single `AorticaModel` class that combines the backbone, attention, and all four task heads into one forward pass.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.AorticaModel` composes backbone + attention + 4 task heads
-- [ ] Single forward pass returns a `MultiTaskOutput` dict/dataclass with keys: `rhythm`, `structural`, `ischaemia`, `risk`
-- [ ] Configurable: any task head can be disabled (e.g., train rhythm-only)
-- [ ] Supports freezing/unfreezing backbone independently of heads
-- [ ] Implemented in both PyTorch (`nn.Module`) and TensorFlow/Keras (`tf.keras.Model`)
-- [ ] Unit tests verifying full forward pass, selective head disabling, and gradient flow
-- [ ] Typecheck passes
+- [x] `aortica.models.AorticaModel` composes backbone + attention + 4 task heads
+- [x] Single forward pass returns a `MultiTaskOutput` dict/dataclass with keys: `rhythm`, `structural`, `ischaemia`, `risk`
+- [x] Configurable: any task head can be disabled (e.g., train rhythm-only)
+- [x] Supports freezing/unfreezing backbone independently of heads
+- [x] Implemented in both PyTorch (`nn.Module`) and TensorFlow/Keras (`tf.keras.Model`)
+- [x] Unit tests verifying full forward pass, selective head disabling, and gradient flow
+- [x] Typecheck passes
 
 ---
 
