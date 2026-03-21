@@ -366,12 +366,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a researcher, I want a variational autoencoder that encodes median beats into interpretable latent factors so that the model's internal representations can be visualized and understood.
 
 **Acceptance Criteria:**
-- [ ] `aortica.xai.MedianBeatVAE`: VAE with 24-dimensional latent space, trained on median beats extracted from 12-lead ECGs
-- [ ] Encoder: 1D CNN; Decoder: transposed 1D CNN; Loss: reconstruction + KL divergence
-- [ ] Training script for the VAE on PTB-XL median beats
-- [ ] Each latent dimension labeled by Pearson correlation with standard ECG measurements (from PTB-XL metadata)
-- [ ] Unit tests verifying encode/decode shapes and reconstruction loss convergence
-- [ ] Typecheck passes
+- [x] `aortica.xai.MedianBeatVAE`: VAE with 24-dimensional latent space, trained on median beats extracted from 12-lead ECGs
+- [x] Encoder: 1D CNN; Decoder: transposed 1D CNN; Loss: reconstruction + KL divergence
+- [x] Training script for the VAE on PTB-XL median beats
+- [x] Each latent dimension labeled by Pearson correlation with standard ECG measurements (from PTB-XL metadata)
+- [x] Unit tests verifying encode/decode shapes and reconstruction loss convergence
+- [x] Typecheck passes
 
 ---
 
