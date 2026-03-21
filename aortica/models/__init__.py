@@ -8,10 +8,15 @@ from aortica.models.resnet1d import ResNet1D
 from aortica.models.rhythm_head import RhythmHead
 from aortica.models.risk_head import RiskHead
 from aortica.models.structural_head import StructuralHead
+from aortica.models.temperature_scaling import (
+    CalibratedModel,
+    TemperatureScaling,
+)
 
 __all__ = [
     "AorticaBackbone",
     "AorticaModel",
+    "CalibratedModel",
     "CrossLeadAttention",
     "IschaemiaHead",
     "MultiTaskOutput",
@@ -19,4 +24,5 @@ __all__ = [
     "RhythmHead",
     "RiskHead",
     "StructuralHead",
+    "TemperatureScaling",
 ]

@@ -327,12 +327,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As an ML engineer, I want post-hoc calibration so that model probability outputs are well-calibrated and clinically trustworthy.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.TemperatureScaling` module: learns a single temperature parameter per task head on the validation set
-- [ ] `calibrate(model, val_loader)` optimizes temperature on NLL loss
-- [ ] `CalibratedModel` wrapper applies temperature scaling at inference time
-- [ ] Produces reliability diagrams (expected calibration error) as part of evaluation
-- [ ] Unit tests verifying ECE improvement on synthetic miscalibrated logits
-- [ ] Typecheck passes
+- [x] `aortica.models.TemperatureScaling` module: learns a single temperature parameter per task head on the validation set
+- [x] `calibrate(model, val_loader)` optimizes temperature on NLL loss
+- [x] `CalibratedModel` wrapper applies temperature scaling at inference time
+- [x] Produces reliability diagrams (expected calibration error) as part of evaluation
+- [x] Unit tests verifying ECE improvement on synthetic miscalibrated logits
+- [x] Typecheck passes
 
 ---
 
