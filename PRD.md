@@ -352,13 +352,13 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a clinician, I want AI explanations mapped to named ECG features (QRS width, ST slope, T-wave morphology) rather than generic heatmaps so that I can reconcile AI findings with my visual interpretation.
 
 **Acceptance Criteria:**
-- [ ] `aortica.xai.explain(model, ecg_record, task='rhythm')` returns a `FeatureAttribution` object
-- [ ] Computes integrated gradients per lead
-- [ ] Maps gradient attributions onto named ECG segments: P wave, PR interval, QRS complex, ST segment, T wave, QT/QTc
-- [ ] Segment boundaries determined by a rule-based delineation algorithm (using R-peak + interval heuristics)
-- [ ] Returns top-3 contributing features per active diagnosis with delta-contribution scores
-- [ ] Unit tests verifying attribution shape and feature mapping on synthetic ECG
-- [ ] Typecheck passes
+- [x] `aortica.xai.explain(model, ecg_record, task='rhythm')` returns a `FeatureAttribution` object
+- [x] Computes integrated gradients per lead
+- [x] Maps gradient attributions onto named ECG segments: P wave, PR interval, QRS complex, ST segment, T wave, QT/QTc
+- [x] Segment boundaries determined by a rule-based delineation algorithm (using R-peak + interval heuristics)
+- [x] Returns top-3 contributing features per active diagnosis with delta-contribution scores
+- [x] Unit tests verifying attribution shape and feature mapping on synthetic ECG
+- [x] Typecheck passes
 
 ---
 
