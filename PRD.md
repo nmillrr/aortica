@@ -340,11 +340,11 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a clinician, I want per-prediction confidence intervals and out-of-distribution flagging so that I know when to trust the AI and when to override.
 
 **Acceptance Criteria:**
-- [ ] `aortica.models.ConformalPredictor` wrapper: generates prediction sets at a user-specified coverage level (default 90%)
-- [ ] OOD detection via Mahalanobis distance on backbone features; flags inputs beyond a configurable percentile threshold
-- [ ] `UncertaintyReport` object returned alongside predictions with: confidence interval, OOD flag, entropy score
-- [ ] Unit tests with in-distribution and synthetic OOD inputs
-- [ ] Typecheck passes
+- [x] `aortica.models.ConformalPredictor` wrapper: generates prediction sets at a user-specified coverage level (default 90%)
+- [x] OOD detection via Mahalanobis distance on backbone features; flags inputs beyond a configurable percentile threshold
+- [x] `UncertaintyReport` object returned alongside predictions with: confidence interval, OOD flag, entropy score
+- [x] Unit tests with in-distribution and synthetic OOD inputs
+- [x] Typecheck passes
 
 ---
 
