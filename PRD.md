@@ -379,12 +379,12 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a clinician, I want to see how changing a single latent factor affects the ECG waveform so that I can understand what the model has learned.
 
 **Acceptance Criteria:**
-- [ ] `aortica.xai.vae_report(model, vae, ecg_record)` returns a `VAEReport` object
-- [ ] Reports which latent factors are most activated for the given prediction
-- [ ] Generates synthetic ECG waveforms showing the effect of varying each top factor ±2σ
-- [ ] Synthetic waveforms returned as numpy arrays (rendering to image is deferred to PRD-2)
-- [ ] Unit tests verifying report generation and synthetic waveform shapes
-- [ ] Typecheck passes
+- [x] `aortica.xai.vae_report(model, vae, ecg_record)` returns a `VAEReport` object
+- [x] Reports which latent factors are most activated for the given prediction
+- [x] Generates synthetic ECG waveforms showing the effect of varying each top factor ±2σ
+- [x] Synthetic waveforms returned as numpy arrays (rendering to image is deferred to PRD-2)
+- [x] Unit tests verifying report generation and synthetic waveform shapes
+- [x] Typecheck passes
 
 ---
 

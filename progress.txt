@@ -364,3 +364,68 @@
   - C-index concordant/discordant must be typed as float (not int) to avoid mypy float/int assignment errors when adding 0.5 for ties
   - Same torch-optional pattern: pytest.importorskip, graceful skip on Python 3.13
 ---
+
+## Iteration 24 - US-023: Temperature Scaling Calibration Layer
+- Implemented: `TemperatureScaling`, `CalibratedModel`, `calibrate()`, `expected_calibration_error()`, `reliability_diagram_data()`
+- Files changed:
+  - aortica/models/temperature_scaling.py (new) - TemperatureScaling nn.Module with per-task log-temperature parameters, CalibratedModel wrapper applying temp scaling at inference, calibrate() using LBFGS to optimise NLL on val set, expected_calibration_error(), reliability_diagram_data() returning ReliabilityDiagramData dataclass
+  - aortica/models/__init__.py (modified) - exports TemperatureScaling, CalibratedModel
+  - tests/models/test_temperature_scaling.py (new) - 30 tests: constants, TS module (init/forward/identity/softening/passthrough/learnable/independent temps), ECE (perfect/worst/range/empty/2D), reliability diagrams (type/bins/counts/ece-match/ranges), ECE improvement on synthetic miscalibrated logits, CalibratedModel (output type/keys/shapes/range/no-grad/task-subset), calibrate() (returns TS/correct tasks/moves temperature), end-to-end pipeline
+  - PRD.md (modified) - marked US-023 complete
+- Learnings for future iterations:
+  - `@torch.no_grad()` decorator causes AttributeError at class-definition time when using dummy torch module — use `with torch.no_grad():` context manager inside method body instead
+  - TemperatureScaling uses log-temperature (nn.Parameter initialised to 0 → T=1) with exp() for positivity constraint
+  - LBFGS is the standard optimiser for temperature scaling — only 1 parameter per task, fast convergence
+  - CalibratedModel extracts logits via each head's forward_logits() method, applies temperature scaling, then sigmoid
+  - `.to(device)` returns `Any` per mypy — assign to intermediate typed variable to avoid `no-any-return`
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 25 - US-024: Conformal Prediction and Uncertainty Estimation
+- Implemented: `ConformalPredictor` wrapper, `UncertaintyReport` dataclass, Mahalanobis OOD detection, split conformal prediction sets for classification, residual-based confidence intervals for risk task
+- Files changed:
+  - aortica/models/conformal_prediction.py (new) - ConformalPredictor nn.Module with fit()/predict(), UncertaintyReport dataclass, Mahalanobis OOD via backbone features (mean + inverse covariance + percentile threshold), split conformal prediction sets (non-conformity scores with quantile calibration), risk confidence intervals (residual-based), per-sample entropy scores
+  - aortica/models/__init__.py (modified) - exports ConformalPredictor, UncertaintyReport
+  - tests/models/test_conformal_prediction.py (new) - 35 tests: constants, construction (coverage/percentile/not-fitted), fitting (marks fitted/populates quantiles/OOD detector/risk quantile), prediction (returns tuple/keys/shapes/range/task subset), UncertaintyReport (prediction sets/OOD flags/entropy/Mahalanobis), confidence intervals (present/shape/range/lower≤upper/prediction within), OOD detection (in-dist mostly not flagged/OOD higher rate/Mahalanobis higher for OOD), coverage guarantee, end-to-end pipeline (classification/risk/forward alias)
+  - PRD.md (modified) - marked US-024 complete
+- Learnings for future iterations:
+  - Split conformal prediction uses non-conformity scores: 1−p for positive labels, p for negative labels; quantile chosen as ceil((n+1)*coverage)/n
+  - Mahalanobis distance requires regularised covariance inversion (add small diagonal) for numerical stability
+  - Risk confidence intervals use residual-based conformal: max absolute residual across outputs, then ±quantile around point prediction clamped to [0,1]
+  - `torch.linalg.inv` is the modern way to invert matrices in PyTorch (replaces deprecated `torch.inverse`)
+  - `np.percentile` is used for threshold computation on CPU numpy array from cal distances
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 26 - US-025: Integrated Gradient XAI with Named ECG Features
+- Implemented: `explain()` function with integrated gradients, ECG segment delineation, and `FeatureAttribution` result object
+- Files changed:
+  - aortica/xai/explain.py (new) - explain() with _compute_integrated_gradients (zero-baseline, n_steps interpolation), delineate_segments (rule-based R-peak + interval heuristics for P wave, PR interval, QRS complex, ST segment, T wave, QT/QTc), _map_attributions_to_segments (absolute attribution averaging across beats), FeatureAttribution/FeatureContribution/SegmentBoundaries dataclasses, top-3 contributing features ranked by absolute delta-score
+  - aortica/xai/__init__.py (modified) - exports explain, FeatureAttribution, FeatureContribution, SegmentBoundaries, delineate_segments, ECG_SEGMENTS
+  - tests/xai/test_explain.py (new) - ~30 tests: constants, dataclasses (SegmentBoundaries/FeatureContribution/FeatureAttribution), delineation (returns list/detects beats/boundaries valid/ordered/within signal/empty signal/explicit r_peaks), attribution mapping (zero/dominant QRS/all segments/empty/multiple beats averaged), full explain() pipeline (returns FeatureAttribution/per-lead shapes/segment keys/top-3 count/FeatureContribution types/sorted descending/task field/raw IG shape/target_class/excludes QT-QTc/non-negative/few leads)
+  - PRD.md (modified) - marked US-025 complete
+- Learnings for future iterations:
+  - Integrated gradients use a zero baseline (common for ECG) with Riemann sum approximation: avg gradient × (input - baseline)
+  - ECG segment delineation is rule-based using R-peak ± fixed ms offsets: QRS ±40ms, P wave 200-80ms before R, ST segment QRS_end+120ms, T wave ST_end+160ms
+  - _map_attributions_to_segments uses absolute attribution values summed per segment, averaged across all detected beats
+  - QT/QTc is excluded from top-3 ranking since it's a superset of QRS+ST+T segments
+  - model.eval() is called inside _compute_integrated_gradients for consistent inference-mode behavior
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 27 - US-026: VAE Latent Factor Model
+- Implemented: `MedianBeatVAE` with 1D CNN encoder/decoder, 24-dim latent space, training function, and Pearson correlation latent labelling
+- Files changed:
+  - aortica/xai/median_beat_vae.py (new) - MedianBeatVAE (encoder: 3-layer 1D CNN 32→64→128 + AdaptiveAvgPool1d + fc_mu/fc_log_var; decoder: Linear → transpose CNN 128→64→32→out_channels + F.interpolate to beat_length), VAEOutput/LatentLabel/TrainResult dataclasses, vae_loss (MSE + KL divergence with configurable beta weight), extract_median_beat (R-peak detection → beat segmentation → element-wise median), train_vae (Adam optimizer training loop), label_latent_dimensions (Pearson correlation between latent dims and ECG measurements)
+  - aortica/xai/__init__.py (modified) - exports MedianBeatVAE, VAEOutput, LatentLabel, TrainResult, vae_loss, extract_median_beat, train_vae, label_latent_dimensions
+  - tests/xai/test_median_beat_vae.py (new) - ~35 tests: constants, construction, encoder/decoder shapes, forward pass (VAEOutput fields), reparameterization (stochasticity, zero-variance), VAE loss (reconstruction, KL, gradient, beta-weight), gradient flow through full model, eval mode, median beat extraction (multi-lead, single-lead, short signal), training (returns TrainResult, loss decreases, recon converges, reproducibility), latent labelling (returns LatentLabels, indexed dims, correlated measurement detected, empty measurements)
+  - PRD.md (modified) - marked US-026 complete
+- Learnings for future iterations:
+  - MedianBeatVAE uses reparameterization trick: z = mu + eps * exp(0.5 * log_var) for differentiable sampling
+  - Decoder uses F.interpolate(mode='linear') as final layer to match exact beat_length regardless of transposed conv output size
+  - VAE loss uses mean MSE reconstruction + KL divergence (mean over batch of sum over latent dims)
+  - extract_median_beat uses Pan-Tompkins on Lead II (index 1) for R-peak detection, then median across all detected beats
+  - label_latent_dimensions uses np.corrcoef for Pearson r, with std < 1e-12 guard for constant signals
+  - mypy `no-any-return` fix: assign self.encoder(x) to typed local variables before returning
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---

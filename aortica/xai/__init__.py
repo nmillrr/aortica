@@ -1,4 +1,4 @@
-"""Explainability: integrated gradients, VAE latent factor model."""
+"""Explainability: integrated gradients, VAE latent factor model, VAE reporter."""
 
 from aortica.xai.explain import (
     ECG_SEGMENTS,
@@ -18,20 +18,28 @@ from aortica.xai.median_beat_vae import (
     train_vae,
     vae_loss,
 )
+from aortica.xai.vae_report import (
+    LatentActivation,
+    VAEReport,
+    vae_report,
+)
 
 __all__ = [
     "ECG_SEGMENTS",
     "FeatureAttribution",
     "FeatureContribution",
+    "LatentActivation",
     "LatentLabel",
     "MedianBeatVAE",
     "SegmentBoundaries",
     "TrainResult",
     "VAEOutput",
+    "VAEReport",
     "delineate_segments",
     "explain",
     "extract_median_beat",
     "label_latent_dimensions",
     "train_vae",
     "vae_loss",
+    "vae_report",
 ]
