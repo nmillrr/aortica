@@ -407,11 +407,11 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a developer, I want automated tests confirming that the TF/Keras model implementation produces equivalent outputs to the PyTorch implementation so that framework parity is maintained.
 
 **Acceptance Criteria:**
-- [ ] Script that loads identical weights into both PyTorch and TF/Keras models
-- [ ] Feeds the same input tensor through both and asserts outputs are within floating-point tolerance (atol=1e-5)
-- [ ] Included as a CI test (may be slow; tagged as `@pytest.mark.slow`)
-- [ ] Documents the weight conversion process between frameworks
-- [ ] Typecheck passes
+- [x] Script that loads identical weights into both PyTorch and TF/Keras models
+- [x] Feeds the same input tensor through both and asserts outputs are within floating-point tolerance (atol=1e-5)
+- [x] Included as a CI test (may be slow; tagged as `@pytest.mark.slow`)
+- [x] Documents the weight conversion process between frameworks
+- [x] Typecheck passes
 
 ---
 

@@ -459,3 +459,18 @@
   - BenchmarkReport provides three output formats: as_dict() for programmatic use, summary_table() for human reading, to_csv() for file export
   - Same torch-optional pattern: _check_torch(), dummy torch module, pytest.importorskip
 ---
+
+## Iteration 30 - US-029: TensorFlow/Keras Parity Validation
+- Implemented: `convert_pytorch_to_tf()` weight conversion and `validate_parity()` output comparison
+- Files changed:
+  - aortica/models/framework_parity.py (new) - Weight mapping tables for backbone (ConvBN stages), attention (Q/K/V/out projections, LayerNorm), task heads (fc1/logits/bias); _convert_conv1d_weight (transpose [out,in,kernel]→[kernel,in,out]), _convert_linear_weight (transpose), _find_tf_layer (recursive nested model search), _set_tf_weight, convert_pytorch_to_tf, validate_parity (transpose input [B,leads,samples]→[B,samples,leads], compare outputs atol=1e-5)
+  - tests/models/test_framework_parity.py (new) - 20 tests: Conv1D weight conversion (shape/values/roundtrip), Linear weight conversion (shape/values), weight transfer (returns keys/backbone/attention/task heads/all params/subset), parity validation (within tolerance/all tasks/reproducible/different inputs), subset parity (rhythm-only), documentation (module/convert/validate docstrings), imports
+  - PRD.md (modified) - marked US-029 complete
+- Learnings for future iterations:
+  - Conv1D weights: PyTorch [out, in, kernel] → TF [kernel, in, out] via np.transpose(w, (2,1,0))
+  - Linear/Dense weights: PyTorch [out, in] → TF [in, out] via simple transpose
+  - BN stores num_batches_tracked in PyTorch which has no TF equivalent — silently skip
+  - build_aortica_model_tf nests sub-models (backbone, attention) — need recursive layer search
+  - HAS_TF/HAS_TORCH module-level flags allow test skip marks without module-level importorskip side effects
+  - Using pytest.mark.skipif with framework flags is preferable to pytest.importorskip at module level for mixed test files
+---
