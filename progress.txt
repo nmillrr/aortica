@@ -429,3 +429,33 @@
   - mypy `no-any-return` fix: assign self.encoder(x) to typed local variables before returning
   - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
 ---
+
+## Iteration 28 - US-027: VAE Reporter and Synthetic ECG Rendering
+- Implemented: `vae_report()` function, `VAEReport` and `LatentActivation` dataclasses, `_generate_synthetic_waves()` helper
+- Files changed:
+  - aortica/xai/vae_report.py (new) - vae_report() extracts median beat → encodes to latent space → identifies top-N activated factors (by |mu|) → generates synthetic waveforms by perturbing each top dimension ±Nσ via decoder; LatentActivation dataclass tracks dimension/activation/mu_value/optional label; VAEReport holds top_factors, synthetic_waves dict, baseline_wave, mu, log_var
+  - aortica/xai/__init__.py (already wired) - imports LatentActivation, VAEReport, vae_report were pre-wired from previous iteration
+  - tests/xai/test_vae_report.py (already existed) - 22 tests covering LatentActivation/VAEReport dataclasses, _generate_synthetic_waves (offsets, shapes, zero-offset=baseline, different dims), vae_report (returns type, top factor count/sorting/types/clamping, synthetic wave keys/offsets/shapes, baseline shape, mu/log_var shapes, baseline=zero-offset, with/without labels, unique dimensions), end-to-end train→report pipeline, imports
+  - PRD.md (modified) - marked US-027 complete
+- Learnings for future iterations:
+  - vae_report uses extract_median_beat with vae.beat_length to match the VAE's expected input size
+  - _generate_synthetic_waves perturbs z[dim] = mu[dim] + offset * std[dim] where std = exp(0.5 * log_var)
+  - activation is defined as abs(mu_value) — measures how far the encoding is from the prior mean
+  - Labels are optional; when provided via LatentLabel objects, they annotate top factors with measurement names
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 29 - US-028: Multi-Task Evaluation Harness
+- Implemented: `benchmark()` function, `BenchmarkReport`/`TaskReport`/`ClassMetrics`/`SubgroupReport` dataclasses, all required metrics, subgroup stratification, and output formats
+- Files changed:
+  - aortica/evaluation/benchmark.py (already existed from prior conversation) - benchmark() with DataLoader-based inference, _split_labels, _build_subgroup_masks, _compute_auc (trapezoidal), _compute_sensitivity_specificity, _compute_f1 (macro + per-class), _compute_ece (binned), _compute_c_index (pairwise), _compute_brier_score, _evaluate_classification_task, _evaluate_risk_task; BenchmarkReport with as_dict(), summary_table(), to_csv()
+  - aortica/evaluation/__init__.py (already existed) - exports BenchmarkReport, ClassMetrics, SubgroupReport, TaskReport, benchmark
+  - tests/evaluation/test_benchmark.py (already existed) - 57 tests covering: dataclass defaults/construction, AUC (perfect/worst/random/single-class), sensitivity/specificity, F1 (perfect/worst/range), ECE (perfect/worst/range/empty), C-index (perfect/reversed/single/multi), Brier score, classification task evaluation, risk task evaluation, label splitting, subgroup masks (age/sex/empty/90+), full benchmark (returns report/tasks/keys/per-class/risk/ranges/subset/metadata/subgroup metrics/reproducibility/dict/table/csv), imports
+  - PRD.md (modified) - marked US-028 complete
+- Learnings for future iterations:
+  - benchmark() implementation was already complete from a prior conversation — just needed verification and PRD marking
+  - _compute_c_index uses O(n²) pairwise comparisons — acceptable for evaluation but would need optimization for very large datasets
+  - _build_subgroup_masks bins age into decades (0-9, 10-19, ..., 80-89, 90+) and sex by value
+  - BenchmarkReport provides three output formats: as_dict() for programmatic use, summary_table() for human reading, to_csv() for file export
+  - Same torch-optional pattern: _check_torch(), dummy torch module, pytest.importorskip
+---

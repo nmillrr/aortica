@@ -392,14 +392,14 @@ This PRD covers **Phase 0 (Foundation)** and **Phase 1 (Core Engine)** — the c
 **Description:** As a researcher, I want a benchmark harness that evaluates all task heads with proper metrics and demographic subgroup breakdowns so that model performance is transparent and reproducible.
 
 **Acceptance Criteria:**
-- [ ] `aortica.evaluation.benchmark(model, dataset, tasks='all')` returns a `BenchmarkReport`
-- [ ] Metrics per classification task: macro-F1, per-class AUC, per-class sensitivity/specificity, ECE
-- [ ] Metrics per risk task: C-index, Brier score
-- [ ] Subgroup stratification by age decile and sex (when demographic metadata is available)
-- [ ] Outputs results as structured dict, printable summary table, and CSV export
-- [ ] Reproducible: same model + dataset + seed produces identical results
-- [ ] Unit tests verifying metric computation on synthetic predictions
-- [ ] Typecheck passes
+- [x] `aortica.evaluation.benchmark(model, dataset, tasks='all')` returns a `BenchmarkReport`
+- [x] Metrics per classification task: macro-F1, per-class AUC, per-class sensitivity/specificity, ECE
+- [x] Metrics per risk task: C-index, Brier score
+- [x] Subgroup stratification by age decile and sex (when demographic metadata is available)
+- [x] Outputs results as structured dict, printable summary table, and CSV export
+- [x] Reproducible: same model + dataset + seed produces identical results
+- [x] Unit tests verifying metric computation on synthetic predictions
+- [x] Typecheck passes
 
 ---
 
