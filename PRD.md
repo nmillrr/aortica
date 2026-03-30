@@ -515,14 +515,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want to run `aortica predict <file>` from the command line so that I can get AI predictions without writing code.
 
 **Acceptance Criteria:**
-- [ ] `aortica/cli/` subpackage with Click-based CLI
-- [ ] `aortica predict <file>` runs full inference pipeline and prints results
-- [ ] `--format` flag for output format: `table` (default), `json`
-- [ ] `--tasks` flag to select which task heads to run (default: all)
-- [ ] `--model` flag to specify model checkpoint path
-- [ ] Colored terminal output with severity indicators (via `rich`)
-- [ ] Unit tests for CLI invocation (Click CliRunner)
-- [ ] Typecheck passes
+- [x] `aortica/cli/` subpackage with Click-based CLI
+- [x] `aortica predict <file>` runs full inference pipeline and prints results
+- [x] `--format` flag for output format: `table` (default), `json`
+- [x] `--tasks` flag to select which task heads to run (default: all)
+- [x] `--model` flag to specify model checkpoint path
+- [x] Colored terminal output with severity indicators (via `rich`)
+- [x] Unit tests for CLI invocation (Click CliRunner)
+- [x] Typecheck passes
 
 ---
 
