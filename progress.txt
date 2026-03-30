@@ -490,3 +490,17 @@
   - starlette.testclient.TestClient is the synchronous test client for FastAPI apps
   - ruff N813/N814 rules flag CamelCase imported as lowercase or with an underscore — avoid aliasing Pydantic/FastAPI classes in tests
   - `app.user_middleware` exposes the middleware stack for testing CORS configuration
+
+## Iteration 32 - US-032: Batch ECG Inference API Endpoint
+- Implemented: `POST /api/v1/predict/batch` endpoint accepting multiple file uploads with per-file results
+- Files changed:
+  - aortica/api/batch_predict.py (new) - BatchFileResult, BatchPredictResponse Pydantic models, run_batch_inference() function wrapping run_inference_pipeline per file, configurable max_batch_size (default 50), per-file error capture
+  - aortica/api/app.py (modified) - added POST /api/v1/predict/batch endpoint with max_batch_size check (422 on exceed), reads all files async then delegates to run_batch_inference
+  - tests/api/test_batch_predict.py (new) - 25 tests: Pydantic models (BatchFileResult success/error/roundtrip, BatchPredictResponse construction/counts), constants, run_batch_inference (single/multi/failure/mixed/filenames/max_size/empty), endpoint (200/structure/fields/no-predictions/mixed/422-max-size/default-max/format-param/content-type/pydantic-model), imports
+  - PRD.md (modified) - marked US-032 complete
+- Learnings for future iterations:
+  - Batch endpoint reuses run_inference_pipeline from predict.py — each file is processed independently with errors captured per-file
+  - Max batch size validation is done at the endpoint level (returns 422) before delegating to run_batch_inference
+  - FastAPI List[UploadFile] = File(...) accepts multiple file uploads via multipart form with same field name "files"
+  - TestClient.post(files=[("files", (name, data, mime)), ...]) sends multiple files with same key for list upload
+---

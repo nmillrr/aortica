@@ -489,12 +489,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a researcher, I want to submit multiple ECG files for batch processing so that I can analyze large datasets efficiently.
 
 **Acceptance Criteria:**
-- [ ] `POST /api/v1/predict/batch` accepts multiple file uploads
-- [ ] Returns list of per-file results (same schema as single predict)
-- [ ] Includes per-file status (success/error) with error messages for failed files
-- [ ] Configurable max batch size (default 50)
-- [ ] Unit tests with multiple synthetic ECG uploads
-- [ ] Typecheck passes
+- [x] `POST /api/v1/predict/batch` accepts multiple file uploads
+- [x] Returns list of per-file results (same schema as single predict)
+- [x] Includes per-file status (success/error) with error messages for failed files
+- [x] Configurable max batch size (default 50)
+- [x] Unit tests with multiple synthetic ECG uploads
+- [x] Typecheck passes
 
 ---
 

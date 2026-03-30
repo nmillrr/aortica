@@ -221,4 +221,66 @@ def create_app(
 
         return result
 
+    # ---- POST /api/v1/predict/batch -------------------------------------
+
+    @app.post(
+        "/api/v1/predict/batch",
+        tags=["inference"],
+        summary="Batch ECG inference",
+    )
+    async def predict_batch(
+        files: List[UploadFile] = File(
+            ..., description="ECG files to analyse"
+        ),
+        format: Optional[str] = Query(  # noqa: A002
+            default=None,
+            description="Explicit format override applied to all files",
+        ),
+    ) -> Any:
+        """Upload multiple ECG files and receive per-file AI predictions.
+
+        Runs the full pipeline for each file:
+        read_ecg → denoise → score_quality → model inference.
+
+        Returns per-file status (success/error) with error messages for
+        any files that fail processing.  Maximum batch size is
+        configurable (default 50).
+        """
+        from aortica.api.batch_predict import (
+            BatchPredictResponse,
+            run_batch_inference,
+        )
+
+        max_batch_size: int = getattr(
+            app.state, "max_batch_size", 50
+        )
+
+        # Read all file contents
+        file_data: List[tuple[bytes, str]] = []
+        for f in files:
+            content = await f.read()
+            file_data.append((content, f.filename or "upload.dat"))
+
+        if len(file_data) > max_batch_size:
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": (
+                        f"Batch size {len(file_data)} exceeds maximum "
+                        f"allowed batch size of {max_batch_size}"
+                    )
+                },
+            )
+
+        result: BatchPredictResponse = run_batch_inference(
+            file_data,
+            format_override=format,
+            model=app.state.model,  # type: ignore[attr-defined]
+            conformal_predictor=app.state.conformal_predictor,  # type: ignore[attr-defined]
+            enabled_tasks=list(app.state.enabled_tasks),  # type: ignore[attr-defined]
+            max_batch_size=max_batch_size,
+        )
+
+        return result
+
     return app
