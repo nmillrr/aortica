@@ -502,12 +502,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a device integrator, I want a gRPC service for high-throughput ECG inference so that I can integrate Aortica with low-latency clinical systems.
 
 **Acceptance Criteria:**
-- [ ] `aortica/api/ecg_service.proto` defining `ECGPredictionService` with `Predict` and `PredictBatch` RPCs
-- [ ] Generated Python stubs via `grpcio-tools`
-- [ ] `aortica/api/grpc_server.py` implementing the service, wrapping the same inference pipeline as REST
-- [ ] Server startup function with configurable port
-- [ ] Unit tests using gRPC test channel
-- [ ] Typecheck passes
+- [x] `aortica/api/ecg_service.proto` defining `ECGPredictionService` with `Predict` and `PredictBatch` RPCs
+- [x] Generated Python stubs via `grpcio-tools`
+- [x] `aortica/api/grpc_server.py` implementing the service, wrapping the same inference pipeline as REST
+- [x] Server startup function with configurable port
+- [x] Unit tests using gRPC test channel
+- [x] Typecheck passes
 
 ---
 

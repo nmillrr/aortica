@@ -1,0 +1,117 @@
+// Protocol Buffer definition for the Aortica ECG Prediction Service.
+//
+// Provides high-throughput gRPC inference for clinical ECG analysis,
+// wrapping the same multi-task pipeline as the REST API.
+
+syntax = "proto3";
+
+package aortica;
+
+// ---------------------------------------------------------------------------
+// Service definition
+// ---------------------------------------------------------------------------
+
+// ECGPredictionService provides single and batch ECG inference.
+service ECGPredictionService {
+  // Process a single ECG file and return multi-task predictions.
+  rpc Predict (PredictRequest) returns (PredictReply);
+
+  // Process multiple ECG files in a single call.
+  rpc PredictBatch (PredictBatchRequest) returns (PredictBatchReply);
+}
+
+// ---------------------------------------------------------------------------
+// Request messages
+// ---------------------------------------------------------------------------
+
+// Single ECG inference request.
+message PredictRequest {
+  // Raw file bytes of the ECG recording.
+  bytes file_data = 1;
+
+  // Original filename (used for extension-based format detection).
+  string filename = 2;
+
+  // Optional explicit format override (e.g. "wfdb", "dicom", "csv").
+  string format_override = 3;
+}
+
+// Batch ECG inference request.
+message PredictBatchRequest {
+  // List of ECG files to process.
+  repeated PredictRequest files = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Response messages
+// ---------------------------------------------------------------------------
+
+// Quality assessment for a single ECG lead.
+message LeadQuality {
+  string lead_name = 1;
+  float score = 2;
+  string classification = 3;
+  repeated string flags = 4;
+}
+
+// Overall signal quality report.
+message QualityReport {
+  repeated LeadQuality per_lead = 1;
+  float overall_score = 2;
+  string overall_classification = 3;
+  string recommendation = 4;
+}
+
+// Prediction results for a single task head.
+message TaskPrediction {
+  string task = 1;
+  repeated string class_names = 2;
+  repeated float probabilities = 3;
+}
+
+// Uncertainty / conformal prediction information.
+message UncertaintyReport {
+  // Per-task conformal prediction sets (classification only).
+  map<string, PredictionSet> prediction_sets = 1;
+
+  // Per-task confidence intervals (risk only).
+  map<string, ConfidenceInterval> confidence_intervals = 2;
+
+  // Whether the input is flagged as out-of-distribution.
+  bool ood_flag = 3;
+
+  // Mean prediction entropy across tasks.
+  float entropy_score = 4;
+}
+
+message PredictionSet {
+  repeated int32 indices = 1;
+}
+
+message ConfidenceInterval {
+  repeated float lower = 1;
+  repeated float upper = 2;
+}
+
+// Full response for a single ECG prediction.
+message PredictReply {
+  QualityReport quality_report = 1;
+  repeated TaskPrediction predictions = 2;
+  UncertaintyReport uncertainty = 3;
+}
+
+// Result for a single file within a batch.
+message BatchFileResult {
+  string filename = 1;
+  string status = 2;      // "success" or "error"
+  string error = 3;       // Error message (empty on success)
+  PredictReply result = 4; // Present only on success
+}
+
+// Full response for a batch prediction.
+message PredictBatchReply {
+  int32 total = 1;
+  int32 succeeded = 2;
+  int32 failed = 3;
+  repeated BatchFileResult results = 4;
+}
