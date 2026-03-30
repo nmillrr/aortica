@@ -474,3 +474,19 @@
   - HAS_TF/HAS_TORCH module-level flags allow test skip marks without module-level importorskip side effects
   - Using pytest.mark.skipif with framework flags is preferable to pytest.importorskip at module level for mixed test files
 ---
+
+## Iteration 31 - US-030: FastAPI Application Scaffold
+- Implemented: `aortica/api/` subpackage with `create_app()` factory, CORS middleware, `GET /health`, `GET /info`, Pydantic response models
+- Files changed:
+  - aortica/api/__init__.py (new) - exports create_app
+  - aortica/api/app.py (new) - create_app() factory with configurable CORS origins, enabled task heads, model_loaded flag; HealthResponse and InfoResponse Pydantic models; SUPPORTED_FORMATS and DEFAULT_TASK_HEADS constants; optional FastAPI import pattern
+  - tests/api/__init__.py (new) - test package init
+  - tests/api/test_app.py (new) - 28 tests: Pydantic models (construction, roundtrip, defaults), app factory (instance type, CORS, enabled tasks, model_loaded), health endpoint (200, status ok, model validation, content-type), info endpoint (200, version, formats, tasks, model_loaded, custom config reflection, content-type), constants, imports
+  - PRD.md (modified) - marked US-030 complete
+- Learnings for future iterations:
+  - FastAPI uses optional import pattern consistent with torch/tf — `HAS_FASTAPI` flag + `_check_fastapi()` guard
+  - Pydantic v2 uses `model_dump()` instead of `dict()`, and `examples=` instead of `example=` in Field()
+  - `app.state` is used for shared state (enabled_tasks, model_loaded) — requires `type: ignore[attr-defined]` for mypy
+  - starlette.testclient.TestClient is the synchronous test client for FastAPI apps
+  - ruff N813/N814 rules flag CamelCase imported as lowercase or with an underscore — avoid aliasing Pydantic/FastAPI classes in tests
+  - `app.user_middleware` exposes the middleware stack for testing CORS configuration

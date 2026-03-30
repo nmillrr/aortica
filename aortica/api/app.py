@@ -1,4 +1,4 @@
-"""FastAPI application factory with health and info endpoints."""
+"""FastAPI application factory with health, info, and predict endpoints."""
 
 from __future__ import annotations
 
@@ -7,8 +7,9 @@ from typing import Any, List, Optional, Sequence
 from pydantic import BaseModel, Field
 
 try:
-    from fastapi import FastAPI
+    from fastapi import FastAPI, File, Query, UploadFile
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import JSONResponse
 
     HAS_FASTAPI = True
 except ImportError:  # pragma: no cover
@@ -93,6 +94,8 @@ def create_app(
     cors_origins: Optional[Sequence[str]] = None,
     enabled_tasks: Optional[Sequence[str]] = None,
     model_loaded: bool = False,
+    model: Any = None,
+    conformal_predictor: Any = None,
 ) -> Any:
     """Create and configure the FastAPI application.
 
@@ -104,6 +107,10 @@ def create_app(
         List of enabled task heads.  Defaults to all four heads.
     model_loaded:
         Whether a model checkpoint is loaded at startup.
+    model:
+        An optional pre-loaded ``AorticaModel`` instance.
+    conformal_predictor:
+        An optional fitted ``ConformalPredictor`` instance.
 
     Returns
     -------
@@ -135,6 +142,8 @@ def create_app(
     # ---- shared state ----
     app.state.enabled_tasks = list(enabled_tasks)  # type: ignore[attr-defined]
     app.state.model_loaded = model_loaded  # type: ignore[attr-defined]
+    app.state.model = model  # type: ignore[attr-defined]
+    app.state.conformal_predictor = conformal_predictor  # type: ignore[attr-defined]
 
     # ---- routes ----------------------------------------------------------
 
@@ -162,5 +171,54 @@ def create_app(
             enabled_task_heads=list(app.state.enabled_tasks),  # type: ignore[attr-defined]
             model_loaded=app.state.model_loaded,  # type: ignore[attr-defined]
         )
+
+    # ---- POST /api/v1/predict -------------------------------------------
+
+    @app.post(
+        "/api/v1/predict",
+        tags=["inference"],
+        summary="Single ECG inference",
+    )
+    async def predict(
+        file: UploadFile = File(..., description="ECG file to analyse"),
+        format: Optional[str] = Query(  # noqa: A002
+            default=None,
+            description="Explicit format override (e.g. wfdb, dicom, csv)",
+        ),
+    ) -> Any:
+        """Upload a single ECG file and receive multi-task AI predictions.
+
+        Runs the full pipeline: read_ecg → denoise → score_quality →
+        model inference → uncertainty estimation.
+
+        Returns ``422`` for unsupported or unparseable formats.
+        """
+        from aortica.api.predict import PredictResponse, run_inference_pipeline
+        from aortica.io.dispatcher import UnsupportedFormatError
+
+        file_bytes = await file.read()
+        filename = file.filename or "upload.dat"
+
+        try:
+            result: PredictResponse = run_inference_pipeline(
+                file_bytes,
+                filename,
+                format_override=format,
+                model=app.state.model,  # type: ignore[attr-defined]
+                conformal_predictor=app.state.conformal_predictor,  # type: ignore[attr-defined]
+                enabled_tasks=list(app.state.enabled_tasks),  # type: ignore[attr-defined]
+            )
+        except UnsupportedFormatError as exc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": str(exc)},
+            )
+        except (ValueError, OSError) as exc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": str(exc)},
+            )
+
+        return result
 
     return app

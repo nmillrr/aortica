@@ -475,13 +475,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want to upload a single ECG file via REST API and receive multi-task AI predictions so that I can integrate Aortica into my workflow.
 
 **Acceptance Criteria:**
-- [ ] `POST /api/v1/predict` accepts file upload (multipart/form-data)
-- [ ] Runs full pipeline: `read_ecg` → `denoise` → `score_quality` → model inference
-- [ ] Returns JSON with: quality report, per-task predictions (rhythm, structural, ischaemia, risk), uncertainty report
-- [ ] Supports `format` query parameter for explicit format override
-- [ ] Returns `422` with clear error for unsupported formats
-- [ ] Unit tests with synthetic ECG file upload
-- [ ] Typecheck passes
+- [x] `POST /api/v1/predict` accepts file upload (multipart/form-data)
+- [x] Runs full pipeline: `read_ecg` → `denoise` → `score_quality` → model inference
+- [x] Returns JSON with: quality report, per-task predictions (rhythm, structural, ischaemia, risk), uncertainty report
+- [x] Supports `format` query parameter for explicit format override
+- [x] Returns `422` with clear error for unsupported formats
+- [x] Unit tests with synthetic ECG file upload
+- [x] Typecheck passes
 
 ---
 
