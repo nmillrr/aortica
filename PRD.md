@@ -560,13 +560,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want to export AorticaModel to ONNX format so that it can be deployed on edge devices and non-Python runtimes.
 
 **Acceptance Criteria:**
-- [ ] `aortica/edge/` subpackage with `__init__.py`
-- [ ] `aortica.edge.export_onnx(model, output_path, opset_version=17)` exports full AorticaModel to ONNX
-- [ ] Dynamic axes for batch size and signal length dimensions
-- [ ] Validates exported model: feeds same input through PyTorch and ONNX Runtime, asserts outputs within atol=1e-4
-- [ ] Supports exporting with subset of task heads (matches model's enabled_tasks)
-- [ ] Unit tests with synthetic model and input
-- [ ] Typecheck passes
+- [x] `aortica/edge/` subpackage with `__init__.py`
+- [x] `aortica.edge.export_onnx(model, output_path, opset_version=17)` exports full AorticaModel to ONNX
+- [x] Dynamic axes for batch size and signal length dimensions
+- [x] Validates exported model: feeds same input through PyTorch and ONNX Runtime, asserts outputs within atol=1e-4
+- [x] Supports exporting with subset of task heads (matches model's enabled_tasks)
+- [x] Unit tests with synthetic model and input
+- [x] Typecheck passes
 
 ---
 
