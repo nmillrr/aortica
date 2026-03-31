@@ -504,3 +504,21 @@
   - FastAPI List[UploadFile] = File(...) accepts multiple file uploads via multipart form with same field name "files"
   - TestClient.post(files=[("files", (name, data, mime)), ...]) sends multiple files with same key for list upload
 ---
+
+## Iteration 33 - US-034: CLI Tool — `aortica predict` Command
+- Implemented: `aortica predict <file>` Click-based CLI command with Rich-formatted table output and JSON output mode
+- Files changed:
+  - aortica/cli/__init__.py (new) - CLI subpackage with _build_cli() lazy Click group builder, main() entry point, optional dependency checks for click and rich
+  - aortica/cli/predict.py (new) - predict command with Click decorators: --format (table/json), --tasks (comma-separated), --model (checkpoint path), --ecg-format (override); _run_pipeline wraps API's run_inference_pipeline; _render_table with Rich panels/tables/severity coloring (critical/high/moderate/low); _render_json for JSON stdout; _load_model for checkpoint loading; _classify_severity maps probabilities to severity labels
+  - tests/cli/__init__.py (new) - test package init
+  - tests/cli/test_predict.py (new) - 36 tests: imports/structure (deps check, CLI group, predict registered, valid tasks), severity classification (8 tests for all boundaries), predict command via CliRunner (help, missing file, nonexistent file, table default, json output, tasks filter, invalid task, ecg-format override, pipeline error, no model message, with predictions, with uncertainty, json with predictions), render helpers (json valid, table no crash, empty predictions, marginal/poor quality, uncertainty), CLI group integration (help, subcommand, predict via group), _run_pipeline (calls inference, reads file bytes)
+  - PRD.md (modified) - marked US-034 complete
+- Learnings for future iterations:
+  - CLI uses lazy import pattern: _build_cli() constructs Click group on demand to avoid import failures when click/rich not installed
+  - _run_pipeline reuses run_inference_pipeline from aortica.api.predict — reads file bytes and delegates to same pipeline as REST API
+  - When mocking lazy imports in tests, patch at the source module (aortica.api.predict.run_inference_pipeline) not the consumer module
+  - Click CliRunner(mix_stderr=False) separates stdout from stderr for assertion on error messages
+  - Rich console output renders markup in tables — use [color]...[/color] syntax for severity coloring
+  - ruff auto-fix handles import sorting for noqa: E402 lines after pytest.importorskip
+  - rich was not pre-installed — needed pip install rich before tests could run
+---
