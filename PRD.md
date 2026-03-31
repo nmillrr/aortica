@@ -530,12 +530,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a researcher, I want CLI commands for benchmarking and training so that I can reproduce results and train models without custom scripts.
 
 **Acceptance Criteria:**
-- [ ] `aortica benchmark <dataset_path>` wraps `evaluation.benchmark()` with CLI args for tasks, output format, CSV export path
-- [ ] `aortica train <config.yaml>` wraps `train_multitask.train()` with YAML config file
-- [ ] Both commands share the same Click group as `aortica predict`
-- [ ] `--help` shows all available options with descriptions
-- [ ] Unit tests for CLI invocation
-- [ ] Typecheck passes
+- [x] `aortica benchmark <dataset_path>` wraps `evaluation.benchmark()` with CLI args for tasks, output format, CSV export path
+- [x] `aortica train <config.yaml>` wraps `train_multitask.train()` with YAML config file
+- [x] Both commands share the same Click group as `aortica predict`
+- [x] `--help` shows all available options with descriptions
+- [x] Unit tests for CLI invocation
+- [x] Typecheck passes
 
 ---
 

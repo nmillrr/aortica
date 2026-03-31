@@ -41,7 +41,9 @@ def _build_cli() -> Any:
     """Build and return the Click CLI group (lazy to avoid import failures)."""
     _check_cli_deps()
 
+    from aortica.cli.benchmark import benchmark_cmd
     from aortica.cli.predict import predict
+    from aortica.cli.train import train_cmd
 
     @click.group()
     @click.version_option(package_name="aortica")
@@ -49,6 +51,8 @@ def _build_cli() -> Any:
         """Aortica — AI-powered ECG analysis from the command line."""
 
     cli.add_command(predict)
+    cli.add_command(benchmark_cmd)
+    cli.add_command(train_cmd)
     return cli
 
 
