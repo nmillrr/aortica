@@ -325,11 +325,14 @@ class TestTrainVAE:
 
     def test_reproducibility(self) -> None:
         """Same seed produces identical loss trajectories."""
+        np.random.seed(0)
         beats = np.random.randn(32, 2, 64).astype(np.float64)
 
+        torch.manual_seed(123)
         vae1 = MedianBeatVAE(in_channels=2, latent_dim=4, beat_length=64)
         r1 = train_vae(vae1, beats, epochs=5, seed=123)
 
+        torch.manual_seed(123)
         vae2 = MedianBeatVAE(in_channels=2, latent_dim=4, beat_length=64)
         r2 = train_vae(vae2, beats, epochs=5, seed=123)
 

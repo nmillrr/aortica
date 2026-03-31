@@ -23,6 +23,28 @@ This module walks the PyTorch state-dict and the TF model's layer
 tree to build an explicit name mapping, then copies each parameter
 with the appropriate transpose.
 
+Layer name mapping
+~~~~~~~~~~~~~~~~~~
+=====================  ============================
+PyTorch key prefix     TF layer name
+=====================  ============================
+backbone.conv1         conv1 (inside AorticaBackboneTF)
+backbone.bn1           bn1
+backbone.layer1.0      stage1_block1
+backbone.layer1.1      stage1_block2
+backbone.layer2.0      stage2_block1 (+ shortcut)
+backbone.layer2.1      stage2_block2
+backbone.layer3.0      stage3_block1 (+ shortcut)
+backbone.layer3.1      stage3_block2
+backbone.fc            fc_proj (projection Dense)
+attention.q_proj       q_proj (inside CrossLeadAttentionTF)
+attention.k_proj       k_proj
+attention.v_proj       v_proj
+attention.out_proj     out_proj
+attention.layer_norm   layer_norm
+{task}_head.classifier {task}_fc1 / {task}_logits
+=====================  ============================
+
 Included as a CI test (tagged ``@pytest.mark.slow``) in
 ``tests/models/test_framework_parity.py``.
 """
@@ -94,113 +116,7 @@ def _convert_linear_weight(
 
 
 # ---------------------------------------------------------------------------
-# Name mapping between PyTorch state dict keys and TF layer names
-# ---------------------------------------------------------------------------
-
-# Backbone mapping: PyTorch param name prefix → TF layer name prefix
-# The PyTorch model has ``backbone.`` prefix; the TF composite model
-# nests the backbone as a sub-model called ``AorticaBackboneTF``.
-
-_BACKBONE_MAP: list[tuple[str, str, str]] = [
-    # (pytorch_key_fragment, tf_layer_name, param_type)
-    # Initial conv + BN
-    ("backbone.conv1.weight", "conv1", "conv_weight"),
-    ("backbone.bn1.weight", "bn1", "bn_gamma"),
-    ("backbone.bn1.bias", "bn1", "bn_beta"),
-    ("backbone.bn1.running_mean", "bn1", "bn_mean"),
-    ("backbone.bn1.running_var", "bn1", "bn_var"),
-]
-
-
-def _make_res_stage_map(
-    stage_idx: int, block_idx: int
-) -> list[tuple[str, str, str]]:
-    """Generate mapping entries for a single residual block."""
-    pt_prefix = f"backbone.layer{stage_idx}.{block_idx}"
-    tf_prefix = f"stage{stage_idx}_block{block_idx + 1}"
-    entries: list[tuple[str, str, str]] = []
-
-    # Main path conv1, bn1, conv2, bn2
-    for conv_i in [1, 2]:
-        entries.append(
-            (f"{pt_prefix}.conv{conv_i}.weight", f"{tf_prefix}_conv{conv_i}", "conv_weight")
-        )
-        entries.append(
-            (f"{pt_prefix}.bn{conv_i}.weight", f"{tf_prefix}_bn{conv_i}", "bn_gamma")
-        )
-        entries.append(
-            (f"{pt_prefix}.bn{conv_i}.bias", f"{tf_prefix}_bn{conv_i}", "bn_beta")
-        )
-        entries.append(
-            (f"{pt_prefix}.bn{conv_i}.running_mean", f"{tf_prefix}_bn{conv_i}", "bn_mean")
-        )
-        entries.append(
-            (f"{pt_prefix}.bn{conv_i}.running_var", f"{tf_prefix}_bn{conv_i}", "bn_var")
-        )
-
-    # Shortcut (downsample) — only present on first block of stages 2, 3
-    entries.append(
-        (f"{pt_prefix}.downsample.0.weight", f"{tf_prefix}_shortcut_conv", "conv_weight")
-    )
-    entries.append(
-        (f"{pt_prefix}.downsample.1.weight", f"{tf_prefix}_shortcut_bn", "bn_gamma")
-    )
-    entries.append(
-        (f"{pt_prefix}.downsample.1.bias", f"{tf_prefix}_shortcut_bn", "bn_beta")
-    )
-    entries.append(
-        (f"{pt_prefix}.downsample.1.running_mean", f"{tf_prefix}_shortcut_bn", "bn_mean")
-    )
-    entries.append(
-        (f"{pt_prefix}.downsample.1.running_var", f"{tf_prefix}_shortcut_bn", "bn_var")
-    )
-
-    return entries
-
-
-def _build_full_backbone_map() -> list[tuple[str, str, str]]:
-    """Build complete backbone weight mapping list."""
-    mapping = list(_BACKBONE_MAP)
-    for stage in [1, 2, 3]:
-        for block in [0, 1]:
-            mapping.extend(_make_res_stage_map(stage, block))
-    return mapping
-
-
-# Attention mapping: PyTorch → TF
-_ATTENTION_MAP: list[tuple[str, str, str]] = [
-    ("attention.q_proj.weight", "q_proj", "linear_weight"),
-    ("attention.k_proj.weight", "k_proj", "linear_weight"),
-    ("attention.v_proj.weight", "v_proj", "linear_weight"),
-    ("attention.out_proj.weight", "out_proj", "linear_weight"),
-    ("attention.layer_norm.weight", "layer_norm", "ln_gamma"),
-    ("attention.layer_norm.bias", "layer_norm", "ln_beta"),
-]
-
-# Task head mapping template
-_TASK_HEAD_NAMES = {
-    "rhythm": ("rhythm_head", "rhythm"),
-    "structural": ("structural_head", "structural"),
-    "ischaemia": ("ischaemia_head", "ischaemia"),
-    "risk": ("risk_head", "risk"),
-}
-
-
-def _make_task_head_map(
-    task_name: str,
-) -> list[tuple[str, str, str]]:
-    """Generate mapping entries for a task head."""
-    pt_head, tf_prefix = _TASK_HEAD_NAMES[task_name]
-    return [
-        (f"{pt_head}.classifier.0.weight", f"{tf_prefix}_fc1", "linear_weight"),
-        (f"{pt_head}.classifier.0.bias", f"{tf_prefix}_fc1", "linear_bias"),
-        (f"{pt_head}.classifier.3.weight", f"{tf_prefix}_logits", "linear_weight"),
-        (f"{pt_head}.classifier.3.bias", f"{tf_prefix}_logits", "linear_bias"),
-    ]
-
-
-# ---------------------------------------------------------------------------
-# Main conversion function
+# Layer lookup
 # ---------------------------------------------------------------------------
 
 
@@ -208,11 +124,9 @@ def _find_tf_layer(
     model: "keras.Model", layer_name: str
 ) -> "keras.layers.Layer":
     """Recursively find a layer by name in a (potentially nested) Keras model."""
-    # Direct lookup
     for layer in model.layers:
         if layer.name == layer_name:
             return layer
-        # Recurse into sub-models
         if isinstance(layer, keras.Model):
             try:
                 return _find_tf_layer(layer, layer_name)
@@ -221,40 +135,85 @@ def _find_tf_layer(
     raise KeyError(f"Layer '{layer_name}' not found in model '{model.name}'.")
 
 
-def _set_tf_weight(
+def _tf_layer_exists(model: "keras.Model", layer_name: str) -> bool:
+    """Return True if the layer exists in the model (or any nested sub-model)."""
+    try:
+        _find_tf_layer(model, layer_name)
+        return True
+    except KeyError:
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Weight assignment
+# ---------------------------------------------------------------------------
+
+
+def _set_bn_weights(
     model: "keras.Model",
     tf_layer_name: str,
-    param_type: str,
-    np_value: npt.NDArray[np.floating[Any]],
+    gamma: npt.NDArray[np.floating[Any]],
+    beta: npt.NDArray[np.floating[Any]],
+    running_mean: npt.NDArray[np.floating[Any]],
+    running_var: npt.NDArray[np.floating[Any]],
 ) -> None:
-    """Set a single weight in a TF model layer."""
+    """Set all four BatchNorm parameters in one call."""
     layer = _find_tf_layer(model, tf_layer_name)
-    weights = layer.get_weights()
+    layer.set_weights([gamma, beta, running_mean, running_var])
 
-    if param_type == "conv_weight":
-        converted = _convert_conv1d_weight(np_value)
-        weights[0] = converted
-    elif param_type == "linear_weight":
-        converted = _convert_linear_weight(np_value)
-        weights[0] = converted
-    elif param_type == "linear_bias":
-        weights[1] = np_value
-    elif param_type == "bn_gamma":
-        weights[0] = np_value
-    elif param_type == "bn_beta":
-        weights[1] = np_value
-    elif param_type == "bn_mean":
-        weights[2] = np_value
-    elif param_type == "bn_var":
-        weights[3] = np_value
-    elif param_type == "ln_gamma":
-        weights[0] = np_value
-    elif param_type == "ln_beta":
-        weights[1] = np_value
+
+def _set_conv_weights(
+    model: "keras.Model",
+    tf_layer_name: str,
+    weight: npt.NDArray[np.floating[Any]],
+    bias: npt.NDArray[np.floating[Any]] | None = None,
+) -> None:
+    """Set Conv1D weights (and optional bias)."""
+    layer = _find_tf_layer(model, tf_layer_name)
+    converted = _convert_conv1d_weight(weight)
+    if bias is not None:
+        layer.set_weights([converted, bias])
     else:
-        raise ValueError(f"Unknown param type: {param_type}")
+        layer.set_weights([converted])
 
-    layer.set_weights(weights)
+
+def _set_dense_weights(
+    model: "keras.Model",
+    tf_layer_name: str,
+    weight: npt.NDArray[np.floating[Any]],
+    bias: npt.NDArray[np.floating[Any]] | None = None,
+) -> None:
+    """Set Dense weights (and optional bias)."""
+    layer = _find_tf_layer(model, tf_layer_name)
+    converted = _convert_linear_weight(weight)
+    if bias is not None:
+        layer.set_weights([converted, bias])
+    else:
+        layer.set_weights([converted])
+
+
+def _set_ln_weights(
+    model: "keras.Model",
+    tf_layer_name: str,
+    gamma: npt.NDArray[np.floating[Any]],
+    beta: npt.NDArray[np.floating[Any]],
+) -> None:
+    """Set LayerNorm gamma and beta."""
+    layer = _find_tf_layer(model, tf_layer_name)
+    layer.set_weights([gamma, beta])
+
+
+# ---------------------------------------------------------------------------
+# Main conversion function
+# ---------------------------------------------------------------------------
+
+# Task head name mapping: PT prefix → TF prefix
+_TASK_HEAD_NAMES: dict[str, tuple[str, str]] = {
+    "rhythm": ("rhythm_head", "rhythm"),
+    "structural": ("structural_head", "structural"),
+    "ischaemia": ("ischaemia_head", "ischaemia"),
+    "risk": ("risk_head", "risk"),
+}
 
 
 def convert_pytorch_to_tf(
@@ -264,6 +223,11 @@ def convert_pytorch_to_tf(
 ) -> list[str]:
     """Transfer weights from a PyTorch AorticaModel to a TF/Keras model.
 
+    Each PyTorch Conv1d weight is transposed from ``[out, in, kernel]`` to
+    ``[kernel, in, out]`` for TF.  Linear/Dense weights are transposed from
+    ``[out, in]`` to ``[in, out]``.  BatchNorm and LayerNorm parameters are
+    identical in both frameworks and copied directly.
+
     Args:
         pt_model: Trained PyTorch :class:`AorticaModel`.
         tf_model: A TF model built via :func:`build_aortica_model_tf`
@@ -272,32 +236,145 @@ def convert_pytorch_to_tf(
 
     Returns:
         List of PyTorch state-dict keys that were transferred.
-
-    Raises:
-        KeyError: If a required TF layer is not found.
     """
     _check_deps()
 
     if enabled_tasks is None:
         enabled_tasks = list(_TASK_HEAD_NAMES.keys())
 
-    state_dict = pt_model.state_dict()
+    sd = {k: v.detach().cpu().numpy() for k, v in pt_model.state_dict().items()}
     transferred: list[str] = []
 
-    # Build complete mapping
-    mapping: list[tuple[str, str, str]] = []
-    mapping.extend(_build_full_backbone_map())
-    mapping.extend(_ATTENTION_MAP)
-    for task in enabled_tasks:
-        mapping.extend(_make_task_head_map(task))
+    def _get(key: str) -> npt.NDArray[np.floating[Any]] | None:
+        return sd.get(key)
 
-    for pt_key, tf_name, param_type in mapping:
-        if pt_key not in state_dict:
-            # Skip optional params (e.g. downsample on blocks without it)
-            continue
-        np_value = state_dict[pt_key].detach().cpu().numpy()
-        _set_tf_weight(tf_model, tf_name, param_type, np_value)
-        transferred.append(pt_key)
+    def _mark(*keys: str) -> None:
+        for k in keys:
+            if k in sd:
+                transferred.append(k)
+
+    # ------------------------------------------------------------------
+    # Backbone: initial conv + BN
+    # ------------------------------------------------------------------
+    w = _get("backbone.conv1.weight")
+    if w is not None:
+        _set_conv_weights(tf_model, "conv1", w)
+        _mark("backbone.conv1.weight")
+
+    g = _get("backbone.bn1.weight")
+    b = _get("backbone.bn1.bias")
+    m = _get("backbone.bn1.running_mean")
+    v = _get("backbone.bn1.running_var")
+    if all(x is not None for x in [g, b, m, v]):
+        _set_bn_weights(tf_model, "bn1", g, b, m, v)  # type: ignore[arg-type]
+        _mark("backbone.bn1.weight", "backbone.bn1.bias",
+              "backbone.bn1.running_mean", "backbone.bn1.running_var")
+
+    # ------------------------------------------------------------------
+    # Backbone: residual stages
+    # ------------------------------------------------------------------
+    for stage_idx in [1, 2, 3]:
+        for block_idx in [0, 1]:
+            pt_pfx = f"backbone.layer{stage_idx}.{block_idx}"
+            tf_pfx = f"stage{stage_idx}_block{block_idx + 1}"
+
+            # conv1 + bn1
+            w = _get(f"{pt_pfx}.conv1.weight")
+            if w is not None:
+                _set_conv_weights(tf_model, f"{tf_pfx}_conv1", w)
+                _mark(f"{pt_pfx}.conv1.weight")
+
+            g, b = _get(f"{pt_pfx}.bn1.weight"), _get(f"{pt_pfx}.bn1.bias")
+            m_, v_ = _get(f"{pt_pfx}.bn1.running_mean"), _get(f"{pt_pfx}.bn1.running_var")
+            if all(x is not None for x in [g, b, m_, v_]):
+                _set_bn_weights(tf_model, f"{tf_pfx}_bn1", g, b, m_, v_)  # type: ignore[arg-type]
+                _mark(f"{pt_pfx}.bn1.weight", f"{pt_pfx}.bn1.bias",
+                      f"{pt_pfx}.bn1.running_mean", f"{pt_pfx}.bn1.running_var")
+
+            # conv2 + bn2
+            w = _get(f"{pt_pfx}.conv2.weight")
+            if w is not None:
+                _set_conv_weights(tf_model, f"{tf_pfx}_conv2", w)
+                _mark(f"{pt_pfx}.conv2.weight")
+
+            g, b = _get(f"{pt_pfx}.bn2.weight"), _get(f"{pt_pfx}.bn2.bias")
+            m_, v_ = _get(f"{pt_pfx}.bn2.running_mean"), _get(f"{pt_pfx}.bn2.running_var")
+            if all(x is not None for x in [g, b, m_, v_]):
+                _set_bn_weights(tf_model, f"{tf_pfx}_bn2", g, b, m_, v_)  # type: ignore[arg-type]
+                _mark(f"{pt_pfx}.bn2.weight", f"{pt_pfx}.bn2.bias",
+                      f"{pt_pfx}.bn2.running_mean", f"{pt_pfx}.bn2.running_var")
+
+            # Shortcut / downsample (only on blocks that have it)
+            ds_conv_key = f"{pt_pfx}.downsample.0.weight"
+            if ds_conv_key in sd and _tf_layer_exists(tf_model, f"{tf_pfx}_shortcut_conv"):
+                _set_conv_weights(tf_model, f"{tf_pfx}_shortcut_conv", sd[ds_conv_key])
+                _mark(ds_conv_key)
+
+                g = _get(f"{pt_pfx}.downsample.1.weight")
+                b = _get(f"{pt_pfx}.downsample.1.bias")
+                m_ = _get(f"{pt_pfx}.downsample.1.running_mean")
+                v_ = _get(f"{pt_pfx}.downsample.1.running_var")
+                if all(x is not None for x in [g, b, m_, v_]):
+                    _set_bn_weights(
+                        tf_model, f"{tf_pfx}_shortcut_bn", g, b, m_, v_  # type: ignore[arg-type]
+                    )
+                    _mark(f"{pt_pfx}.downsample.1.weight",
+                          f"{pt_pfx}.downsample.1.bias",
+                          f"{pt_pfx}.downsample.1.running_mean",
+                          f"{pt_pfx}.downsample.1.running_var")
+
+    # ------------------------------------------------------------------
+    # Backbone: optional fc projection (when feature_dim != 256)
+    # ------------------------------------------------------------------
+    fc_w = _get("backbone.fc.weight")
+    fc_b = _get("backbone.fc.bias")
+    if fc_w is not None and _tf_layer_exists(tf_model, "fc_proj"):
+        _set_dense_weights(tf_model, "fc_proj", fc_w, fc_b)
+        _mark("backbone.fc.weight")
+        if fc_b is not None:
+            _mark("backbone.fc.bias")
+
+    # ------------------------------------------------------------------
+    # Attention: Q, K, V, output projections + LayerNorm
+    # ------------------------------------------------------------------
+    for proj_name in ["q_proj", "k_proj", "v_proj", "out_proj"]:
+        w = _get(f"attention.{proj_name}.weight")
+        if w is not None:
+            _set_dense_weights(tf_model, proj_name, w)
+            _mark(f"attention.{proj_name}.weight")
+
+    g = _get("attention.layer_norm.weight")
+    b = _get("attention.layer_norm.bias")
+    if g is not None and b is not None:
+        _set_ln_weights(tf_model, "layer_norm", g, b)
+        _mark("attention.layer_norm.weight", "attention.layer_norm.bias")
+
+    # ------------------------------------------------------------------
+    # Task heads
+    # ------------------------------------------------------------------
+    for task in enabled_tasks:
+        pt_head, tf_pfx = _TASK_HEAD_NAMES[task]
+        # Determine the nn.Sequential attribute name:
+        # classification heads use "classifier", risk head uses "regressor"
+        seq_name = "regressor" if task == "risk" else "classifier"
+
+        # fc1 (index 0 in nn.Sequential)
+        w = _get(f"{pt_head}.{seq_name}.0.weight")
+        b = _get(f"{pt_head}.{seq_name}.0.bias")
+        if w is not None:
+            _set_dense_weights(tf_model, f"{tf_pfx}_fc1", w, b)
+            _mark(f"{pt_head}.{seq_name}.0.weight")
+            if b is not None:
+                _mark(f"{pt_head}.{seq_name}.0.bias")
+
+        # logits (index 3 in nn.Sequential: Linear, ReLU, Dropout, Linear)
+        w = _get(f"{pt_head}.{seq_name}.3.weight")
+        b = _get(f"{pt_head}.{seq_name}.3.bias")
+        if w is not None:
+            _set_dense_weights(tf_model, f"{tf_pfx}_logits", w, b)
+            _mark(f"{pt_head}.{seq_name}.3.weight")
+            if b is not None:
+                _mark(f"{pt_head}.{seq_name}.3.bias")
 
     return transferred
 
@@ -343,7 +420,7 @@ def validate_parity(
     np.random.seed(seed)
     input_np = np.random.randn(*input_shape).astype(np.float32)
 
-    # PyTorch forward
+    # PyTorch forward (eval mode, no dropout)
     pt_model.eval()
     with torch.no_grad():
         pt_input = torch.from_numpy(input_np)
@@ -355,7 +432,7 @@ def validate_parity(
 
     max_diffs: dict[str, float] = {}
     for task in enabled_tasks:
-        pt_out = getattr(pt_output, task)
+        pt_out = getattr(pt_output, task, None)
         if pt_out is None:
             continue
         pt_np = pt_out.numpy()

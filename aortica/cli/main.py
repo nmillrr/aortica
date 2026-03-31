@@ -1,4 +1,4 @@
-"""Aortica CLI — ``aortica predict <file>`` and related commands.
+"""Aortica CLI — ``aortica predict``, ``aortica benchmark``, and ``aortica train``.
 
 Uses Click for argument parsing and Rich for coloured terminal output
 with severity-coded prediction indicators.
@@ -29,6 +29,12 @@ except ImportError:  # pragma: no cover
     HAS_RICH = False
 
 from aortica.api.predict import run_inference_pipeline
+from aortica.models.train_multitask import (
+    MultiTaskTrainConfig,
+    load_config,
+    train_multitask,
+    train_multitask_tf,
+)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -288,3 +294,223 @@ def predict(
         _print_results_json(result_dict)
     else:
         _print_results_table(result_dict)
+
+
+# ---------------------------------------------------------------------------
+# `aortica benchmark` command
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.argument("dataset_path", type=click.Path(exists=True))
+@click.option(
+    "--tasks",
+    type=str,
+    default=None,
+    help="Comma-separated task heads to evaluate (e.g. 'rhythm,risk'). Default: all.",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["table", "json", "csv"], case_sensitive=False),
+    default="table",
+    show_default=True,
+    help="Output format: coloured summary table, raw JSON, or CSV.",
+)
+@click.option(
+    "--csv-export",
+    "csv_export_path",
+    type=click.Path(dir_okay=False),
+    default=None,
+    help="Optional path to save CSV results to a file.",
+)
+@click.option(
+    "--model",
+    "model_path",
+    type=click.Path(exists=True, dir_okay=False),
+    default=None,
+    help="Path to model checkpoint (.pt file).",
+)
+@click.option(
+    "--batch-size",
+    type=int,
+    default=64,
+    show_default=True,
+    help="Batch size for evaluation.",
+)
+@click.option(
+    "--seed",
+    type=int,
+    default=42,
+    show_default=True,
+    help="Random seed for reproducibility.",
+)
+@click.option(
+    "--sampling-rate",
+    type=click.Choice(["100", "500"]),
+    default="500",
+    show_default=True,
+    help="ECG sampling rate (Hz) for dataset loading.",
+)
+def benchmark(
+    dataset_path: str,
+    tasks: Optional[str],
+    output_format: str,
+    csv_export_path: Optional[str],
+    model_path: Optional[str],
+    batch_size: int,
+    seed: int,
+    sampling_rate: str,
+) -> None:
+    """Evaluate a trained AorticaModel on a dataset.
+
+    Runs the evaluation harness across all (or selected) task heads and
+    reports per-task and per-class metrics including macro-F1, AUC,
+    sensitivity, specificity, ECE, C-index, and Brier score.
+    """
+    # ── Parse tasks ───────────────────────────────────────────────────
+    enabled_tasks: Optional[List[str]] = None
+    if tasks:
+        enabled_tasks = [t.strip() for t in tasks.split(",")]
+        invalid = [t for t in enabled_tasks if t not in ALL_TASKS]
+        if invalid:
+            raise click.BadParameter(
+                f"Unknown task(s): {', '.join(invalid)}. "
+                f"Valid tasks: {', '.join(ALL_TASKS)}",
+                param_hint="'--tasks'",
+            )
+
+    # ── Load model ────────────────────────────────────────────────────
+    try:
+        import torch
+
+        from aortica.models import AorticaModel
+    except ImportError:
+        raise click.ClickException(
+            "PyTorch is required for benchmark. "
+            "Install it with: pip install aortica[torch]"
+        )
+
+    model: Any = None
+    if model_path:
+        try:
+            checkpoint = torch.load(model_path, map_location="cpu", weights_only=False)
+            if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
+                state_dict = checkpoint["model_state_dict"]
+                config = checkpoint.get("config", {})
+            elif isinstance(checkpoint, dict) and "state_dict" in checkpoint:
+                state_dict = checkpoint["state_dict"]
+                config = checkpoint.get("config", {})
+            else:
+                state_dict = checkpoint
+                config = {}
+
+            model = AorticaModel(
+                enabled_tasks=config.get("enabled_tasks", list(ALL_TASKS)),
+                feature_dim=config.get("feature_dim", 252),
+                num_leads=config.get("num_leads", 12),
+            )
+            model.load_state_dict(state_dict)
+            model.eval()
+        except ImportError:
+            raise click.ClickException(
+                "PyTorch is required for model loading. "
+                "Install it with: pip install aortica[torch]"
+            )
+        except Exception as exc:
+            raise click.ClickException(f"Failed to load model: {exc}")
+    else:
+        # Create an untrained model for benchmarking (useful for testing)
+        model = AorticaModel(
+            enabled_tasks=enabled_tasks or list(ALL_TASKS),
+            feature_dim=252,
+            num_leads=12,
+        )
+        model.eval()
+
+    # ── Load dataset ──────────────────────────────────────────────────
+    try:
+        from aortica.data.dataset import ECGDataset
+        from aortica.data.ptbxl import load_ptbxl
+
+        rate = int(sampling_rate)
+        _, _, (test_records, test_labels) = load_ptbxl(
+            dataset_path, sampling_rate=rate,
+        )
+
+        test_ds = ECGDataset(
+            test_records,
+            test_labels,
+            target_hz=float(rate),
+            window_seconds=10.0,
+            augment=False,
+        )
+    except Exception as exc:
+        raise click.ClickException(f"Failed to load dataset: {exc}")
+
+    # ── Run benchmark ─────────────────────────────────────────────────
+    try:
+        from aortica.evaluation.benchmark import benchmark as run_benchmark
+
+        report = run_benchmark(
+            model=model,
+            dataset=test_ds,
+            tasks=enabled_tasks,
+            batch_size=batch_size,
+            seed=seed,
+        )
+    except Exception as exc:
+        raise click.ClickException(f"Benchmark failed: {exc}")
+
+    # ── Output ────────────────────────────────────────────────────────
+    if output_format == "json":
+        click.echo(json.dumps(report.as_dict(), indent=2))
+    elif output_format == "csv":
+        click.echo(report.to_csv())
+    else:
+        click.echo(report.summary_table())
+
+    # ── Optional CSV export ───────────────────────────────────────────
+    if csv_export_path:
+        csv_text = report.to_csv()
+        Path(csv_export_path).write_text(csv_text, encoding="utf-8")
+        click.echo(f"\nCSV exported to: {csv_export_path}")
+
+
+# ---------------------------------------------------------------------------
+# `aortica train` command
+# ---------------------------------------------------------------------------
+
+
+@main.command()
+@click.argument("config_path", type=click.Path(exists=True, dir_okay=False))
+def train(config_path: str) -> None:
+    """Train the multi-task AorticaModel using a YAML configuration file.
+
+    Loads training configuration from CONFIG_PATH (a YAML file), then runs
+    the joint optimisation loop across backbone + attention + all enabled
+    task heads.  Saves the best checkpoint and training metrics to the
+    configured output directory.
+    """
+    # ── Load config ───────────────────────────────────────────────────
+    try:
+        config: MultiTaskTrainConfig = load_config(config_path)
+    except ImportError:
+        raise click.ClickException(
+            "PyYAML is required to load config files. "
+            "Install it with: pip install pyyaml"
+        )
+    except Exception as exc:
+        raise click.ClickException(f"Failed to load config: {exc}")
+
+    # ── Run training ──────────────────────────────────────────────────
+    try:
+        if config.backend == "tensorflow":
+            train_multitask_tf(config)
+        else:
+            train_multitask(config)
+    except ImportError as exc:
+        raise click.ClickException(str(exc))
+    except Exception as exc:
+        raise click.ClickException(f"Training failed: {exc}")
+

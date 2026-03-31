@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aortica"
-version = "0.1.0"
+version = "0.2.0"
 description = "Open-source AI ECG analysis platform"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -32,6 +32,10 @@ dependencies = [
     "pandas>=2.0",
 ]
 
+[project.scripts]
+aortica = "aortica.cli:main"
+aortica-server = "aortica.api:run_server"
+
 [project.optional-dependencies]
 torch = [
     "torch>=2.0",
@@ -41,6 +45,23 @@ tf = [
 ]
 signal = [
     "neurokit2>=0.2",
+]
+api = [
+    "fastapi>=0.100",
+    "uvicorn[standard]>=0.23",
+    "python-multipart>=0.0.6",
+]
+grpc = [
+    "grpcio>=1.56",
+    "grpcio-tools>=1.56",
+]
+cli = [
+    "click>=8.1",
+    "rich>=13.0",
+]
+edge = [
+    "onnx>=1.14",
+    "onnxruntime>=1.15",
 ]
 dev = [
     "pytest>=7.0",

@@ -45,14 +45,14 @@ def _residual_block_tf(
         filters, kernel_size, strides=stride, padding="same",
         use_bias=False, name=f"{name_prefix}_conv1",
     )(x)
-    out = keras.layers.BatchNormalization(name=f"{name_prefix}_bn1")(out)
+    out = keras.layers.BatchNormalization(epsilon=1e-5, name=f"{name_prefix}_bn1")(out)
     out = keras.layers.ReLU(name=f"{name_prefix}_relu1")(out)
 
     out = keras.layers.Conv1D(
         filters, kernel_size, strides=1, padding="same",
         use_bias=False, name=f"{name_prefix}_conv2",
     )(out)
-    out = keras.layers.BatchNormalization(name=f"{name_prefix}_bn2")(out)
+    out = keras.layers.BatchNormalization(epsilon=1e-5, name=f"{name_prefix}_bn2")(out)
 
     # Shortcut projection when dimensions change
     if stride != 1 or x.shape[-1] != filters:
@@ -61,7 +61,7 @@ def _residual_block_tf(
             name=f"{name_prefix}_shortcut_conv",
         )(shortcut)
         shortcut = keras.layers.BatchNormalization(
-            name=f"{name_prefix}_shortcut_bn",
+            epsilon=1e-5, name=f"{name_prefix}_shortcut_bn",
         )(shortcut)
 
     out = keras.layers.Add(name=f"{name_prefix}_add")([out, shortcut])
@@ -98,7 +98,7 @@ def build_aortica_backbone_tf(
     x = keras.layers.Conv1D(
         64, 15, strides=2, padding="same", use_bias=False, name="conv1",
     )(inputs)
-    x = keras.layers.BatchNormalization(name="bn1")(x)
+    x = keras.layers.BatchNormalization(epsilon=1e-5, name="bn1")(x)
     x = keras.layers.ReLU(name="relu1")(x)
     x = keras.layers.MaxPooling1D(pool_size=3, strides=2, padding="same", name="maxpool")(x)
 

@@ -175,6 +175,11 @@ def delineate_segments(
     """
     n_samples = len(signal_1d)
 
+    # Guard: signal too short for the filters in Pan-Tompkins
+    # (scipy.signal.sosfiltfilt needs len > 3*ntaps, typically >=16 samples)
+    if n_samples < 16:
+        return []
+
     if r_peaks is None:
         r_peaks = _detect_r_peaks(signal_1d, sample_rate)
 

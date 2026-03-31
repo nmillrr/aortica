@@ -391,12 +391,13 @@ class TestOODDetection:
         """Calibration-like inputs should mostly not be flagged OOD."""
         torch.manual_seed(42)
         model = _make_model()
-        cal_loader = _make_cal_loader(n_samples=64)
+        cal_loader = _make_cal_loader(n_samples=300, batch_size=64)
         cp = ConformalPredictor(model, ood_percentile=95.0)
         cp.fit(cal_loader, device=torch.device("cpu"))
 
         # Generate inputs from same distribution
-        x = torch.randn(20, 12, 2500)
+        torch.manual_seed(42)
+        x = torch.randn(50, 12, 2500)
         _, report = cp.predict(x)
         assert report.ood_flags is not None
         # Most should not be OOD (allow some false positives)
@@ -407,16 +408,17 @@ class TestOODDetection:
         """Extreme OOD inputs should be flagged more often than in-dist."""
         torch.manual_seed(42)
         model = _make_model()
-        cal_loader = _make_cal_loader(n_samples=64)
+        cal_loader = _make_cal_loader(n_samples=300, batch_size=64)
         cp = ConformalPredictor(model, ood_percentile=90.0)
         cp.fit(cal_loader, device=torch.device("cpu"))
 
         # In-distribution
-        x_in = torch.randn(20, 12, 2500)
+        torch.manual_seed(42)
+        x_in = torch.randn(50, 12, 2500)
         _, report_in = cp.predict(x_in)
 
         # OOD: very different scale/distribution
-        x_ood = torch.randn(20, 12, 2500) * 100.0 + 50.0
+        x_ood = torch.randn(50, 12, 2500) * 100.0 + 50.0
         _, report_ood = cp.predict(x_ood)
 
         assert report_in.ood_flags is not None

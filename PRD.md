@@ -543,12 +543,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a user, I want to install Aortica via `pip install aortica` and have the CLI and API available immediately.
 
 **Acceptance Criteria:**
-- [ ] `[project.scripts]` entry point in `pyproject.toml`: `aortica = "aortica.cli:main"`
-- [ ] New optional dependency groups: `api` (fastapi, uvicorn, python-multipart), `grpc` (grpcio, grpcio-tools), `cli` (click, rich), `edge` (onnx, onnxruntime)
-- [ ] `aortica-server` entry point for API server: `aortica.api:run_server`
-- [ ] Version bump to 0.2.0
-- [ ] Installation test: `pip install -e .[cli,api]` succeeds
-- [ ] Typecheck passes
+- [x] `[project.scripts]` entry point in `pyproject.toml`: `aortica = "aortica.cli:main"`
+- [x] New optional dependency groups: `api` (fastapi, uvicorn, python-multipart), `grpc` (grpcio, grpcio-tools), `cli` (click, rich), `edge` (onnx, onnxruntime)
+- [x] `aortica-server` entry point for API server: `aortica.api:run_server`
+- [x] Version bump to 0.2.0
+- [x] Installation test: `pip install -e .[cli,api]` succeeds
+- [x] Typecheck passes
 
 ---
 

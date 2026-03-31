@@ -198,11 +198,11 @@ class TestCrossLeadAttentionTF:
         from aortica.models.attention_tf import build_cross_lead_attention_tf
 
         model = build_cross_lead_attention_tf(
-            feature_dim=256, num_leads=12, num_heads=4, head_dim=64,
+            feature_dim=252, num_leads=12, num_heads=4, head_dim=64,
         )
-        x = np.random.randn(4, 256).astype(np.float32)
+        x = np.random.randn(4, 252).astype(np.float32)
         enriched, attn_weights = model(x, training=False)
-        assert enriched.shape == (4, 256)
+        assert enriched.shape == (4, 252)
         assert attn_weights.shape == (4, 4, 12, 12)
 
     def test_attention_weights_sum_to_one(self) -> None:
@@ -210,8 +210,8 @@ class TestCrossLeadAttentionTF:
 
         from aortica.models.attention_tf import build_cross_lead_attention_tf
 
-        model = build_cross_lead_attention_tf(feature_dim=256, num_leads=12)
-        x = np.random.randn(2, 256).astype(np.float32)
+        model = build_cross_lead_attention_tf(feature_dim=252, num_leads=12)
+        x = np.random.randn(2, 252).astype(np.float32)
         _, attn_weights = model(x, training=False)
         row_sums = np.sum(attn_weights.numpy(), axis=-1)
         np.testing.assert_allclose(row_sums, 1.0, atol=1e-5)
@@ -239,7 +239,7 @@ class TestCrossLeadAttentionTF:
         from aortica.models.attention_tf import build_cross_lead_attention_tf
 
         model = build_cross_lead_attention_tf(
-            feature_dim=256, num_leads=12, num_heads=4, head_dim=64,
+            feature_dim=252, num_leads=12, num_heads=4, head_dim=64,
         )
         # Should not raise
         model.summary()
