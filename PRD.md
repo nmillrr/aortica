@@ -574,12 +574,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want a lightweight 1D MobileNet-style backbone so that Aortica can run on resource-constrained edge devices.
 
 **Acceptance Criteria:**
-- [ ] `aortica.edge.MobileNetBackbone1D` class: depthwise-separable 1D convolutions at 32, 64, 128 filter widths
-- [ ] Parameter count ≤ 2.5M (vs AorticaBackbone's larger size)
-- [ ] Accepts same input shape `[batch, leads, samples]` as AorticaBackbone
-- [ ] Returns same feature_dim output (default 256) for compatibility with existing task heads
-- [ ] Unit tests verifying output shapes, parameter count, and gradient flow
-- [ ] Typecheck passes
+- [x] `aortica.edge.MobileNetBackbone1D` class: depthwise-separable 1D convolutions at 32, 64, 128 filter widths
+- [x] Parameter count ≤ 2.5M (vs AorticaBackbone's larger size)
+- [x] Accepts same input shape `[batch, leads, samples]` as AorticaBackbone
+- [x] Returns same feature_dim output (default 256) for compatibility with existing task heads
+- [x] Unit tests verifying output shapes, parameter count, and gradient flow
+- [x] Typecheck passes
 
 ---
 
