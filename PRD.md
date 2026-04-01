@@ -587,13 +587,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want to train the edge model via knowledge distillation from the full model so that the edge model retains most of the full model's accuracy.
 
 **Acceptance Criteria:**
-- [ ] `aortica.edge.train_distillation(teacher, student, train_loader, val_loader, config)` function
-- [ ] Distillation loss: KL divergence on temperature-scaled soft targets + hard label cross-entropy (configurable alpha weighting)
-- [ ] Temperature parameter configurable (default T=4.0)
-- [ ] Saves best student checkpoint by validation metric
-- [ ] Logs per-epoch distillation loss, hard loss, and per-task metrics
-- [ ] Unit tests with synthetic teacher/student models and data
-- [ ] Typecheck passes
+- [x] `aortica.edge.train_distillation(teacher, student, train_loader, val_loader, config)` function
+- [x] Distillation loss: KL divergence on temperature-scaled soft targets + hard label cross-entropy (configurable alpha weighting)
+- [x] Temperature parameter configurable (default T=4.0)
+- [x] Saves best student checkpoint by validation metric
+- [x] Logs per-epoch distillation loss, hard loss, and per-task metrics
+- [x] Unit tests with synthetic teacher/student models and data
+- [x] Typecheck passes
 
 ---
 

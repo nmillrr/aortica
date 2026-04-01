@@ -522,3 +522,19 @@
   - ruff auto-fix handles import sorting for noqa: E402 lines after pytest.importorskip
   - rich was not pre-installed — needed pip install rich before tests could run
 ---
+
+## Iteration 34 - US-035: CLI Tool — `aortica benchmark` and `aortica train` Commands
+- Implemented: `aortica benchmark <dataset_path>` and `aortica train <config.yaml>` Click commands
+- Files changed:
+  - aortica/cli/benchmark.py (new) - benchmark_cmd Click command with --format (table/json/csv), --tasks, --model, --csv-export, --sampling-rate, --batch-size, --seed options; _run_benchmark wraps evaluation.benchmark(); _render_benchmark_table (Rich Panel), _render_benchmark_json, _render_benchmark_csv helpers
+  - aortica/cli/train.py (new) - train_cmd Click command with CONFIG_PATH argument and --backend override; wraps train_multitask/train_multitask_tf from models.train_multitask
+  - aortica/cli/__init__.py (modified) - registered benchmark_cmd and train_cmd in the CLI group alongside predict
+  - tests/cli/test_benchmark_train.py (new) - 39 tests covering: constants, CLI group registration (all 3 commands), benchmark help/options/missing args/invalid tasks, benchmark execution (table/json/csv/csv-export/tasks-filter/sampling-rate/batch-size/seed/error/via-group), render helpers (table/json/csv-stdout/csv-file), train help/options/missing args, train execution (load_config/pytorch/tensorflow/backend-override/config-error/training-error/via-group)
+  - PRD.md (modified) - marked US-035 complete
+- Learnings for future iterations:
+  - When mocking lazy imports (inside function body), use module-level imports instead so unittest.mock.patch can find the attributes
+  - train.py does module-level imports from train_multitask (load_config, train_multitask, train_multitask_tf) — unlike predict.py's lazy pattern — because tests need to patch these
+  - benchmark_cmd uses Click's `@click.argument("dataset_path", type=click.Path(exists=True))` for path validation
+  - CSV export uses both stdout (when --csv-export not provided) and file write (when provided)
+  - Same pytest pattern: pytest.importorskip("click") and pytest.importorskip("rich") at module level
+---
