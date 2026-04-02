@@ -601,13 +601,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want to quantize the ONNX edge model to INT8 so that inference is faster and uses less memory on ARM hardware.
 
 **Acceptance Criteria:**
-- [ ] `aortica.edge.quantize_int8(onnx_model_path, calibration_data, output_path)` function
-- [ ] Uses ONNX Runtime quantization tools (static quantization with calibration)
-- [ ] Calibration data: representative ECG samples (configurable count, default 100)
-- [ ] Validates quantized model runs successfully via ONNX Runtime
-- [ ] Compares quantized vs. original model output (logs max absolute difference)
-- [ ] Unit tests with synthetic ONNX model and calibration data
-- [ ] Typecheck passes
+- [x] `aortica.edge.quantize_int8(onnx_model_path, calibration_data, output_path)` function
+- [x] Uses ONNX Runtime quantization tools (static quantization with calibration)
+- [x] Calibration data: representative ECG samples (configurable count, default 100)
+- [x] Validates quantized model runs successfully via ONNX Runtime
+- [x] Compares quantized vs. original model output (logs max absolute difference)
+- [x] Unit tests with synthetic ONNX model and calibration data
+- [x] Typecheck passes
 
 ---
 
