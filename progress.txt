@@ -538,3 +538,21 @@
   - CSV export uses both stdout (when --csv-export not provided) and file write (when provided)
   - Same pytest pattern: pytest.importorskip("click") and pytest.importorskip("rich") at module level
 ---
+
+## Iteration 35 - US-039: Knowledge Distillation Training Script
+- Implemented: `train_distillation()` function, `DistillationConfig`, `DistillationResult`, classification and regression distillation loss functions
+- Files changed:
+  - aortica/edge/distillation.py (new) - DistillationConfig dataclass with temperature/alpha/epochs/lr/enabled_tasks; distillation_loss_classification (sigmoid KL divergence + BCE, T^2 scaling); distillation_loss_regression (MSE mimic + MSE hard); _distill_one_epoch (teacher frozen, student trains with grad clipping); _evaluate_student (per-task metrics); train_distillation (full loop with cosine LR, best checkpoint, JSON metrics); DistillationResult/DistillationEpochMetrics dataclasses
+  - aortica/edge/__init__.py (modified) - exports DistillationConfig, DistillationEpochMetrics, DistillationResult, distillation_loss_classification, distillation_loss_regression, train_distillation
+  - tests/edge/test_distillation.py (new) - ~50 tests: config defaults/custom/serialisation, epoch metrics, result construction, classification loss (scalar/gradient/identical/alpha-zero/temperature/multi-class), regression loss (scalar/gradient/identical/alpha-zero/alpha-one), label splitting, F1/C-index metrics, LR schedule, save metric helpers, evaluate_student, full train_distillation (result/history/best-epoch/checkpoint/JSON/all-tasks/teacher-frozen/student-learns/task-subsets/custom-temp-alpha/save-metric), imports
+  - PRD.md (modified) - marked US-039 complete
+- Learnings for future iterations:
+  - ruff N812 flags `import torch.nn.functional as F` — use `nn.functional.xxx()` directly instead of an alias
+  - ruff E741 flags single-letter variable `T` — use `temp` or similar descriptive name
+  - ruff N806 flags uppercase local variables like `_TASK_WIDTHS` — lowercase for function-local vars
+  - For multi-label distillation, element-wise binary KL divergence on sigmoid outputs is correct (not softmax KL)
+  - T^2 scaling on the KL loss is essential per Hinton et al. to match gradient magnitudes at different temperatures
+  - Teacher must be fully frozen: .eval() + requires_grad=False on all params
+  - mypy "Tensor not callable" errors on model.backbone(x) are pre-existing false positives from torch stubs (12 identical errors in train_multitask.py)
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---

@@ -12,16 +12,14 @@ import struct
 from pathlib import Path
 from typing import Any, Optional
 
-import numpy as np
-
 from aortica.io.csv_reader import CSVConfig, read_csv
 from aortica.io.dicom_reader import read_dicom
 from aortica.io.ecg_record import ECGRecord
 from aortica.io.hl7_aecg_reader import read_hl7_aecg
 from aortica.io.mat_reader import MATConfig, read_mat
+from aortica.io.pdf_ecg_reader import PDFECGConfig, read_pdf_ecg
 from aortica.io.scp_reader import read_scp
 from aortica.io.wfdb_reader import read_wfdb
-
 
 # ── Standard 12‑lead ordering ────────────────────────────────────────
 
@@ -33,7 +31,7 @@ STANDARD_12_LEAD_ORDER: list[str] = [
 # ── Supported format identifiers ─────────────────────────────────────
 
 SUPPORTED_FORMATS: set[str] = {
-    "wfdb", "csv", "mat", "dicom", "scp", "hl7_aecg", "xml",
+    "wfdb", "csv", "mat", "dicom", "scp", "hl7_aecg", "xml", "pdf_scan",
 }
 
 
@@ -55,6 +53,12 @@ _EXTENSION_MAP: dict[str, str] = {
     ".dicom": "dicom",
     ".scp": "scp",
     ".xml": "xml",   # further refined by magic‑byte sniffing
+    ".pdf": "pdf_scan",
+    ".png": "pdf_scan",
+    ".jpg": "pdf_scan",
+    ".jpeg": "pdf_scan",
+    ".tiff": "pdf_scan",
+    ".tif": "pdf_scan",
 }
 
 
@@ -73,6 +77,10 @@ def _sniff_format(path: Path) -> Optional[str]:
 
     if not header:
         return None
+
+    # PDF: starts with %PDF
+    if header[:4] == b"%PDF":
+        return "pdf_scan"
 
     # DICOM: bytes 128–131 should read "DICM"
     if len(header) >= 132 and header[128:132] == b"DICM":
@@ -173,6 +181,7 @@ def read_ecg(
     resample: bool = True,
     csv_config: Optional[CSVConfig] = None,
     mat_config: Optional[MATConfig] = None,
+    pdf_ecg_config: Optional[PDFECGConfig] = None,
     **kwargs: Any,
 ) -> ECGRecord:
     """Read an ECG file with automatic format detection.
@@ -284,6 +293,9 @@ def read_ecg(
 
     elif detected_format == "xml":
         record = _read_xml(filepath)
+
+    elif detected_format == "pdf_scan":
+        record = read_pdf_ecg(str(filepath), config=pdf_ecg_config)
 
     else:  # pragma: no cover – unreachable after validation
         raise UnsupportedFormatError(f"No reader for format '{detected_format}'")
