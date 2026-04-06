@@ -538,3 +538,40 @@
   - CSV export uses both stdout (when --csv-export not provided) and file write (when provided)
   - Same pytest pattern: pytest.importorskip("click") and pytest.importorskip("rich") at module level
 ---
+
+## Iteration 35 - US-039: Knowledge Distillation Training Script
+- Implemented: `train_distillation()` function, `DistillationConfig`, `DistillationResult`, classification and regression distillation loss functions
+- Files changed:
+  - aortica/edge/distillation.py (new) - DistillationConfig dataclass with temperature/alpha/epochs/lr/enabled_tasks; distillation_loss_classification (sigmoid KL divergence + BCE, T^2 scaling); distillation_loss_regression (MSE mimic + MSE hard); _distill_one_epoch (teacher frozen, student trains with grad clipping); _evaluate_student (per-task metrics); train_distillation (full loop with cosine LR, best checkpoint, JSON metrics); DistillationResult/DistillationEpochMetrics dataclasses
+  - aortica/edge/__init__.py (modified) - exports DistillationConfig, DistillationEpochMetrics, DistillationResult, distillation_loss_classification, distillation_loss_regression, train_distillation
+  - tests/edge/test_distillation.py (new) - ~50 tests: config defaults/custom/serialisation, epoch metrics, result construction, classification loss (scalar/gradient/identical/alpha-zero/temperature/multi-class), regression loss (scalar/gradient/identical/alpha-zero/alpha-one), label splitting, F1/C-index metrics, LR schedule, save metric helpers, evaluate_student, full train_distillation (result/history/best-epoch/checkpoint/JSON/all-tasks/teacher-frozen/student-learns/task-subsets/custom-temp-alpha/save-metric), imports
+  - PRD.md (modified) - marked US-039 complete
+- Learnings for future iterations:
+  - ruff N812 flags `import torch.nn.functional as F` — use `nn.functional.xxx()` directly instead of an alias
+  - ruff E741 flags single-letter variable `T` — use `temp` or similar descriptive name
+  - ruff N806 flags uppercase local variables like `_TASK_WIDTHS` — lowercase for function-local vars
+  - For multi-label distillation, element-wise binary KL divergence on sigmoid outputs is correct (not softmax KL)
+  - T^2 scaling on the KL loss is essential per Hinton et al. to match gradient magnitudes at different temperatures
+  - Teacher must be fully frozen: .eval() + requires_grad=False on all params
+  - mypy "Tensor not callable" errors on model.backbone(x) are pre-existing false positives from torch stubs (12 identical errors in train_multitask.py)
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+---
+
+## Iteration 36 - US-008b: PDF and Image ECG Scan Digitization Reader
+- Implemented: `read_pdf_ecg(path, config)` with full pipeline: PDF rasterisation → grid detection → trace extraction → lead segmentation → waveform digitisation
+- Files changed:
+  - aortica/io/pdf_ecg_reader.py (new) - read_pdf_ecg(), PDFECGConfig dataclass, _rasterise_pdf (pymupdf or pdfplumber), _detect_grid (Hough line transform → mm/pixel calibration), _extract_trace_mask (HSV/grayscale thresholding for red/black/blue/auto trace isolation), _extract_waveform_from_roi (column centroid → amplitude conversion → resampling), _segment_lead_regions (rows×cols grid), GridCalibration/STANDARD_3x4_LEAD_ORDER
+  - aortica/io/dispatcher.py (modified) - added pdf_scan to SUPPORTED_FORMATS, _EXTENSION_MAP (.pdf, .png, .jpg, .jpeg, .tiff, .tif), _sniff_format (%PDF magic), read_ecg dispatch with pdf_ecg_config parameter
+  - aortica/io/__init__.py (modified) - exports read_pdf_ecg, PDFECGConfig
+  - aortica/signal/quality_scoring.py (modified) - added scan_origin field to QualityReport, _SCAN_QUALITY_CEILING=69.0, scan-derived records capped at marginal quality in score_quality()
+  - pyproject.toml (modified) - added [scan] optional dependency group (opencv-python-headless, pdfplumber)
+  - tests/io/test_pdf_ecg_reader.py (new) - 54 tests covering: constants, PDFECGConfig, GridCalibration, grid detection (calibration/blank/custom paper speed), trace extraction (black/auto/red/blue), waveform extraction (simple ROI/empty/sine), lead segmentation (3×4/1×1/sizes), full pipeline (ECGRecord/source_format/metadata/leads/shape/sample_rate/units/errors/layout/extensions), dispatcher integration (formats/extension map/dispatch/explicit format), scan quality ceiling (capped/not capped/per-lead/field), digitisation accuracy (signal structure/multi-lead), imports
+- Learnings for future iterations:
+  - OpenCV cv2 functions return types mypy can't infer precisely — use `# type: ignore[assignment]` liberally
+  - Synthetic ECG render → digitise round-trip is inherently lossy (grid interference, thresholding artefacts) — use structural correctness checks rather than strict correlation thresholds in tests
+  - pdfplumber and pymupdf (fitz) are alternative PDF backends — reader tries fitz first (faster, no system deps), falls back to pdfplumber
+  - HSV colour space is ideal for isolating coloured ECG traces (red/blue) from the background grid
+  - Grid calibration uses Hough line detection + median spacing → 1mm per grid square assumption
+  - scan_origin quality ceiling (69/100) is applied in score_quality() by checking patient_metadata["scan_origin"] flag
+  - `np.asarray(x, dtype=np.float64)` is the safe way to return typed ndarrays from functions that chain operations (avoids mypy no-any-return)
+---

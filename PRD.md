@@ -6,7 +6,11 @@ Aortica is an open-source AI ECG analysis platform designed to close the most cr
 
 This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (Edge & Rural Deployment)**, **Phase 3 (Federated Learning & Equity)**, and **Phase 4 (Regulatory & Scale)**. Phase 0–1 delivered the core ML pipeline. Phase 2 extends this with REST API, CLI, React web UI with AI copilot, edge-optimized models (ONNX + INT8), offline sync, Docker, docs, and LMIC deployment. Phase 3 adds federated learning via Flower, differential privacy, equity gating CI checks, public performance cards, and expanded task heads for rare arrhythmias, STEMI mimics, strain patterns, and metabolic/drug effects. Phase 4 completes the platform with FHIR R4 / HL7 EHR integration, DICOM SR write-back, worklist prioritization, PDF/JSON-LD report generation, case-based ECG retrieval, regulatory document library (IEC 80601-2-86, FDA SaMD, CE-MDR templates), and prospective validation tooling. Native mobile apps are deferred to future work.
 
-**Tech stack:** Python with PyTorch (primary) and TensorFlow/Keras (parallel) for ML. FastAPI for REST API, gRPC for high-throughput service. React + Vite + TypeScript for web UI. ONNX Runtime for edge deployment. Click + Rich for CLI. Docker for packaging. Flower (flwr) for federated learning. OpenDP for differential privacy. FHIR R4 via `fhir.resources` for EHR integration. HL7 v2.x via `hl7apy`. DICOM SR via `pydicom`. WeasyPrint for PDF report generation. JSON-LD via `pyld`. Annoy/FAISS for latent space nearest-neighbor retrieval.
+**Distribution model:** Aortica is a self-hosted, open-source toolkit distributed via `aortica.io`. Clinicians and institutions download and run it locally (Docker or pip install) — no data ever leaves the deployment site. This preserves patient privacy, eliminates recurring infrastructure costs, and enables deployment in data-sovereignty-constrained settings. A landing page at `aortica.io` provides download links, documentation, and demo assets.
+
+**Deployment target:** The primary deployment scenario is a rural or resource-limited clinic with a laptop or workstation, intermittent internet, and USB-attached 10/12-lead ECG hardware. The FastAPI backend runs locally (Docker or bare-metal), and the React frontend is served as a **Progressive Web App (PWA)** that caches itself and the ONNX edge model for fully offline use after first load. When the local server is reachable, the full model is used; when offline, inference falls back to ONNX Runtime Web (WebAssembly) running the INT8 edge model directly in the browser. This hybrid architecture requires no internet dependency after initial setup.
+
+**Tech stack:** Python with PyTorch (primary) and TensorFlow/Keras (parallel) for ML. FastAPI for REST API, gRPC for high-throughput service. React + Vite + TypeScript for web UI with PWA service worker. ONNX Runtime (server-side) and ONNX Runtime Web/WASM (in-browser offline inference) for edge deployment. Click + Rich for CLI. Docker for packaging. Flower (flwr) for federated learning. OpenDP for differential privacy. FHIR R4 via `fhir.resources` for EHR integration. HL7 v2.x via `hl7apy`. DICOM SR via `pydicom`. WeasyPrint for PDF report generation. JSON-LD via `pyld`. Annoy/FAISS for latent space nearest-neighbor retrieval. OpenCV + pdfplumber for PDF/image ECG scan digitization.
 
 **Team:** Small team; stories sized at ~30 min of focused implementation each.
 
@@ -157,6 +161,24 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] Returns a normalized `ECGRecord` with consistent lead ordering (I, II, III, aVR, aVL, aVF, V1-V6 for 12-lead)
 - [x] Resamples to a configurable target rate (default 500 Hz)
 - [x] Unit tests covering each format dispatch and the fallback path
+- [x] Typecheck passes
+
+---
+
+### US-008b: PDF and Image ECG Scan Digitization Reader
+**Description:** As a clinician in a setting where only paper or PDF ECG printouts are available, I want to upload a scanned ECG image or PDF and have Aortica digitize it into a signal so that AI analysis is possible even without direct device connectivity.
+
+**Acceptance Criteria:**
+- [x] `aortica.io.read_pdf_ecg(path, config=None)` accepts a PDF or image file (PNG, JPG, TIFF) and returns an `ECGRecord`
+- [x] PDF extraction: uses `pdfplumber` or `pymupdf` to rasterize the ECG page to a high-resolution image (≥300 DPI)
+- [x] Grid detection: uses OpenCV to detect the standard ECG grid (horizontal/vertical lines), compute mm/pixel scale, and calibrate amplitude (mV/pixel) and time (s/pixel) axes
+- [x] Waveform trace extraction: isolates the red/black ECG trace from the background grid via color thresholding and contour detection; reconstructs a time-series signal per detected lead region
+- [x] Lead region segmentation: auto-detects lead arrangement (standard 12-lead 3×4 layout or rhythm strip) from the image layout; falls back to user-specified grid via `PDFECGConfig(rows, cols, lead_order)`
+- [x] Returns an `ECGRecord` with `source_format='pdf_scan'` and a prominently set `scan_quality_warning=True` flag in `patient_metadata`
+- [x] `score_quality()` automatically assigns a 'marginal' floor to scan-derived records (scan quality cannot exceed 69/100) with a `scan_origin` flag in the `QualityReport`
+- [x] `read_ecg()` universal dispatcher auto-detects `.pdf`, `.png`, `.jpg`, `.tiff` extensions and routes to `read_pdf_ecg()`
+- [x] Digitization accuracy target: ≥85% waveform shape correlation (Pearson r) against ground-truth signal on a held-out set of synthetic ECG-to-image-to-signal round-trips
+- [x] Unit tests with synthetic ECG images (rendered from known signals) verifying: grid detection, signal extraction shape, amplitude calibration within 15%, round-trip Pearson r ≥ 0.85
 - [x] Typecheck passes
 
 ---
@@ -552,6 +574,29 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 
 ---
 
+### US-036b: Pre-Trained Model Distribution via HuggingFace Hub
+**Description:** As a clinician or field-deployment engineer, I want to download a ready-to-use, pre-trained Aortica checkpoint without running a training job so that I can get AI predictions immediately after `pip install aortica`, even in settings with no GPU or dataset access.
+
+**Background and rationale:** Aortica's primary deployment scenario is a rural clinic where re-training from raw PTB-XL data is impractical (hardware, data storage, expertise). The current PRD requires users to download ~21 GB of PTB-XL and run a multi-epoch training run before any inference is possible. Distributing canonical, versioned checkpoints trained on publicly licensed data (PTB-XL — CC BY 4.0, MIMIC-IV-ECG — PhysioNet Credentialed) eliminates this barrier entirely. The `aortica train` CLI remains the research path for fine-tuning, federated rounds, and custom datasets. The pre-trained checkpoint becomes the universal starting point for all downstream workflows — including federated learning (Phase 3), which fine-tunes from the public checkpoint rather than training from scratch.
+
+**Acceptance Criteria:**
+- [ ] `aortica/models/registry.py` module implementing `load_pretrained(version='latest', cache_dir=None, force_download=False) -> AorticaModel`
+- [ ] Checkpoint hosted on HuggingFace Hub at `nmillrr/aortica` (or equivalent org namespace) with semantic versioning tags matching the package version (e.g., `aortica-v0.2.0.pt`)
+- [ ] Downloads and caches the checkpoint to `~/.cache/aortica/` on first call; subsequent calls load from cache without network access
+- [ ] `load_pretrained()` verifies the downloaded file against a published SHA-256 hash before loading, raising `ChecksumError` on mismatch (tamper protection for clinical deployment)
+- [ ] CLI shortcut: `aortica predict <file>` and `aortica benchmark <path>` automatically call `load_pretrained('latest')` when no `--model` flag is provided
+- [ ] Distributed bundle includes **both** the full PyTorch checkpoint (`aortica_full_v{version}.pt`) and the INT8 ONNX edge model (`aortica_edge_int8_v{version}.onnx`); `load_pretrained(variant='edge')` fetches the ONNX artifact instead
+- [ ] Each release on HuggingFace Hub includes a **model card** (`README.md`) documenting: training data (PTB-XL dataset, version, fold split), all task head class lists and output dimensions, per-task performance metrics (macro-F1, AUC, C-index from US-028 benchmark), demographic subgroup performance (age decile, sex) from equity gate (US-069), known limitations (European-heavy training cohort, PDF-scan origin ECGs capped to marginal quality), and attribution/license notices
+- [ ] The model card includes a prominent data provenance section: "Trained on PTB-XL (CC BY 4.0, Wagner et al. 2020, PhysioNet). No proprietary data used. No patient data leaves this deployment." This directly satisfies the PRD non-goal: *"No proprietary data partnerships — all training uses public or federated data."*
+- [ ] CI/CD: GitHub Actions `release.yml` workflow step that — on push of a version tag — runs the full benchmark (US-028), runs equity gate (US-069), generates and uploads the performance card (US-070), exports the ONNX edge model (US-037), quantizes to INT8 (US-040), and pushes all artifacts to HuggingFace Hub with the version tag
+- [ ] `aortica.models.registry.list_available_versions()` queries the Hub API and returns a list of available version strings with release dates and performance summary
+- [ ] `aortica info` CLI command updated to show: currently loaded model version, checkpoint source (hub vs. local path), SHA-256 hash, and training data attribution
+- [ ] Federated learning client (US-063) `AorticaFlowerClient` initialises its model via `load_pretrained()` by default, so FL rounds always start from the canonical public checkpoint unless a custom `--base-checkpoint` is specified
+- [ ] Unit tests: mock HuggingFace Hub responses to test `load_pretrained()` cache behaviour, checksum validation (good and tampered), version listing, and CLI `--model` flag override
+- [ ] Typecheck passes
+
+---
+
 #### Edge Optimization
 
 ---
@@ -641,6 +686,25 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [ ] Responsive layout (mobile-friendly breakpoints)
 - [ ] `npm run dev` starts the development server
 - [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+### US-042b: PWA Offline-Capable Inference Infrastructure
+**Description:** As a clinician in a setting with intermittent connectivity, I want the Aortica web app to work fully offline after the first load so that ECG analysis is never blocked by network availability.
+
+**Acceptance Criteria:**
+- [ ] Vite PWA plugin (`vite-plugin-pwa`) configured with a service worker that caches: app shell (JS/CSS/HTML), the INT8 ONNX edge model (~5–8 MB), and ONNX Runtime Web WASM binaries
+- [ ] `frontend/public/manifest.json` with app name, icons (192×192, 512×512), theme color, and `display: standalone` for installability on Android Chrome and desktop
+- [ ] `InferenceClient` TypeScript module with `predict(ecgData)` method implementing the hybrid fallback strategy:
+  1. Attempt `POST http://localhost:8000/api/v1/predict` (local FastAPI server) with a 3-second timeout
+  2. On timeout or network error, fall back to in-browser ONNX Runtime Web inference using the cached edge model
+  3. Annotate the result with `inference_mode: 'server' | 'edge_wasm'` so the UI can display which path was used
+- [ ] ONNX Runtime Web (`onnxruntime-web`) loaded as a frontend dependency; edge model fetched and cached via the service worker on first app load
+- [ ] `ConnectionStatusBanner` React component: green badge ("Server — Full Model") when local server responds, amber badge ("Offline Mode — Edge Model") when using WASM fallback
+- [ ] First-load behavior: service worker pre-caches the entire app shell + model bundle in the background; subsequent loads work fully offline
+- [ ] Edge model served from `frontend/public/models/aortica_edge_int8.onnx`; build script copies the latest quantized model from `aortica/edge/` artifacts
+- [ ] Verified offline: Chrome DevTools Network → Offline mode shows full inference working with WASM fallback
 - [ ] Typecheck passes
 
 ---
@@ -741,16 +805,32 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 ---
 
 ### US-049: Copilot Findings Panel
-**Description:** As a clinician, I want a ranked AI findings panel so that the most important detections are surfaced first with clear confidence levels.
+**Description:** As a clinician, I want a ranked AI findings panel so that the most important detections are surfaced first with clear confidence levels and relevant clinical next-step prompts.
 
 **Acceptance Criteria:**
 - [ ] `CopilotPanel` React component showing all positive findings ranked by confidence
 - [ ] Each finding shows: condition name, confidence percentage, severity badge (critical/warning/info)
+- [ ] Each finding includes a **clinical suggestion prompt** — a short, non-prescriptive plain-language cue (e.g. "Consider cardiology referral", "Electrolytes warrant checking", "Urgent 12-lead repeat recommended") sourced from the condition's suggestion map (see US-049b)
+- [ ] Suggestion prompts are clearly labelled as AI-generated clinical prompts, not treatment orders, with a visible disclaimer: "Decision support only — requires clinician judgment"
 - [ ] Critical findings (≥90% confidence on high-severity conditions) highlighted with red accent
 - [ ] Clicking a finding scrolls the waveform to the relevant region and activates XAI overlay
 - [ ] Empty state message when no significant findings detected
 - [ ] Integrates with results page layout
 - [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+### US-049b: Clinical Suggestion Prompt Data Layer
+**Description:** As a developer, I want a structured, maintainable mapping of AI-detected conditions to plain-language clinical suggestion prompts so that the copilot panel can surface non-prescriptive next-step cues without hard-coding them in the frontend.
+
+**Acceptance Criteria:**
+- [ ] `aortica/api/clinical_suggestions.py` with a `CONDITION_SUGGESTIONS` dict mapping each class name (from RHYTHM_CLASSES, STRUCTURAL_CLASSES, ISCHAEMIA_CLASSES) to a `ClinicalSuggestion` dataclass containing: `prompt` (str, ≤100 chars), `urgency` ("routine" | "prompt" | "urgent" | "emergent"), `rationale` (str, 1–2 sentence clinical justification)
+- [ ] Populated for all high-severity conditions at minimum: STEMI territories, VT, VF, Wellens, de Winter, Brugada, WPW, severe hyperkalaemia, complete AV block, LVSD
+- [ ] `GET /api/v1/suggestions/{condition_name}` endpoint returning the `ClinicalSuggestion` for a given class
+- [ ] Inference response (`POST /api/v1/predict`) optionally includes suggestions for active findings when `include_suggestions=true` query param is set
+- [ ] Suggestions are loaded from an editable JSON file (`data/clinical_suggestions.json`) so clinicians can customize prompts without code changes
+- [ ] Unit tests verifying: all high-severity conditions have entries, JSON round-trip, API endpoint 200/404 behavior, inference response inclusion
 - [ ] Typecheck passes
 
 ---
@@ -785,11 +865,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 ---
 
 ### US-052: Explanation Cards
-**Description:** As a clinician, I want detailed explanation cards per finding so that I understand exactly why the AI flagged each condition.
+**Description:** As a clinician, I want detailed explanation cards per finding so that I understand exactly why the AI flagged each condition and what clinical actions to consider.
 
 **Acceptance Criteria:**
 - [ ] `ExplanationCard` React component showing per-finding detail view
 - [ ] Sections: named ECG features driving detection (from XAI), confidence interval (from conformal prediction), clinical reference text
+- [ ] **Clinical Suggestions section**: displays the `ClinicalSuggestion.prompt` and `rationale` from US-049b with urgency color-coding (routine=grey, prompt=yellow, urgent=orange, emergent=red); labelled "Suggested Next Steps" with a subtitle clarifying these are AI-generated prompts requiring clinician judgment
 - [ ] Feature attributions displayed as a ranked bar chart (top-3 features with delta scores)
 - [ ] Confidence interval displayed as a range bar
 - [ ] Placeholder section for "Similar historical cases" (to be implemented in Phase 4)

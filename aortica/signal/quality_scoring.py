@@ -58,12 +58,16 @@ class QualityReport:
             score using the configured thresholds.
         recommendation: ``'accept'`` (good), ``'review'`` (marginal),
             or ``'reject'`` (poor).
+        scan_origin: ``True`` if the record was digitised from a
+            PDF/image scan.  Scan-derived records are automatically
+            capped to ``'marginal'`` quality (max 69/100).
     """
 
     per_lead: list[LeadQuality]
     overall_score: float
     overall_classification: QualityClass
     recommendation: Recommendation
+    scan_origin: bool = False
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -72,6 +76,7 @@ class QualityReport:
 
 _DEFAULT_GOOD_THRESHOLD = 70.0
 _DEFAULT_MARGINAL_THRESHOLD = 40.0
+_SCAN_QUALITY_CEILING = 69.0  # scan-derived records cannot exceed this
 
 # Penalty weights for each artefact category (deducted from 100).
 _PENALTY_FLATLINE = 40.0
@@ -131,6 +136,21 @@ def score_quality(
         per_lead.append(lq)
 
     overall_score = float(np.mean([lq.score for lq in per_lead]))
+
+    # Scan-origin quality ceiling: records digitised from PDF/image
+    # scans cannot exceed 'marginal' quality (max 69/100).
+    is_scan = False
+    if ecg_record.patient_metadata and ecg_record.patient_metadata.get("scan_origin"):
+        is_scan = True
+        overall_score = min(overall_score, _SCAN_QUALITY_CEILING)
+        # Also cap per-lead scores
+        for lq in per_lead:
+            if lq.score > _SCAN_QUALITY_CEILING:
+                lq.score = _SCAN_QUALITY_CEILING
+                lq.classification = _classify(
+                    lq.score, good_threshold, marginal_threshold
+                )
+
     overall_class = _classify(overall_score, good_threshold, marginal_threshold)
     recommendation = _recommend(overall_class)
 
@@ -139,6 +159,7 @@ def score_quality(
         overall_score=overall_score,
         overall_classification=overall_class,
         recommendation=recommendation,
+        scan_origin=is_scan,
     )
 
 

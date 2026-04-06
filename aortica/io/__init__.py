@@ -1,4 +1,4 @@
-"""ECG format readers (WFDB, DICOM, SCP-ECG, CSV, MAT, HL7 aECG, XML)."""
+"""ECG format readers (WFDB, DICOM, SCP-ECG, CSV, MAT, HL7 aECG, XML, PDF/Image)."""
 
 from aortica.io.csv_reader import CSVConfig, read_csv
 from aortica.io.dicom_reader import read_dicom
@@ -10,6 +10,7 @@ from aortica.io.dispatcher import (
 from aortica.io.ecg_record import ECGRecord
 from aortica.io.hl7_aecg_reader import read_hl7_aecg
 from aortica.io.mat_reader import MATConfig, read_mat
+from aortica.io.pdf_ecg_reader import PDFECGConfig, read_pdf_ecg
 from aortica.io.scp_reader import read_scp
 from aortica.io.wfdb_reader import read_wfdb
 
@@ -17,6 +18,7 @@ __all__ = [
     "CSVConfig",
     "ECGRecord",
     "MATConfig",
+    "PDFECGConfig",
     "STANDARD_12_LEAD_ORDER",
     "UnsupportedFormatError",
     "read_csv",
@@ -24,6 +26,7 @@ __all__ = [
     "read_ecg",
     "read_hl7_aecg",
     "read_mat",
+    "read_pdf_ecg",
     "read_scp",
     "read_wfdb",
 ]
