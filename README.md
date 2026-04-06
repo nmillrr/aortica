@@ -1,6 +1,5 @@
 # Aortica
 
-[![CI](https://github.com/nmillrr/aortica/actions/workflows/ci.yml/badge.svg)](https://github.com/nmillrr/aortica/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-0.2.0-orange.svg)](https://github.com/nmillrr/aortica)
