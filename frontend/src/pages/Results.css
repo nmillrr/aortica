@@ -1,0 +1,282 @@
+/* ============================================================
+   Results Page
+   ============================================================ */
+
+.results-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ── Breadcrumb ─────────────────────────────────────────── */
+
+.results-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.breadcrumb-link {
+  color: var(--color-text-tertiary);
+}
+
+.breadcrumb-link:hover {
+  color: var(--color-text-primary);
+}
+
+.breadcrumb-sep {
+  color: var(--color-text-muted);
+}
+
+.breadcrumb-current {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ── Quality bar ────────────────────────────────────────── */
+
+.results-quality-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.quality-badge {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.quality-badge--good {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+}
+
+.quality-badge--marginal {
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
+}
+
+.quality-badge--poor {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+.quality-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+/* ── Waveform ───────────────────────────────────────────── */
+
+.results-waveform {
+  padding: var(--space-6);
+  overflow: hidden;
+}
+
+.waveform-placeholder {
+  position: relative;
+  height: 220px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.waveform-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(230, 57, 70, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230, 57, 70, 0.04) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.waveform-trace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.waveform-lead-labels {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.waveform-lead-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ── Panels ─────────────────────────────────────────────── */
+
+.results-panels {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+.results-panel {
+  padding: var(--space-6);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-5);
+}
+
+.panel-icon {
+  color: var(--color-accent);
+}
+
+/* ── Findings ───────────────────────────────────────────── */
+
+.findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.finding-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.finding-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  min-width: 180px;
+}
+
+.finding-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.finding-name {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.finding-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 6px;
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-full);
+  position: relative;
+  overflow: visible;
+}
+
+.finding-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.finding-bar--high   { background: var(--color-danger); box-shadow: 0 0 8px rgba(231, 76, 60, 0.3); }
+.finding-bar--medium { background: var(--color-warning); }
+.finding-bar--normal { background: var(--color-success); opacity: 0.6; }
+
+.finding-prob {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  min-width: 32px;
+  text-align: right;
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Risk Gauges ────────────────────────────────────────── */
+
+.risk-gauges {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.risk-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.gauge-ring {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.gauge-svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.gauge-bg {
+  fill: none;
+  stroke: var(--color-bg-primary);
+  stroke-width: 6;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dasharray var(--transition-slow);
+}
+
+.gauge-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  line-height: var(--line-height-tight);
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .results-panels {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .risk-gauges {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .finding-info {
+    min-width: 120px;
+  }
+}

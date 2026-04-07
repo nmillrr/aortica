@@ -1,0 +1,206 @@
+/* ============================================================
+   Login Page
+   ============================================================ */
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Background ─────────────────────────────────────────── */
+
+.login-bg-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 57, 70, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* ── Container ──────────────────────────────────────────── */
+
+.login-container {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  z-index: 1;
+}
+
+/* ── Brand ──────────────────────────────────────────────── */
+
+.login-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.login-logo {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-brand);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-glow);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.login-logo-icon {
+  font-size: 1.75rem;
+  color: #fff;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+}
+
+.login-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-heavy);
+  letter-spacing: -0.03em;
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Card ───────────────────────────────────────────────── */
+
+.login-card {
+  width: 100%;
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+}
+
+/* ── Form ───────────────────────────────────────────────── */
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-input {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-secondary);
+  border: var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.form-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+.login-submit-btn {
+  width: 100%;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-2);
+}
+
+/* ── Divider ────────────────────────────────────────────── */
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  margin: var(--space-6) 0;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-surface-border);
+}
+
+.login-divider span {
+  padding: 0 var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ── OAuth ──────────────────────────────────────────────── */
+
+.login-oauth {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.login-oauth-btn {
+  font-size: var(--font-size-sm);
+}
+
+/* ── API Key ────────────────────────────────────────────── */
+
+.login-apikey {
+  margin-top: var(--space-5);
+}
+
+.login-apikey-summary {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  text-align: center;
+  transition: color var(--transition-fast);
+}
+
+.login-apikey-summary:hover {
+  color: var(--color-text-secondary);
+}
+
+.login-apikey-submit {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+
+.login-footer {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+}

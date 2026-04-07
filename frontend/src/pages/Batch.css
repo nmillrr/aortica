@@ -1,0 +1,157 @@
+/* ============================================================
+   Batch Page
+   ============================================================ */
+
+.batch-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ── Toolbar ────────────────────────────────────────────── */
+
+.batch-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.batch-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.batch-count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Table ──────────────────────────────────────────────── */
+
+.batch-table-container {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.batch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.batch-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.batch-table th {
+  text-align: left;
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--color-surface-border);
+  background: var(--color-surface);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--transition-fast);
+}
+
+.batch-table th:hover {
+  color: var(--color-text-secondary);
+}
+
+.batch-table td {
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid rgba(42, 50, 80, 0.2);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.batch-row {
+  transition: background var(--transition-fast);
+}
+
+.batch-row:hover {
+  background: var(--color-bg-hover);
+}
+
+.batch-filename {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+.batch-filename:hover {
+  color: var(--color-accent);
+}
+
+.batch-finding {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Pills ──────────────────────────────────────────────── */
+
+.quality-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.quality-pill--good     { background: var(--color-success-muted); color: var(--color-success); }
+.quality-pill--marginal { background: var(--color-warning-muted); color: var(--color-warning); }
+.quality-pill--poor     { background: var(--color-danger-muted);  color: var(--color-danger); }
+
+.risk-cell {
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.risk-cell--high   { color: var(--color-danger); }
+.risk-cell--medium { color: var(--color-warning); }
+.risk-cell--low    { color: var(--color-text-tertiary); }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.status-pill--done {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+}
+
+.status-pill--processing {
+  background: var(--color-info-muted);
+  color: var(--color-info);
+}
+
+.status-pill--error {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .batch-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

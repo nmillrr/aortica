@@ -679,15 +679,15 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a developer, I want a React frontend application with routing and a premium design system so that the web UI has a solid foundation.
 
 **Acceptance Criteria:**
-- [ ] `frontend/` directory with Vite + React + TypeScript project
-- [ ] React Router with routes: `/` (dashboard), `/upload`, `/results/:id`, `/batch`, `/login`
-- [ ] Layout component: sidebar navigation, header with logo, main content area
-- [ ] Dark theme design system with CSS variables (colors, typography, spacing)
-- [ ] Google Fonts (Inter) loaded
-- [ ] Responsive layout (mobile-friendly breakpoints)
-- [ ] `npm run dev` starts the development server
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `frontend/` directory with Vite + React + TypeScript project
+- [x] React Router with routes: `/` (dashboard), `/upload`, `/results/:id`, `/batch`, `/login`
+- [x] Layout component: sidebar navigation, header with logo, main content area
+- [x] Dark theme design system with CSS variables (colors, typography, spacing)
+- [x] Google Fonts (Inter) loaded
+- [x] Responsive layout (mobile-friendly breakpoints)
+- [x] `npm run dev` starts the development server
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

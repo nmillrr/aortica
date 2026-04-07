@@ -1,0 +1,185 @@
+/* ============================================================
+   Upload Page
+   ============================================================ */
+
+.upload-page {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-4);
+}
+
+.upload-container {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ── Dropzone ───────────────────────────────────────────── */
+
+.upload-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-16) var(--space-8);
+  border: 2px dashed var(--color-surface-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-dropzone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  background: radial-gradient(circle at center, rgba(230, 57, 70, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.upload-dropzone:hover::before,
+.upload-dropzone--active::before {
+  opacity: 1;
+}
+
+.upload-dropzone--active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-muted);
+}
+
+.upload-dropzone--has-file {
+  padding: var(--space-8);
+  border-style: solid;
+  border-color: var(--color-surface-border);
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: var(--color-accent);
+  line-height: 1;
+}
+
+.upload-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+}
+
+.upload-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.upload-browse-btn {
+  margin-top: var(--space-2);
+  cursor: pointer;
+}
+
+.upload-file-input {
+  display: none;
+}
+
+/* ── Selected file ──────────────────────────────────────── */
+
+.upload-selected {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.upload-file-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent-muted);
+  border-radius: var(--radius-md);
+  font-size: 1.25rem;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.upload-file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-file-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.upload-file-size {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.upload-remove-btn {
+  font-size: var(--font-size-md);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Analyze button ─────────────────────────────────────── */
+
+.upload-analyze-btn {
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--font-size-md);
+}
+
+.upload-analyze-btn--loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.upload-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Formats ────────────────────────────────────────────── */
+
+.upload-formats {
+  padding: var(--space-6);
+}
+
+.upload-formats .card-title {
+  margin-bottom: var(--space-4);
+}
+
+.format-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.format-chip {
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-bg-elevated);
+  border: var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
