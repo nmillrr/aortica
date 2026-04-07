@@ -597,3 +597,45 @@
   - Pre-existing issue: train_multitask.py uses @torch.no_grad() at module level which fails when torch is not installed — causes cascading import failures in CLI tests
   - Model info sidecar (model_info.json) written to cache dir after each load — used by `aortica info` CLI command
 ---
+
+## Iteration 38 - US-041: Edge Model Validation Harness
+- Implemented: `validate_edge()` function, `EdgeValidationReport` and `TaskValidation` dataclasses, inlined metric helpers, full+edge model inference with latency measurement, summary table output
+- Files changed:
+  - aortica/edge/validation.py (new) - validate_edge() running full PyTorch model + ONNX edge model over same dataset, _run_full_model/_run_edge_model with latency timing, _evaluate_task comparing F1/AUC for classification and C-index for risk, configurable threshold (default 3%), EdgeValidationReport with summary_table(), inlined metric helpers (_compute_auc, _compute_f1, _compute_mean_auc, _compute_c_index) for module independence
+  - aortica/edge/__init__.py (modified) - exports EdgeValidationReport, TaskValidation, validate_edge
+  - tests/edge/test_validation.py (new) - ~35 tests covering: constants, TaskValidation/EdgeValidationReport dataclasses (defaults/custom/failed/summary table), AUC (perfect/worst/random/single class), F1 (perfect/worst/range), mean AUC, C-index (perfect/reversed/single sample), label splitting (all tasks/subset), _evaluate_task (classification pass/risk/strict threshold/zero metric), full pipeline via validate_edge (returns report/task validations/identical model passes/latency measured/multi-task/summary table), imports (edge package/validation module)
+  - PRD.md (modified) - marked US-041 complete
+- Learnings for future iterations:
+  - ONNX output names follow "{task}_output" convention from export_onnx — used to map ONNX outputs back to task names
+  - pathlib must be imported at module level (not inside function) when used in type annotations with `from __future__ import annotations`
+  - Metrics are inlined rather than imported from benchmark.py to keep the edge module self-contained
+  - Same torch-optional pattern: _check_torch(), dummy nn.Module stub, pytest.importorskip
+  - time.perf_counter() used for latency measurement — high-resolution monotonic clock
+---
+
+## Iteration 39 - US-042: React + Vite Frontend Scaffold
+- Implemented: Full frontend scaffold in `frontend/` with Vite + React + TypeScript, dark-theme design system, 5 pages, Layout component with sidebar/header
+- Files changed:
+  - frontend/ (new directory) - Vite + React + TypeScript project scaffolded with `create-vite`
+  - frontend/src/index.css (new) - Complete dark-theme design system with CSS variables (colors, typography, spacing, shadows, gradients, animations)
+  - frontend/src/main.tsx (new) - Entry point with BrowserRouter wrapper
+  - frontend/src/App.tsx (new) - Route definitions for Dashboard, Upload, Results, Batch, Login
+  - frontend/src/components/Layout.tsx + Layout.css (new) - App shell with fixed sidebar + offset main content area
+  - frontend/src/components/Sidebar.tsx + Sidebar.css (new) - Navigation sidebar with brand, nav links, server status indicator
+  - frontend/src/components/Header.tsx + Header.css (new) - Glassmorphism header with page title, search, user avatar
+  - frontend/src/pages/Dashboard.tsx + Dashboard.css (new) - Hero section, stats grid (4 cards), Recent ECGs list, Multi-Task Engine cards
+  - frontend/src/pages/Upload.tsx + Upload.css (new) - Drag-and-drop dropzone, file selection, supported format chips
+  - frontend/src/pages/Results.tsx + Results.css (new) - ECG waveform SVG, 4 task panels with confidence bars, risk ring gauges
+  - frontend/src/pages/Batch.tsx + Batch.css (new) - Batch results table with quality pills, risk cells, status badges
+  - frontend/src/pages/Login.tsx + Login.css (new) - Login form, OAuth buttons, API key section, centered glassmorphism card
+  - frontend/public/favicon.svg (new) - SVG favicon with Aortica brand gradient
+  - frontend/index.html (modified) - Added Inter font, meta description, proper title
+  - PRD.md (modified) - marked US-042 complete
+- Learnings for future iterations:
+  - When using `position: fixed` sidebar, do NOT use CSS Grid columns to offset main content — use `margin-left` instead, since fixed elements are removed from normal flow and don't participate in grid layout
+  - Vite + React + TypeScript scaffolding via `npx create-vite@latest` with `--template react-ts`
+  - Dark theme uses HSL-based color tokens for consistent palette harmony
+  - Glassmorphism effect: `backdrop-filter: blur(12px)` + semi-transparent background + subtle border
+  - SVG-based ECG waveform visualization is lightweight and works without charting libraries
+  - Ring gauges use SVG circle with `stroke-dasharray` / `stroke-dashoffset` for progress arcs
+  - Google Fonts loaded via `<link>` in index.html; Inter provides clean medical-authority typography
