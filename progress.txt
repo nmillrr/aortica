@@ -575,3 +575,25 @@
   - scan_origin quality ceiling (69/100) is applied in score_quality() by checking patient_metadata["scan_origin"] flag
   - `np.asarray(x, dtype=np.float64)` is the safe way to return typed ndarrays from functions that chain operations (avoids mypy no-any-return)
 ---
+
+## Iteration 37 - US-036b: Pre-Trained Model Distribution via HuggingFace Hub
+- Implemented: `registry.py` with `load_pretrained()`, `list_available_versions()`, `get_model_info()`, `ChecksumError`, `ModelNotFoundError`; `info.py` CLI command; CLI auto-loading in predict/benchmark; `release.yml` CI/CD workflow
+- Files changed:
+  - aortica/models/registry.py (new) - load_pretrained() with version resolution, SHA-256 verification, local caching at ~/.cache/aortica/, variant support (full/edge), model info JSON sidecar; list_available_versions() querying HuggingFace Hub API; ChecksumError and ModelNotFoundError exceptions; PretrainedModelInfo/ModelVersion dataclasses; DATA_PROVENANCE constant
+  - aortica/cli/info.py (new) - `aortica info` Click command showing package version, cached model version/variant/source/SHA-256/attribution via Rich panels and tables
+  - aortica/cli/__init__.py (modified) - registered info_cmd in CLI group
+  - aortica/cli/predict.py (modified) - _load_model() now tries load_pretrained("latest") when model_path is None, falls back to None on failure
+  - aortica/cli/benchmark.py (modified) - _load_model_and_dataset() now tries load_pretrained("latest") when model_path is None
+  - aortica/models/__init__.py (modified) - exports ChecksumError, ModelNotFoundError, PretrainedModelInfo, load_pretrained, list_available_versions, get_model_info
+  - pyproject.toml (modified) - added `hub` optional dependency group (huggingface-hub>=0.16)
+  - .github/workflows/release.yml (new) - CI/CD workflow: on version tag push → run tests, export ONNX, quantise INT8, save checkpoint, generate model card, upload to HuggingFace Hub, create GitHub Release
+  - tests/models/test_registry.py (new) - 48 tests: constants, exceptions, dataclasses, SHA-256 computation, cache dir resolution, download URL construction, model info sidecar I/O, checksum validation (good/tampered/unknown), load_pretrained (variant/cache/force-download/failure/info-sidecar/version-resolution), list_available_versions (parse tags/sort/string tags/network errors/empty), CLI info (help/no-cache/cached-model/group-registration), CLI model flag override (predict/benchmark auto-loading), imports
+  - PRD.md (modified) - marked US-036b complete
+- Learnings for future iterations:
+  - Registry module uses only stdlib (hashlib, urllib, json, os, pathlib) — no external dependency required for core functionality
+  - huggingface-hub is an optional dependency for enhanced Hub API access; base registry works with urllib
+  - _KNOWN_CHECKSUMS dict is populated by release CI — new versions auto-verify after their first release
+  - Edge variant (ONNX) returns file path string; full variant returns loaded AorticaModel in eval mode
+  - Pre-existing issue: train_multitask.py uses @torch.no_grad() at module level which fails when torch is not installed — causes cascading import failures in CLI tests
+  - Model info sidecar (model_info.json) written to cache dir after each load — used by `aortica info` CLI command
+---

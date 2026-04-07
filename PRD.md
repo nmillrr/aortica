@@ -661,13 +661,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a researcher, I want to validate that the edge model performs within 3% of the full model so that edge deployment quality is guaranteed.
 
 **Acceptance Criteria:**
-- [ ] `aortica.edge.validate_edge(full_model, edge_model_path, dataset, tasks='all')` function
-- [ ] Compares per-task AUC, F1, and C-index between full and edge models
-- [ ] Returns `EdgeValidationReport` with pass/fail status per task (threshold configurable, default 3%)
-- [ ] Measures inference latency per sample for the edge model
-- [ ] Prints summary table of full vs. edge metrics
-- [ ] Unit tests with synthetic models and predictions
-- [ ] Typecheck passes
+- [x] `aortica.edge.validate_edge(full_model, edge_model_path, dataset, tasks='all')` function
+- [x] Compares per-task AUC, F1, and C-index between full and edge models
+- [x] Returns `EdgeValidationReport` with pass/fail status per task (threshold configurable, default 3%)
+- [x] Measures inference latency per sample for the edge model
+- [x] Prints summary table of full vs. edge metrics
+- [x] Unit tests with synthetic models and predictions
+- [x] Typecheck passes
 
 ---
 

@@ -15,18 +15,26 @@ from aortica.edge.quantization import (
     QuantizationReport,
     quantize_int8,
 )
+from aortica.edge.validation import (
+    EdgeValidationReport,
+    TaskValidation,
+    validate_edge,
+)
 
 __all__ = [
     "DistillationConfig",
     "DistillationEpochMetrics",
     "DistillationResult",
     "ECGCalibrationDataReader",
+    "EdgeValidationReport",
     "MobileNetBackbone1D",
     "QuantizationReport",
+    "TaskValidation",
     "distillation_loss_classification",
     "distillation_loss_regression",
     "export_onnx",
     "quantize_int8",
     "train_distillation",
+    "validate_edge",
     "validate_onnx",
 ]
