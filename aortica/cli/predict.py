@@ -26,11 +26,18 @@ def _load_model(
 ) -> Any:
     """Attempt to load an AorticaModel checkpoint.
 
-    Returns the loaded model, or ``None`` if *model_path* is ``None``
-    or torch is unavailable.
+    When *model_path* is ``None``, attempts to load the latest pretrained
+    model from HuggingFace Hub via :func:`load_pretrained`.  Falls back
+    to ``None`` if the download fails or torch is unavailable.
     """
     if model_path is None:
-        return None
+        # Try loading pretrained from Hub
+        try:
+            from aortica.models.registry import load_pretrained
+
+            return load_pretrained("latest")
+        except Exception:
+            return None
 
     try:
         import torch

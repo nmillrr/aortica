@@ -42,6 +42,7 @@ def _build_cli() -> Any:
     _check_cli_deps()
 
     from aortica.cli.benchmark import benchmark_cmd
+    from aortica.cli.info import info_cmd
     from aortica.cli.predict import predict
     from aortica.cli.train import train_cmd
 
@@ -53,6 +54,7 @@ def _build_cli() -> Any:
     cli.add_command(predict)
     cli.add_command(benchmark_cmd)
     cli.add_command(train_cmd)
+    cli.add_command(info_cmd)
     return cli
 
 

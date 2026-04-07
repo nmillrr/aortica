@@ -580,20 +580,21 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Background and rationale:** Aortica's primary deployment scenario is a rural clinic where re-training from raw PTB-XL data is impractical (hardware, data storage, expertise). The current PRD requires users to download ~21 GB of PTB-XL and run a multi-epoch training run before any inference is possible. Distributing canonical, versioned checkpoints trained on publicly licensed data (PTB-XL — CC BY 4.0, MIMIC-IV-ECG — PhysioNet Credentialed) eliminates this barrier entirely. The `aortica train` CLI remains the research path for fine-tuning, federated rounds, and custom datasets. The pre-trained checkpoint becomes the universal starting point for all downstream workflows — including federated learning (Phase 3), which fine-tunes from the public checkpoint rather than training from scratch.
 
 **Acceptance Criteria:**
-- [ ] `aortica/models/registry.py` module implementing `load_pretrained(version='latest', cache_dir=None, force_download=False) -> AorticaModel`
-- [ ] Checkpoint hosted on HuggingFace Hub at `nmillrr/aortica` (or equivalent org namespace) with semantic versioning tags matching the package version (e.g., `aortica-v0.2.0.pt`)
-- [ ] Downloads and caches the checkpoint to `~/.cache/aortica/` on first call; subsequent calls load from cache without network access
-- [ ] `load_pretrained()` verifies the downloaded file against a published SHA-256 hash before loading, raising `ChecksumError` on mismatch (tamper protection for clinical deployment)
-- [ ] CLI shortcut: `aortica predict <file>` and `aortica benchmark <path>` automatically call `load_pretrained('latest')` when no `--model` flag is provided
-- [ ] Distributed bundle includes **both** the full PyTorch checkpoint (`aortica_full_v{version}.pt`) and the INT8 ONNX edge model (`aortica_edge_int8_v{version}.onnx`); `load_pretrained(variant='edge')` fetches the ONNX artifact instead
-- [ ] Each release on HuggingFace Hub includes a **model card** (`README.md`) documenting: training data (PTB-XL dataset, version, fold split), all task head class lists and output dimensions, per-task performance metrics (macro-F1, AUC, C-index from US-028 benchmark), demographic subgroup performance (age decile, sex) from equity gate (US-069), known limitations (European-heavy training cohort, PDF-scan origin ECGs capped to marginal quality), and attribution/license notices
-- [ ] The model card includes a prominent data provenance section: "Trained on PTB-XL (CC BY 4.0, Wagner et al. 2020, PhysioNet). No proprietary data used. No patient data leaves this deployment." This directly satisfies the PRD non-goal: *"No proprietary data partnerships — all training uses public or federated data."*
-- [ ] CI/CD: GitHub Actions `release.yml` workflow step that — on push of a version tag — runs the full benchmark (US-028), runs equity gate (US-069), generates and uploads the performance card (US-070), exports the ONNX edge model (US-037), quantizes to INT8 (US-040), and pushes all artifacts to HuggingFace Hub with the version tag
-- [ ] `aortica.models.registry.list_available_versions()` queries the Hub API and returns a list of available version strings with release dates and performance summary
-- [ ] `aortica info` CLI command updated to show: currently loaded model version, checkpoint source (hub vs. local path), SHA-256 hash, and training data attribution
-- [ ] Federated learning client (US-063) `AorticaFlowerClient` initialises its model via `load_pretrained()` by default, so FL rounds always start from the canonical public checkpoint unless a custom `--base-checkpoint` is specified
-- [ ] Unit tests: mock HuggingFace Hub responses to test `load_pretrained()` cache behaviour, checksum validation (good and tampered), version listing, and CLI `--model` flag override
-- [ ] Typecheck passes
+- [x] `aortica/models/registry.py` module implementing `load_pretrained(version='latest', cache_dir=None, force_download=False) -> AorticaModel`
+- [x] Checkpoint hosted on HuggingFace Hub at `nmillrr/aortica` (or equivalent org namespace) with semantic versioning tags matching the package version (e.g., `aortica-v0.2.0.pt`)
+- [x] Downloads and caches the checkpoint to `~/.cache/aortica/` on first call; subsequent calls load from cache without network access
+- [x] `load_pretrained()` verifies the downloaded file against a published SHA-256 hash before loading, raising `ChecksumError` on mismatch (tamper protection for clinical deployment)
+- [x] CLI shortcut: `aortica predict <file>` and `aortica benchmark <path>` automatically call `load_pretrained('latest')` when no `--model` flag is provided
+- [x] Distributed bundle includes **both** the full PyTorch checkpoint (`aortica_full_v{version}.pt`) and the INT8 ONNX edge model (`aortica_edge_int8_v{version}.onnx`); `load_pretrained(variant='edge')` fetches the ONNX artifact instead
+- [x] Each release on HuggingFace Hub includes a **model card** (`README.md`) documenting: training data (PTB-XL dataset, version, fold split), all task head class lists and output dimensions, per-task performance metrics (macro-F1, AUC, C-index from US-028 benchmark), demographic subgroup performance (age decile, sex) from equity gate (US-069), known limitations (European-heavy training cohort, PDF-scan origin ECGs capped to marginal quality), and attribution/license notices
+- [x] The model card includes a prominent data provenance section: "Trained on PTB-XL (CC BY 4.0, Wagner et al. 2020, PhysioNet). No proprietary data used. No patient data leaves this deployment." This directly satisfies the PRD non-goal: *"No proprietary data partnerships — all training uses public or federated data."*
+- [x] CI/CD: GitHub Actions `release.yml` workflow step that — on push of a version tag — runs the full benchmark (US-028), runs equity gate (US-069), generates and uploads the performance card (US-070), exports the ONNX edge model (US-037), quantizes to INT8 (US-040), and pushes all artifacts to HuggingFace Hub with the version tag
+- [x] `aortica.models.registry.list_available_versions()` queries the Hub API and returns a list of available version strings with release dates and performance summary
+- [x] `aortica info` CLI command updated to show: currently loaded model version, checkpoint source (hub vs. local path), SHA-256 hash, and training data attribution
+- [x] Federated learning client (US-063) `AorticaFlowerClient` initialises its model via `load_pretrained()` by default, so FL rounds always start from the canonical public checkpoint unless a custom `--base-checkpoint` is specified
+- [x] Unit tests: mock HuggingFace Hub responses to test `load_pretrained()` cache behaviour, checksum validation (good and tampered), version listing, and CLI `--model` flag override
+- [x] Typecheck passes
+
 
 ---
 

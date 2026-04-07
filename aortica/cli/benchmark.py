@@ -74,7 +74,13 @@ def _load_model_and_dataset(
             model.load_state_dict(checkpoint)
         model.eval()
     else:
-        model = AorticaModel(enabled_tasks=list(tasks))
+        # Try loading pretrained from Hub
+        try:
+            from aortica.models.registry import load_pretrained
+
+            model = load_pretrained("latest")
+        except Exception:
+            model = AorticaModel(enabled_tasks=list(tasks))
         model.eval()
 
     return {"model": model, "dataset": dataset, "metadata": metadata}
