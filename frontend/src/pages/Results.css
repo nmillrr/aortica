@@ -69,6 +69,24 @@
   color: var(--color-text-muted);
 }
 
+.inference-mode-badge {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  margin-left: auto;
+}
+
+.inference-mode-badge--server {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+}
+
+.inference-mode-badge--edge_wasm {
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
+}
+
 /* ── Waveform ───────────────────────────────────────────── */
 
 .results-waveform {
