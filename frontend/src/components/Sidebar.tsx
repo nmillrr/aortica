@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { ConnectionStatusBanner } from './ConnectionStatusBanner';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
@@ -42,12 +43,9 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* Footer */}
+      {/* Footer with live connection status */}
       <div className="sidebar-footer">
-        <div className="sidebar-footer-status">
-          <span className="status-dot status-dot--online" />
-          <span className="sidebar-footer-text">Server Online</span>
-        </div>
+        <ConnectionStatusBanner />
       </div>
     </aside>
   );

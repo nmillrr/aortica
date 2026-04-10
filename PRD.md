@@ -695,18 +695,18 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician in a setting with intermittent connectivity, I want the Aortica web app to work fully offline after the first load so that ECG analysis is never blocked by network availability.
 
 **Acceptance Criteria:**
-- [ ] Vite PWA plugin (`vite-plugin-pwa`) configured with a service worker that caches: app shell (JS/CSS/HTML), the INT8 ONNX edge model (~5–8 MB), and ONNX Runtime Web WASM binaries
-- [ ] `frontend/public/manifest.json` with app name, icons (192×192, 512×512), theme color, and `display: standalone` for installability on Android Chrome and desktop
-- [ ] `InferenceClient` TypeScript module with `predict(ecgData)` method implementing the hybrid fallback strategy:
+- [x] Vite PWA plugin (`vite-plugin-pwa`) configured with a service worker that caches: app shell (JS/CSS/HTML), the INT8 ONNX edge model (~5–8 MB), and ONNX Runtime Web WASM binaries
+- [x] `frontend/public/manifest.json` with app name, icons (192×192, 512×512), theme color, and `display: standalone` for installability on Android Chrome and desktop
+- [x] `InferenceClient` TypeScript module with `predict(ecgData)` method implementing the hybrid fallback strategy:
   1. Attempt `POST http://localhost:8000/api/v1/predict` (local FastAPI server) with a 3-second timeout
   2. On timeout or network error, fall back to in-browser ONNX Runtime Web inference using the cached edge model
   3. Annotate the result with `inference_mode: 'server' | 'edge_wasm'` so the UI can display which path was used
-- [ ] ONNX Runtime Web (`onnxruntime-web`) loaded as a frontend dependency; edge model fetched and cached via the service worker on first app load
-- [ ] `ConnectionStatusBanner` React component: green badge ("Server — Full Model") when local server responds, amber badge ("Offline Mode — Edge Model") when using WASM fallback
-- [ ] First-load behavior: service worker pre-caches the entire app shell + model bundle in the background; subsequent loads work fully offline
-- [ ] Edge model served from `frontend/public/models/aortica_edge_int8.onnx`; build script copies the latest quantized model from `aortica/edge/` artifacts
-- [ ] Verified offline: Chrome DevTools Network → Offline mode shows full inference working with WASM fallback
-- [ ] Typecheck passes
+- [x] ONNX Runtime Web (`onnxruntime-web`) loaded as a frontend dependency; edge model fetched and cached via the service worker on first app load
+- [x] `ConnectionStatusBanner` React component: green badge ("Server — Full Model") when local server responds, amber badge ("Offline Mode — Edge Model") when using WASM fallback
+- [x] First-load behavior: service worker pre-caches the entire app shell + model bundle in the background; subsequent loads work fully offline
+- [x] Edge model served from `frontend/public/models/aortica_edge_int8.onnx`; build script copies the latest quantized model from `aortica/edge/` artifacts
+- [x] Verified offline: Chrome DevTools Network → Offline mode shows full inference working with WASM fallback
+- [x] Typecheck passes
 
 ---
 

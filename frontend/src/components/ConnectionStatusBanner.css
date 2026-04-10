@@ -1,0 +1,92 @@
+/* ============================================================
+   ConnectionStatusBanner
+   ============================================================ */
+
+.connection-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+  cursor: default;
+}
+
+/* ── Server (green) ───────────────────────────────────────── */
+
+.connection-banner--server {
+  background: var(--color-success-muted);
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.connection-dot--server {
+  background: var(--color-success);
+  box-shadow: 0 0 6px rgba(46, 204, 113, 0.5);
+}
+
+/* ── Offline (amber) ──────────────────────────────────────── */
+
+.connection-banner--offline {
+  background: var(--color-warning-muted);
+  border: 1px solid rgba(243, 156, 18, 0.2);
+}
+
+.connection-dot--offline {
+  background: var(--color-warning);
+  box-shadow: 0 0 6px rgba(243, 156, 18, 0.5);
+}
+
+/* ── Checking (subtle pulse) ──────────────────────────────── */
+
+.connection-banner--checking {
+  background: rgba(52, 152, 219, 0.08);
+  border: 1px solid rgba(52, 152, 219, 0.15);
+}
+
+.connection-dot--checking {
+  background: var(--color-info);
+  animation: connection-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── Shared dot style ─────────────────────────────────────── */
+
+.connection-dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  transition: background var(--transition-base), box-shadow var(--transition-base);
+}
+
+/* ── Text ─────────────────────────────────────────────────── */
+
+.connection-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.connection-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.connection-detail {
+  font-size: 0.625rem; /* 10px */
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Animations ───────────────────────────────────────────── */
+
+@keyframes connection-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.85); }
+}
