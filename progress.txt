@@ -639,3 +639,41 @@
   - SVG-based ECG waveform visualization is lightweight and works without charting libraries
   - Ring gauges use SVG circle with `stroke-dasharray` / `stroke-dashoffset` for progress arcs
   - Google Fonts loaded via `<link>` in index.html; Inter provides clean medical-authority typography
+
+## Iteration 40 - US-042b: PWA Offline-Capable Inference Infrastructure
+- Verified: All implementation existed from prior conversation — validated completeness against all 9 acceptance criteria
+- Files verified (already existed):
+  - frontend/vite.config.ts - VitePWA plugin configured with service worker caching (app shell, ONNX model, WASM, Google Fonts)
+  - frontend/public/manifest.json - PWA manifest with icons (192×192, 512×512), theme_color, display: standalone
+  - frontend/src/services/InferenceClient.ts - Hybrid predict() with server→WASM fallback, 3s timeout, inference_mode annotation, checkServerHealth(), preloadEdgeModel()
+  - frontend/src/components/ConnectionStatusBanner.tsx + .css - Green/amber/checking status badges with polling
+  - frontend/src/components/Sidebar.tsx - ConnectionStatusBanner integrated in sidebar footer
+  - frontend/public/models/aortica_edge_int8.onnx - Placeholder edge model
+  - frontend/public/icons/ - SVG icons at 192×192 and 512×512
+  - frontend/scripts/copy-edge-model.mjs - Build script to copy quantized model from aortica/edge/
+  - package.json - onnxruntime-web ^1.24.3 and vite-plugin-pwa ^1.2.0 as dependencies
+- Verification: TypeScript typecheck passes (tsc -b --noEmit), production build succeeds with PWA service worker generated (9 precached entries)
+- Learnings for future iterations:
+  - PWA was fully implemented in a prior conversation but PRD criteria were never marked complete — always check existing state before implementing
+  - Vite PWA plugin generates sw.js and workbox-*.js in dist/ at build time — only visible after `npm run build`
+  - ONNX Runtime Web WASM binary (~25 MB uncompressed, ~5.9 MB gzipped) is the largest asset — CacheFirst strategy essential
+  - PowerShell uses `;` not `&&` for command chaining
+---
+
+## Iteration 41 - US-043: ECG Waveform Visualization Component
+- Implemented: `ECGWaveformChart` React component with interactive 12-lead ECG display, SVG grid, pan/zoom, and caliper tool
+- Files changed:
+  - frontend/src/components/ECGWaveformChart.tsx (new) - Full ECG waveform chart component: 3×4 clinical layout (I/aVR/V1/V4 per row), SVG-based minor (1mm) and major (5mm) grid lines, `buildLeadPath()` for signal-to-SVG conversion, `ECGWaveformData` interface matching PRD spec ({leads, signals, sample_rate}), pan via click-drag, zoom via mouse wheel (0.25x–8x), caliper tool for interval measurement (ms + bpm), 1mV calibration marker, `generateDemoECGData()` mock data generator with synthetic PQRST waveforms
+  - frontend/src/components/ECGWaveformChart.css (new) - Dark theme styling: ECG grid lines (rgba red), green waveform traces, toolbar with grouped controls, caliper overlay (amber dashed lines with measurement badge), responsive breakpoints
+  - frontend/src/pages/Results.tsx (modified) - Replaced static SVG waveform placeholder with interactive ECGWaveformChart component using demo data
+  - PRD.md (modified) - marked US-043 complete
+- Learnings for future iterations:
+  - SVG-based ECG rendering scales well for 12-lead 10s recordings — no external charting library needed
+  - 3×4 clinical layout: each column shows colDurationSec = totalDuration/4 of the recording, with lead assignment matching standard Row0=[I,aVR,V1,V4], Row1=[II,aVL,V2,V5], Row2=[III,aVF,V3,V6]
+  - `buildLeadPath()` uses startSample/endSample offsets per column-lead pair — each column-lead shows only its time segment
+  - Caliper measurement: deltaMs = pixelDistance / (pixelsPerSecond * zoom) * 1000, bpm = 60000 / deltaMs
+  - `vector-effect: non-scaling-stroke` on SVG traces prevents stroke width from changing with zoom
+  - Pan is implemented via CSS translate on the SVG element rather than viewBox manipulation — simpler and avoids re-rendering grid
+  - foreignObject in SVG allows embedding HTML caliper badge (with styled div) inline with SVG elements
+  - Demo ECG generator creates synthetic PQRST complexes using phase-based Gaussian segments at 72 bpm with per-lead amplitude variation and aVR inversion
+---

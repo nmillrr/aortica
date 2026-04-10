@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { ECGWaveformChart, generateDemoECGData } from '../components/ECGWaveformChart';
 import './Results.css';
 
 const MOCK_FINDINGS = {
@@ -23,6 +24,8 @@ const MOCK_FINDINGS = {
   ],
 } as const;
 
+const DEMO_ECG = generateDemoECGData();
+
 export function Results() {
   const { id } = useParams<{ id: string }>();
 
@@ -43,29 +46,11 @@ export function Results() {
         <span className="quality-meta">12-Lead · 500 Hz · 10s</span>
       </div>
 
-      {/* ECG waveform placeholder */}
-      <div className="results-waveform card" id="ecg-waveform">
-        <div className="waveform-placeholder">
-          <div className="waveform-grid" />
-          <svg className="waveform-trace" viewBox="0 0 800 200" preserveAspectRatio="none">
-            <path
-              d="M0,100 L50,100 L60,98 L70,90 L80,100 L85,100 L90,40 L95,160 L100,100 L110,100 L120,95 L140,85 L160,100
-                 L200,100 L210,98 L220,90 L230,100 L235,100 L240,35 L245,165 L250,100 L260,100 L270,95 L290,85 L310,100
-                 L350,100 L360,98 L370,90 L380,100 L385,100 L390,38 L395,162 L400,100 L410,100 L420,95 L440,85 L460,100
-                 L500,100 L510,98 L520,90 L530,100 L535,100 L540,42 L545,158 L550,100 L560,100 L570,95 L590,85 L610,100
-                 L650,100 L660,98 L670,90 L680,100 L685,100 L690,36 L695,164 L700,100 L710,100 L720,95 L740,85 L760,100 L800,100"
-              fill="none"
-              stroke="var(--color-accent)"
-              strokeWidth="2"
-            />
-          </svg>
-          <div className="waveform-lead-labels">
-            {['I', 'II', 'III', 'aVR', 'aVL', 'aVF'].map(lead => (
-              <span key={lead} className="waveform-lead-label">{lead}</span>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* ECG waveform — interactive component */}
+      <ECGWaveformChart
+        data={DEMO_ECG}
+        id="ecg-waveform"
+      />
 
       {/* Findings panels */}
       <div className="results-panels" id="findings-panels">
@@ -73,7 +58,7 @@ export function Results() {
         <div className="results-panel card" id="panel-rhythm">
           <h3 className="panel-title">
             <span className="panel-icon">♥</span>
-            Rhythm & Conduction
+            Rhythm &amp; Conduction
           </h3>
           <ul className="findings-list">
             {MOCK_FINDINGS.rhythm.map(f => (
@@ -98,7 +83,7 @@ export function Results() {
         <div className="results-panel card" id="panel-structural">
           <h3 className="panel-title">
             <span className="panel-icon">◇</span>
-            Structural & Functional
+            Structural &amp; Functional
           </h3>
           <ul className="findings-list">
             {MOCK_FINDINGS.structural.map(f => (
@@ -123,7 +108,7 @@ export function Results() {
         <div className="results-panel card" id="panel-ischaemia">
           <h3 className="panel-title">
             <span className="panel-icon">△</span>
-            Ischaemia & Metabolic
+            Ischaemia &amp; Metabolic
           </h3>
           <ul className="findings-list">
             {MOCK_FINDINGS.ischaemia.map(f => (

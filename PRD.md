@@ -714,14 +714,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want an interactive ECG waveform display so that I can visually inspect the 12-lead ECG trace with standard formatting.
 
 **Acceptance Criteria:**
-- [ ] `ECGWaveformChart` React component rendering 12-lead ECG in standard clinical layout
-- [ ] Standard ECG grid background (25mm/s paper speed, 10mm/mV gain)
-- [ ] Lead labels (I, II, III, aVR, aVL, aVF, V1-V6)
-- [ ] Pan and zoom interactions (mouse wheel zoom, click-drag pan)
-- [ ] Accepts waveform data as JSON props (`{leads: string[], signals: number[][], sample_rate: number}`)
-- [ ] Caliper tool for measuring intervals
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `ECGWaveformChart` React component rendering 12-lead ECG in standard clinical layout
+- [x] Standard ECG grid background (25mm/s paper speed, 10mm/mV gain)
+- [x] Lead labels (I, II, III, aVR, aVL, aVF, V1-V6)
+- [x] Pan and zoom interactions (mouse wheel zoom, click-drag pan)
+- [x] Accepts waveform data as JSON props (`{leads: string[], signals: number[][], sample_rate: number}`)
+- [x] Caliper tool for measuring intervals
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
