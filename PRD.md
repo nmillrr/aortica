@@ -729,14 +729,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want to upload an ECG file and see AI predictions so that I can get a second opinion on my interpretation.
 
 **Acceptance Criteria:**
-- [ ] Upload page with drag-and-drop file dropzone
-- [ ] Supported format indicator (WFDB, DICOM, SCP-ECG, CSV, MAT, HL7 aECG)
-- [ ] Calls `POST /api/v1/predict` on upload
-- [ ] Loading state with progress animation
-- [ ] Redirects to results page on success showing waveform + results summary
-- [ ] Error state with clear message for unsupported formats or server errors
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] Upload page with drag-and-drop file dropzone
+- [x] Supported format indicator (WFDB, DICOM, SCP-ECG, CSV, MAT, HL7 aECG)
+- [x] Calls `POST /api/v1/predict` on upload
+- [x] Loading state with progress animation
+- [x] Redirects to results page on success showing waveform + results summary
+- [x] Error state with clear message for unsupported formats or server errors
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
