@@ -744,14 +744,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want to see all AI findings organized by task head so that I can quickly review rhythm, structural, ischaemia, and risk predictions.
 
 **Acceptance Criteria:**
-- [ ] Results page showing ECG waveform + four collapsible task panels
-- [ ] Each panel shows per-class predictions with confidence bars (0–100%)
-- [ ] Color-coded severity: red (≥80% confidence positive), yellow (50–79%), green (<50%)
-- [ ] Risk scores displayed as gauges (0–1 scale) with clinical labels
-- [ ] Signal quality badge (good/marginal/poor) with per-lead breakdown on hover
-- [ ] Uncertainty indicators (conformal prediction set size) per prediction
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] Results page showing ECG waveform + four collapsible task panels
+- [x] Each panel shows per-class predictions with confidence bars (0–100%)
+- [x] Color-coded severity: red (≥80% confidence positive), yellow (50–79%), green (<50%)
+- [x] Risk scores displayed as gauges (0–1 scale) with clinical labels
+- [x] Signal quality badge (good/marginal/poor) with per-lead breakdown on hover
+- [x] Uncertainty indicators (conformal prediction set size) per prediction
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
