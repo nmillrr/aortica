@@ -774,14 +774,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a researcher, I want to upload and process multiple ECGs at once so that I can analyze datasets efficiently through the web UI.
 
 **Acceptance Criteria:**
-- [ ] Batch upload page accepting multiple files (drag-and-drop or file picker)
-- [ ] Progress bar showing processing status per file
-- [ ] Results table with columns: filename, quality score, top rhythm finding, top structural finding, risk scores
-- [ ] Sortable and filterable columns
-- [ ] CSV export button downloading all results
-- [ ] Click row to navigate to individual results page
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] Batch upload page accepting multiple files (drag-and-drop or file picker)
+- [x] Progress bar showing processing status per file
+- [x] Results table with columns: filename, quality score, top rhythm finding, top structural finding, risk scores
+- [x] Sortable and filterable columns
+- [x] CSV export button downloading all results
+- [x] Click row to navigate to individual results page
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
