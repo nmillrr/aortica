@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { ECGWaveformChart, generateDemoECGData } from '../components/ECGWaveformChart';
+import { XAIControls, TopFeaturesPanel, generateDemoXAIData } from '../components/XAIOverlay';
+import type { XAIAttribution } from '../components/XAIOverlay';
 import type { PredictionResult } from '../services/InferenceClient';
 import './Results.css';
 
@@ -220,7 +222,19 @@ function parsePredictions(result: PredictionResult | undefined) {
   };
 }
 
+/**
+ * Parse XAI data from API response or generate demo data.
+ */
+function parseXAIData(result: PredictionResult | undefined): XAIAttribution[] {
+  if (result?.xai && Array.isArray(result.xai)) {
+    return result.xai as unknown as XAIAttribution[];
+  }
+  // Return demo XAI data for preview
+  return generateDemoXAIData();
+}
+
 const DEMO_ECG = generateDemoECGData();
+const STANDARD_LEADS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'];
 
 /* ---------- Sub-components ----------------------------------------------- */
 
@@ -332,8 +346,53 @@ export function Results() {
 
   const findings = parsePredictions(state.predictionResult);
   const quality = parseQuality(state.predictionResult);
+  const xaiData = useMemo(() => parseXAIData(state.predictionResult), [state.predictionResult]);
   const inferenceMode = state.predictionResult?.inference_mode;
   const fileName = state.fileName ?? `ECG ${id}`;
+
+  /* ── XAI state ────────────────────────────────────────────── */
+  const [xaiVisible, setXaiVisible] = useState(false);
+  const [activeFinding, setActiveFinding] = useState<string | null>(null);
+  const [leadVisibility, setLeadVisibility] = useState<Record<string, boolean>>(() => {
+    const vis: Record<string, boolean> = {};
+    for (const lead of STANDARD_LEADS) vis[lead] = true;
+    return vis;
+  });
+
+  const toggleLead = (lead: string) => {
+    setLeadVisibility(prev => ({ ...prev, [lead]: !prev[lead] }));
+  };
+
+  // Build all findings for the XAI controls finding selector
+  const allFindings = useMemo(() => {
+    const result: { name: string; task: string; prob: number }[] = [];
+    for (const f of findings.rhythm) result.push({ name: f.name, task: 'rhythm', prob: f.prob });
+    for (const f of findings.structural) result.push({ name: f.name, task: 'structural', prob: f.prob });
+    for (const f of findings.ischaemia) result.push({ name: f.name, task: 'ischaemia', prob: f.prob });
+    return result;
+  }, [findings]);
+
+  // Determine which XAI data to display based on active finding
+  const activeXAI = useMemo((): XAIAttribution | null => {
+    if (!xaiVisible || xaiData.length === 0) return null;
+
+    if (activeFinding) {
+      // Find the task associated with the active finding
+      const findingInfo = allFindings.find(f => f.name === activeFinding);
+      if (findingInfo) {
+        const taskXAI = xaiData.find(x => x.task === findingInfo.task);
+        if (taskXAI) return taskXAI;
+      }
+    }
+    // Default: show first task's XAI (usually rhythm)
+    return xaiData[0] || null;
+  }, [xaiVisible, xaiData, activeFinding, allFindings]);
+
+  // Top features for the active finding
+  const activeTopFeatures = useMemo(() => {
+    if (!activeXAI) return [];
+    return activeXAI.top_features;
+  }, [activeXAI]);
 
   return (
     <div className="results-page" id="page-results">
@@ -357,11 +416,34 @@ export function Results() {
         )}
       </div>
 
-      {/* ECG waveform — interactive component */}
+      {/* XAI controls */}
+      <XAIControls
+        findings={allFindings}
+        activeFinding={activeFinding}
+        onSelectFinding={setActiveFinding}
+        leadVisibility={leadVisibility}
+        onToggleLead={toggleLead}
+        leads={STANDARD_LEADS}
+        xaiVisible={xaiVisible}
+        onToggleXAI={() => setXaiVisible(prev => !prev)}
+      />
+
+      {/* ECG waveform — interactive component with XAI overlay */}
       <ECGWaveformChart
         data={DEMO_ECG}
         id="ecg-waveform"
+        xaiAttribution={activeXAI}
+        xaiLeadVisibility={leadVisibility}
+        xaiVisible={xaiVisible}
       />
+
+      {/* XAI top features panel */}
+      {xaiVisible && activeTopFeatures.length > 0 && (
+        <TopFeaturesPanel
+          features={activeTopFeatures}
+          findingName={activeFinding || 'All Findings'}
+        />
+      )}
 
       {/* Findings panels */}
       <div className="results-panels" id="findings-panels">

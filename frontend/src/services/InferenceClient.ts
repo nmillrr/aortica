@@ -20,6 +20,8 @@ export interface PredictionResult {
   predictions?: Record<string, unknown>;
   /** Uncertainty / conformal prediction data */
   uncertainty?: Record<string, unknown>;
+  /** XAI attribution data (when include_xai=true) */
+  xai?: unknown[];
   /** Raw response payload (server mode) or edge output tensor data */
   raw?: unknown;
 }
@@ -106,6 +108,7 @@ async function inferServer(
       predictions: (data as Record<string, unknown>).predictions as Record<string, unknown> | undefined,
       quality: (data as Record<string, unknown>).quality as Record<string, unknown> | undefined,
       uncertainty: (data as Record<string, unknown>).uncertainty as Record<string, unknown> | undefined,
+      xai: (data as Record<string, unknown>).xai as unknown[] | undefined,
     };
   } finally {
     clearTimeout(timer);

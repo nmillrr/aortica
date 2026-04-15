@@ -861,6 +861,9 @@ class TestImports:
             QualityReportResponse,
             TaskPrediction,
             UncertaintyResponse,
+            XAIAttributionResponse,
+            XAIFeatureContribution,
+            XAISegmentAttribution,
         )
 
         assert callable(LeadQualityResponse)
@@ -868,3 +871,268 @@ class TestImports:
         assert callable(QualityReportResponse)
         assert callable(TaskPrediction)
         assert callable(UncertaintyResponse)
+        assert callable(XAIAttributionResponse)
+        assert callable(XAIFeatureContribution)
+        assert callable(XAISegmentAttribution)
+
+
+# ---------------------------------------------------------------------------
+# XAI Response Models — US-046
+# ---------------------------------------------------------------------------
+
+
+class TestXAIFeatureContribution:
+    """Tests for XAIFeatureContribution model."""
+
+    def test_construction(self) -> None:
+        from aortica.api.predict import XAIFeatureContribution
+
+        fc = XAIFeatureContribution(
+            feature_name="QRS complex",
+            lead="V1",
+            delta_score=0.82,
+        )
+        assert fc.feature_name == "QRS complex"
+        assert fc.lead == "V1"
+        assert fc.delta_score == 0.82
+
+
+class TestXAISegmentAttribution:
+    """Tests for XAISegmentAttribution model."""
+
+    def test_construction(self) -> None:
+        from aortica.api.predict import XAISegmentAttribution
+
+        sa = XAISegmentAttribution(
+            lead="II",
+            segments={"P wave": 0.12, "QRS complex": 0.85, "T wave": 0.31},
+        )
+        assert sa.lead == "II"
+        assert len(sa.segments) == 3
+        assert sa.segments["QRS complex"] == 0.85
+
+
+class TestXAIAttributionResponse:
+    """Tests for XAIAttributionResponse model."""
+
+    def test_construction(self) -> None:
+        from aortica.api.predict import (
+            XAIAttributionResponse,
+            XAIFeatureContribution,
+            XAISegmentAttribution,
+        )
+
+        resp = XAIAttributionResponse(
+            task="rhythm",
+            per_lead_attributions={"I": [0.1, 0.2, 0.3], "II": [0.4, 0.5, 0.6]},
+            segment_attributions=[
+                XAISegmentAttribution(lead="I", segments={"QRS complex": 0.7}),
+            ],
+            top_features=[
+                XAIFeatureContribution(
+                    feature_name="QRS complex", lead="I", delta_score=0.7
+                ),
+            ],
+        )
+        assert resp.task == "rhythm"
+        assert len(resp.per_lead_attributions) == 2
+        assert resp.per_lead_attributions["I"] == [0.1, 0.2, 0.3]
+        assert len(resp.segment_attributions) == 1
+        assert len(resp.top_features) == 1
+
+    def test_json_serialization(self) -> None:
+        from aortica.api.predict import (
+            XAIAttributionResponse,
+            XAIFeatureContribution,
+            XAISegmentAttribution,
+        )
+
+        resp = XAIAttributionResponse(
+            task="structural",
+            per_lead_attributions={"V1": [0.1]},
+            segment_attributions=[
+                XAISegmentAttribution(lead="V1", segments={"ST segment": 0.5}),
+            ],
+            top_features=[
+                XAIFeatureContribution(
+                    feature_name="ST segment", lead="V1", delta_score=0.5
+                ),
+            ],
+            segment_boundaries={
+                "V1": [{"p_start": 0, "p_end": 20, "qrs_start": 30,
+                         "qrs_end": 50, "t_start": 70, "t_end": 100}],
+            },
+        )
+        data = resp.model_dump()
+        assert data["task"] == "structural"
+        assert "V1" in data["per_lead_attributions"]
+        assert len(data["segment_boundaries"]["V1"]) == 1
+
+
+class TestPredictResponseWithXAI:
+    """Tests for PredictResponse with XAI field."""
+
+    def test_xai_default_none(self) -> None:
+        from aortica.api.predict import (
+            LeadQualityResponse,
+            PredictResponse,
+            QualityReportResponse,
+        )
+
+        lead = LeadQualityResponse(
+            lead_name="I", score=90.0, classification="good"
+        )
+        qr = QualityReportResponse(
+            per_lead=[lead],
+            overall_score=90.0,
+            overall_classification="good",
+            recommendation="accept",
+        )
+        resp = PredictResponse(quality_report=qr, predictions=[])
+        assert resp.xai is None
+
+    def test_xai_populated(self) -> None:
+        from aortica.api.predict import (
+            LeadQualityResponse,
+            PredictResponse,
+            QualityReportResponse,
+            XAIAttributionResponse,
+            XAIFeatureContribution,
+            XAISegmentAttribution,
+        )
+
+        lead = LeadQualityResponse(
+            lead_name="I", score=90.0, classification="good"
+        )
+        qr = QualityReportResponse(
+            per_lead=[lead],
+            overall_score=90.0,
+            overall_classification="good",
+            recommendation="accept",
+        )
+        xai_item = XAIAttributionResponse(
+            task="rhythm",
+            per_lead_attributions={"I": [0.1, 0.2]},
+            segment_attributions=[
+                XAISegmentAttribution(lead="I", segments={"QRS complex": 0.5}),
+            ],
+            top_features=[
+                XAIFeatureContribution(
+                    feature_name="QRS complex", lead="I", delta_score=0.5
+                ),
+            ],
+        )
+        resp = PredictResponse(
+            quality_report=qr, predictions=[], xai=[xai_item]
+        )
+        assert resp.xai is not None
+        assert len(resp.xai) == 1
+        assert resp.xai[0].task == "rhythm"
+
+    def test_json_roundtrip_with_xai(self) -> None:
+        from aortica.api.predict import (
+            LeadQualityResponse,
+            PredictResponse,
+            QualityReportResponse,
+            XAIAttributionResponse,
+            XAIFeatureContribution,
+            XAISegmentAttribution,
+        )
+
+        lead = LeadQualityResponse(
+            lead_name="II", score=80.0, classification="good"
+        )
+        qr = QualityReportResponse(
+            per_lead=[lead],
+            overall_score=80.0,
+            overall_classification="good",
+            recommendation="accept",
+        )
+        xai_item = XAIAttributionResponse(
+            task="ischaemia",
+            per_lead_attributions={"II": [0.5, 0.3]},
+            segment_attributions=[
+                XAISegmentAttribution(lead="II", segments={"T wave": 0.4}),
+            ],
+            top_features=[],
+        )
+        resp = PredictResponse(
+            quality_report=qr, predictions=[], xai=[xai_item]
+        )
+        data = resp.model_dump()
+        restored = PredictResponse(**data)
+        assert restored.xai is not None
+        assert restored.xai[0].task == "ischaemia"
+
+
+class TestPipelineIncludeXAI:
+    """Tests for include_xai parameter in run_inference_pipeline."""
+
+    def test_include_xai_false_by_default(self) -> None:
+        """XAI is not included by default."""
+        from aortica.io.ecg_record import ECGRecord
+
+        mock_record = ECGRecord(
+            signals=np.random.default_rng(0).normal(0, 100, (2, 500)).astype(
+                np.float64
+            ),
+            sample_rate=500.0,
+            lead_names=["II", "V5"],
+            duration_seconds=1.0,
+            source_format="wfdb",
+        )
+
+        with patch("aortica.api.predict.read_ecg", return_value=mock_record):
+            result = run_inference_pipeline(b"dummy-bytes", "test.hea")
+
+        assert result.xai is None
+
+    def test_include_xai_true_no_model(self) -> None:
+        """When include_xai=True but no model, XAI is still None."""
+        from aortica.io.ecg_record import ECGRecord
+
+        mock_record = ECGRecord(
+            signals=np.random.default_rng(0).normal(0, 100, (2, 500)).astype(
+                np.float64
+            ),
+            sample_rate=500.0,
+            lead_names=["II", "V5"],
+            duration_seconds=1.0,
+            source_format="wfdb",
+        )
+
+        with patch("aortica.api.predict.read_ecg", return_value=mock_record):
+            result = run_inference_pipeline(
+                b"dummy-bytes", "test.hea", include_xai=True
+            )
+
+        assert result.xai is None
+
+    def test_endpoint_accepts_include_xai_param(self) -> None:
+        """The predict endpoint accepts include_xai as query parameter."""
+        from aortica.io.ecg_record import ECGRecord
+
+        mock_record = ECGRecord(
+            signals=np.random.default_rng(0).normal(0, 100, (2, 500)).astype(
+                np.float64
+            ),
+            sample_rate=500.0,
+            lead_names=["II", "V5"],
+            duration_seconds=1.0,
+            source_format="wfdb",
+        )
+
+        app = create_app()
+        client = TestClient(app)
+
+        with patch("aortica.api.predict.read_ecg", return_value=mock_record):
+            resp = client.post(
+                "/api/v1/predict?include_xai=true",
+                files={"file": ("test.hea", b"dummy", "application/octet-stream")},
+            )
+
+        assert resp.status_code == 200
+        body = resp.json()
+        # No model loaded, so xai should be null
+        assert body.get("xai") is None
+

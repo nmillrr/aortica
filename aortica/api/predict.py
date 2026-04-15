@@ -86,6 +86,42 @@ class UncertaintyResponse(BaseModel):
     )
 
 
+class XAIFeatureContribution(BaseModel):
+    """A single named-feature contribution to a prediction."""
+
+    feature_name: str = Field(..., description="ECG segment name")
+    lead: str = Field(..., description="Lead name")
+    delta_score: float = Field(..., description="Summed attribution score")
+
+
+class XAISegmentAttribution(BaseModel):
+    """Per-lead segment attribution scores."""
+
+    lead: str = Field(..., description="Lead name")
+    segments: Dict[str, float] = Field(
+        ..., description="Segment name → attribution score"
+    )
+
+
+class XAIAttributionResponse(BaseModel):
+    """XAI attribution response for a single task."""
+
+    task: str = Field(..., description="Task head name")
+    per_lead_attributions: Dict[str, List[float]] = Field(
+        ..., description="Lead name → per-sample attribution values"
+    )
+    segment_attributions: List[XAISegmentAttribution] = Field(
+        ..., description="Per-lead segment attribution scores"
+    )
+    top_features: List[XAIFeatureContribution] = Field(
+        ..., description="Top-3 contributing features"
+    )
+    segment_boundaries: Dict[str, List[Dict[str, int]]] = Field(
+        default_factory=dict,
+        description="Per-lead segment boundaries (sample indices)",
+    )
+
+
 class PredictResponse(BaseModel):
     """Full response from the single ECG inference endpoint."""
 
@@ -98,6 +134,10 @@ class PredictResponse(BaseModel):
     uncertainty: Optional[UncertaintyResponse] = Field(
         default=None,
         description="Uncertainty estimation (when model supports it)",
+    )
+    xai: Optional[List[XAIAttributionResponse]] = Field(
+        default=None,
+        description="XAI attribution data (when include_xai=true)",
     )
 
 
@@ -159,6 +199,7 @@ def run_inference_pipeline(
     model: Any = None,
     conformal_predictor: Any = None,
     enabled_tasks: Optional[List[str]] = None,
+    include_xai: bool = False,
 ) -> PredictResponse:
     """Execute the full ECG inference pipeline on uploaded file bytes.
 
@@ -272,10 +313,78 @@ def run_inference_pipeline(
                     )
                 )
 
+        # ── 6. XAI attribution (optional) ────────────────────────────
+        xai_results: Optional[List[XAIAttributionResponse]] = None
+
+        if include_xai and model is not None:
+            from aortica.xai import FeatureAttribution, delineate_segments, explain
+
+            xai_results = []
+            tasks_to_explain = enabled_tasks or model.enabled_tasks
+            for task_name in tasks_to_explain:
+                try:
+                    attr: FeatureAttribution = explain(
+                        model, ecg_record, task=task_name, n_steps=30
+                    )
+
+                    # Serialise per-lead attributions => list of floats
+                    per_lead_attrs: Dict[str, List[float]] = {}
+                    for lead_name, arr in attr.per_lead_attributions.items():
+                        per_lead_attrs[lead_name] = arr.tolist()
+
+                    # Segment attributions
+                    seg_attrs = [
+                        XAISegmentAttribution(lead=ln, segments=segs)
+                        for ln, segs in attr.segment_attributions.items()
+                    ]
+
+                    # Top features
+                    top_feats = [
+                        XAIFeatureContribution(
+                            feature_name=fc.feature_name,
+                            lead=fc.lead,
+                            delta_score=fc.delta_score,
+                        )
+                        for fc in attr.top_features
+                    ]
+
+                    # Segment boundaries per lead
+                    seg_bounds: Dict[str, List[Dict[str, int]]] = {}
+                    for lead_name in ecg_record.lead_names:
+                        i = ecg_record.lead_names.index(lead_name)
+                        lead_signal = ecg_record.signals[i].astype(np.float64)
+                        bounds = delineate_segments(
+                            lead_signal, ecg_record.sample_rate
+                        )
+                        seg_bounds[lead_name] = [
+                            {
+                                "p_start": b.p_start,
+                                "p_end": b.p_end,
+                                "qrs_start": b.qrs_start,
+                                "qrs_end": b.qrs_end,
+                                "t_start": b.t_start,
+                                "t_end": b.t_end,
+                            }
+                            for b in bounds
+                        ]
+
+                    xai_results.append(
+                        XAIAttributionResponse(
+                            task=task_name,
+                            per_lead_attributions=per_lead_attrs,
+                            segment_attributions=seg_attrs,
+                            top_features=top_feats,
+                            segment_boundaries=seg_bounds,
+                        )
+                    )
+                except Exception:
+                    pass  # XAI is best-effort; skip task on failure
+
         return PredictResponse(
             quality_report=quality_resp,
             predictions=predictions,
             uncertainty=uncertainty_resp,
+            xai=xai_results if xai_results else None,
         )
     finally:
         # Clean up temp file

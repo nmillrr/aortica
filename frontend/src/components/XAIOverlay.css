@@ -1,0 +1,386 @@
+/* ============================================================
+   XAI Overlay Component Styles — US-046
+   ============================================================ */
+
+/* ── Heatmap rects ─────────────────────────────────────────── */
+
+.xai-heatmap-rect {
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition: opacity 0.2s ease;
+}
+
+.xai-heatmap-group {
+  pointer-events: none;
+}
+
+/* ── Segment callout markers ───────────────────────────────── */
+
+.xai-segment-callouts {
+  pointer-events: none;
+}
+
+.xai-segment-region {
+  transition: opacity 0.3s ease;
+}
+
+.xai-segment-label {
+  font-family: var(--font-family, 'Inter', sans-serif);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ── XAI Controls toolbar ──────────────────────────────────── */
+
+.xai-controls {
+  border-radius: var(--radius-lg);
+  background: var(--gradient-card);
+  border: var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.xai-controls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid rgba(42, 50, 80, 0.25);
+  background: rgba(11, 14, 20, 0.4);
+}
+
+.xai-controls-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.xai-controls-title svg {
+  color: var(--color-accent);
+}
+
+.xai-toggle-btn {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-primary);
+  border: 1px solid rgba(42, 50, 80, 0.3);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-family);
+}
+
+.xai-toggle-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+  border-color: rgba(42, 50, 80, 0.5);
+}
+
+.xai-toggle-btn--active {
+  color: var(--color-accent);
+  background: var(--color-accent-muted);
+  border-color: rgba(230, 57, 70, 0.3);
+}
+
+.xai-toggle-btn--active:hover {
+  background: rgba(230, 57, 70, 0.2);
+}
+
+/* ── Controls body (expanded) ──────────────────────────────── */
+
+.xai-controls-body {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* ── Finding selector ──────────────────────────────────────── */
+
+.xai-finding-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.xai-selector-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.xai-finding-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.xai-finding-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-primary);
+  border: 1px solid rgba(42, 50, 80, 0.3);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-family);
+  white-space: nowrap;
+}
+
+.xai-finding-chip:hover {
+  border-color: rgba(42, 50, 80, 0.5);
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.xai-finding-chip--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+  box-shadow: 0 0 8px rgba(230, 57, 70, 0.15);
+}
+
+.xai-finding-chip--active:hover {
+  background: rgba(230, 57, 70, 0.2);
+}
+
+.xai-chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.xai-chip-prob {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  margin-left: 2px;
+}
+
+.xai-finding-chip--active .xai-chip-prob {
+  color: rgba(230, 57, 70, 0.7);
+}
+
+.xai-no-findings {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: var(--space-2) 0;
+}
+
+/* ── Lead visibility controls ──────────────────────────────── */
+
+.xai-lead-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.xai-lead-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-1) 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-family);
+  transition: color var(--transition-fast);
+}
+
+.xai-lead-toggle:hover {
+  color: var(--color-text-secondary);
+}
+
+.xai-lead-chevron {
+  transition: transform var(--transition-base);
+}
+
+.xai-lead-chevron--open {
+  transform: rotate(0deg);
+}
+
+.xai-lead-chevron:not(.xai-lead-chevron--open) {
+  transform: rotate(-90deg);
+}
+
+.xai-lead-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-1);
+  animation: fadeIn 0.15s ease-out;
+}
+
+.xai-lead-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.xai-lead-checkbox:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.xai-lead-checkbox input[type="checkbox"] {
+  width: 12px;
+  height: 12px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.xai-lead-name {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  user-select: none;
+}
+
+/* ── Top Features Panel ────────────────────────────────────── */
+
+.xai-top-features {
+  border-radius: var(--radius-lg);
+  background: var(--gradient-card);
+  border: var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.xai-top-features-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid rgba(42, 50, 80, 0.2);
+}
+
+.xai-top-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.xai-feature-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.xai-feature-rank {
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+  min-width: 18px;
+}
+
+.xai-feature-name {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  min-width: 80px;
+  white-space: nowrap;
+}
+
+.xai-feature-lead {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  background: var(--color-bg-primary);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-semibold);
+  min-width: 28px;
+  text-align: center;
+}
+
+.xai-feature-bar-bg {
+  flex: 1;
+  height: 5px;
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.xai-feature-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease-out;
+  animation: barGrow 0.6s ease-out;
+}
+
+@keyframes barGrow {
+  from { width: 0 !important; }
+}
+
+.xai-feature-score {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-weight-semibold);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .xai-lead-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .xai-finding-chips {
+    gap: var(--space-1);
+  }
+
+  .xai-finding-chip {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  .xai-feature-name {
+    min-width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .xai-lead-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .xai-controls-header {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+}

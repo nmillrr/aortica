@@ -185,11 +185,18 @@ def create_app(
             default=None,
             description="Explicit format override (e.g. wfdb, dicom, csv)",
         ),
+        include_xai: bool = Query(
+            default=False,
+            description="Include XAI attribution data in response",
+        ),
     ) -> Any:
         """Upload a single ECG file and receive multi-task AI predictions.
 
         Runs the full pipeline: read_ecg → denoise → score_quality →
         model inference → uncertainty estimation.
+
+        When ``include_xai=true``, integrated gradient attributions are
+        computed for each active task head and included in the response.
 
         Returns ``422`` for unsupported or unparseable formats.
         """
@@ -207,6 +214,7 @@ def create_app(
                 model=app.state.model,  # type: ignore[attr-defined]
                 conformal_predictor=app.state.conformal_predictor,  # type: ignore[attr-defined]
                 enabled_tasks=list(app.state.enabled_tasks),  # type: ignore[attr-defined]
+                include_xai=include_xai,
             )
         except UnsupportedFormatError as exc:
             return JSONResponse(

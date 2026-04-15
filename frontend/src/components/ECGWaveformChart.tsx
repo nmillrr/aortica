@@ -1,4 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { HeatmapOverlay, SegmentCallouts } from './XAIOverlay';
+import type { XAIAttribution, SegmentBoundary } from './XAIOverlay';
 import './ECGWaveformChart.css';
 
 /* ── Public API ──────────────────────────────────────────────── */
@@ -27,6 +29,12 @@ interface Props {
   /** Whether this data is in µV (true, default) or mV (false) */
   isMicrovolts?: boolean;
   id?: string;
+  /** Optional XAI attribution data for overlay rendering */
+  xaiAttribution?: XAIAttribution | null;
+  /** Per-lead visibility for XAI overlay */
+  xaiLeadVisibility?: Record<string, boolean>;
+  /** Whether XAI overlay is visible */
+  xaiVisible?: boolean;
 }
 
 /* ── Constants ───────────────────────────────────────────────── */
@@ -88,6 +96,9 @@ export function ECGWaveformChart({
   rowHeight = 200,
   isMicrovolts = true,
   id = 'ecg-waveform-chart',
+  xaiAttribution = null,
+  xaiLeadVisibility = {},
+  xaiVisible = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -322,6 +333,108 @@ export function ECGWaveformChart({
     );
   };
 
+  const renderXAIOverlay = () => {
+    if (!xaiVisible || !xaiAttribution) return null;
+
+    const overlays: React.ReactElement[] = [];
+
+    if (use3x4) {
+      for (let row = 0; row < LAYOUT_3x4.length; row++) {
+        for (let col = 0; col < LAYOUT_3x4[row].length; col++) {
+          const leadName = LAYOUT_3x4[row][col];
+          if (xaiLeadVisibility[leadName] === false) continue;
+
+          const attrs = xaiAttribution.per_lead_attributions[leadName];
+          const bounds = xaiAttribution.segment_boundaries?.[leadName];
+          if (!attrs) continue;
+
+          const baselineY = row * rowHeight + rowHeight / 2;
+          const offsetX = col * colWidthPx;
+          const startSample = Math.floor((col * colDurationSec) * data.sample_rate);
+          const endSample = Math.floor(((col + 1) * colDurationSec) * data.sample_rate);
+
+          overlays.push(
+            <HeatmapOverlay
+              key={`hm-${leadName}`}
+              attributions={attrs}
+              sampleRate={data.sample_rate}
+              effectivePPS={effectivePPS}
+              offsetX={offsetX}
+              baselineY={baselineY}
+              rowHeight={rowHeight}
+              startSample={startSample}
+              endSample={endSample}
+            />
+          );
+
+          if (bounds && bounds.length > 0) {
+            // Filter boundaries to this column's time range
+            const colBounds: SegmentBoundary[] = bounds.filter(
+              b => b.qrs_start >= startSample && b.qrs_start < endSample
+            );
+            if (colBounds.length > 0) {
+              overlays.push(
+                <SegmentCallouts
+                  key={`seg-${leadName}`}
+                  boundaries={colBounds}
+                  sampleRate={data.sample_rate}
+                  effectivePPS={effectivePPS}
+                  offsetX={offsetX}
+                  baselineY={baselineY}
+                  rowHeight={rowHeight}
+                  startSample={startSample}
+                  endSample={endSample}
+                />
+              );
+            }
+          }
+        }
+      }
+    } else {
+      data.leads.forEach((leadName, idx) => {
+        if (xaiLeadVisibility[leadName] === false) return;
+
+        const attrs = xaiAttribution.per_lead_attributions[leadName];
+        const bounds = xaiAttribution.segment_boundaries?.[leadName];
+        if (!attrs) return;
+
+        const baselineY = idx * rowHeight + rowHeight / 2;
+
+        overlays.push(
+          <HeatmapOverlay
+            key={`hm-${leadName}`}
+            attributions={attrs}
+            sampleRate={data.sample_rate}
+            effectivePPS={effectivePPS}
+            offsetX={0}
+            baselineY={baselineY}
+            rowHeight={rowHeight}
+            startSample={0}
+            endSample={attrs.length}
+          />
+        );
+
+        if (bounds && bounds.length > 0) {
+          overlays.push(
+            <SegmentCallouts
+              key={`seg-${leadName}`}
+              boundaries={bounds}
+              sampleRate={data.sample_rate}
+              effectivePPS={effectivePPS}
+              offsetX={0}
+              baselineY={baselineY}
+              rowHeight={rowHeight}
+              startSample={0}
+              endSample={attrs.length}
+            />
+          );
+        }
+      });
+    }
+
+    return <g className="ecg-xai-overlay-group">{overlays}</g>;
+  };
+
   const renderCaliper = () => {
     if (!caliperStart || !caliperEnd) return null;
     const x1 = caliperStart.x;
@@ -434,6 +547,7 @@ export function ECGWaveformChart({
         >
           {renderGrid()}
           {renderCalibMarker()}
+          {renderXAIOverlay()}
           {renderTraces()}
           {renderCaliper()}
         </svg>

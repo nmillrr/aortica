@@ -759,14 +759,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want to see which ECG features drive each AI finding so that I can reconcile AI output with my visual interpretation.
 
 **Acceptance Criteria:**
-- [ ] Integrated gradient heatmap overlay on the ECG waveform (color intensity = attribution strength)
-- [ ] Named segment callouts: P wave, PR interval, QRS complex, ST segment, T wave markers
-- [ ] Top-3 contributing features displayed per active finding with delta-contribution scores
-- [ ] Toggle overlay on/off per finding
-- [ ] Per-lead attribution visibility controls
-- [ ] API endpoint accepts `include_xai=true` parameter returning attribution data
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] Integrated gradient heatmap overlay on the ECG waveform (color intensity = attribution strength)
+- [x] Named segment callouts: P wave, PR interval, QRS complex, ST segment, T wave markers
+- [x] Top-3 contributing features displayed per active finding with delta-contribution scores
+- [x] Toggle overlay on/off per finding
+- [x] Per-lead attribution visibility controls
+- [x] API endpoint accepts `include_xai=true` parameter returning attribution data
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
