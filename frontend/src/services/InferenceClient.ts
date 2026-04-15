@@ -236,10 +236,85 @@ export async function predict(
   }
 }
 
+/* ---------- Batch inference ---------------------------------------------- */
+
+/**
+ * Submit multiple ECG files to the batch predict endpoint.
+ * Falls back to sequential single-file inference if batch endpoint fails.
+ *
+ * @param files  - Array of ECG files to analyze
+ * @param config - Optional configuration overrides
+ * @returns      - Array of per-file PredictionResult (same order as input files)
+ */
+export async function predictBatch(
+  files: File[],
+  config?: InferenceClientConfig,
+): Promise<PredictionResult[]> {
+  const serverUrl = config?.serverUrl ?? DEFAULT_SERVER_URL;
+  const timeoutMs = config?.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+
+  // Try batch endpoint first
+  const controller = new AbortController();
+  const batchTimeoutMs = timeoutMs + files.length * 2000; // generous per-file budget
+  const timer = setTimeout(() => controller.abort(), batchTimeoutMs);
+
+  try {
+    const formData = new FormData();
+    for (const f of files) {
+      formData.append('files', f);
+    }
+
+    const response = await fetch(`${serverUrl}/api/v1/predict/batch`, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Batch server returned ${response.status}`);
+    }
+
+    const data = await response.json() as Record<string, unknown>;
+    const results = (data['results'] as unknown[]) ?? [];
+
+    return results.map(r => ({
+      inference_mode: 'server' as InferenceMode,
+      raw: r,
+      predictions: (r as Record<string, unknown>)['predictions'] as Record<string, unknown> | undefined,
+      quality: (r as Record<string, unknown>)['quality'] as Record<string, unknown> | undefined,
+      uncertainty: (r as Record<string, unknown>)['uncertainty'] as Record<string, unknown> | undefined,
+      xai: (r as Record<string, unknown>)['xai'] as unknown[] | undefined,
+    }));
+  } catch {
+    // Fall back to sequential single-file inference
+    clearTimeout(timer);
+  } finally {
+    clearTimeout(timer);
+  }
+
+  // Sequential fallback — process each file independently
+  const results: PredictionResult[] = [];
+  for (const f of files) {
+    try {
+      const result = await predict(f, config);
+      results.push(result);
+    } catch (err) {
+      results.push({
+        inference_mode: 'edge_wasm',
+        raw: null,
+        predictions: undefined,
+        quality: undefined,
+      });
+    }
+  }
+  return results;
+}
+
 /* ---------- Exports ------------------------------------------------------ */
 
 export const InferenceClient = {
   predict,
+  predictBatch,
   checkServerHealth,
   preloadEdgeModel,
 } as const;
