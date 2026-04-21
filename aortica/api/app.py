@@ -7,7 +7,7 @@ from typing import Any, List, Optional, Sequence
 from pydantic import BaseModel, Field
 
 try:
-    from fastapi import FastAPI, File, Query, UploadFile
+    from fastapi import Depends, FastAPI, File, Header, Query, Request, UploadFile
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import JSONResponse
 
@@ -96,6 +96,7 @@ def create_app(
     model_loaded: bool = False,
     model: Any = None,
     conformal_predictor: Any = None,
+    enable_auth: bool = True,
 ) -> Any:
     """Create and configure the FastAPI application.
 
@@ -111,6 +112,9 @@ def create_app(
         An optional pre-loaded ``AorticaModel`` instance.
     conformal_predictor:
         An optional fitted ``ConformalPredictor`` instance.
+    enable_auth:
+        Whether to enforce authentication on ``/api/v1/`` endpoints.
+        Defaults to ``True``.
 
     Returns
     -------
@@ -144,6 +148,38 @@ def create_app(
     app.state.model_loaded = model_loaded  # type: ignore[attr-defined]
     app.state.model = model  # type: ignore[attr-defined]
     app.state.conformal_predictor = conformal_predictor  # type: ignore[attr-defined]
+    app.state.enable_auth = enable_auth  # type: ignore[attr-defined]
+
+    # ---- auth setup ----
+    from aortica.api.auth import APIKeyStore, UserInfo, create_auth_router, require_auth
+
+    api_key_store = APIKeyStore()
+    app.state.api_key_store = api_key_store  # type: ignore[attr-defined]
+
+    # Mount auth router (login/callback/token/refresh)
+    auth_router = create_auth_router(api_key_store)
+    app.include_router(auth_router)
+
+    # Optional OAuth providers (best-effort — only if authlib installed
+    # and env vars are set)
+    try:
+        from aortica.api.auth import create_oauth
+
+        oauth = create_oauth()
+        app.state.oauth = oauth  # type: ignore[attr-defined]
+    except ImportError:
+        app.state.oauth = None  # type: ignore[attr-defined]
+
+    # Auth dependency (no-op when disabled)
+    async def _auth_dependency(
+        request: Request,  # type: ignore[arg-type]
+        x_api_key: Optional[str] = Header(default=None),  # type: ignore[assignment]
+    ) -> Optional[Any]:
+        if not app.state.enable_auth:  # type: ignore[attr-defined]
+            return None
+        return await require_auth(request, x_api_key=x_api_key)
+
+    app.state.auth_dependency = _auth_dependency  # type: ignore[attr-defined]
 
     # ---- routes ----------------------------------------------------------
 
@@ -189,6 +225,7 @@ def create_app(
             default=False,
             description="Include XAI attribution data in response",
         ),
+        _user: Any = Depends(_auth_dependency),
     ) -> Any:
         """Upload a single ECG file and receive multi-task AI predictions.
 
@@ -244,6 +281,7 @@ def create_app(
             default=None,
             description="Explicit format override applied to all files",
         ),
+        _user: Any = Depends(_auth_dependency),
     ) -> Any:
         """Upload multiple ECG files and receive per-file AI predictions.
 

@@ -789,15 +789,15 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an admin, I want user authentication so that the Aortica web UI and API are access-controlled.
 
 **Acceptance Criteria:**
-- [ ] FastAPI OAuth 2.0 integration (Google and GitHub providers via `authlib`)
-- [ ] Local API key authentication for programmatic access (`X-API-Key` header)
-- [ ] `POST /api/v1/auth/token` for API key generation
-- [ ] FastAPI `Depends()` security dependency protecting all `/api/v1/` endpoints
-- [ ] React login page with OAuth buttons and API key input
-- [ ] JWT token storage and refresh in React
-- [ ] Protected React routes redirect to login when unauthenticated
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] FastAPI OAuth 2.0 integration (Google and GitHub providers via `authlib`)
+- [x] Local API key authentication for programmatic access (`X-API-Key` header)
+- [x] `POST /api/v1/auth/token` for API key generation
+- [x] FastAPI `Depends()` security dependency protecting all `/api/v1/` endpoints
+- [x] React login page with OAuth buttons and API key input
+- [x] JWT token storage and refresh in React
+- [x] Protected React routes redirect to login when unauthenticated
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

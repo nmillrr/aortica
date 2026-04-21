@@ -48,7 +48,7 @@ def _mock_ecg_record() -> Any:
 @pytest.fixture()
 def client() -> TestClient:
     """Synchronous test client for the default app (no model)."""
-    return TestClient(create_app())
+    return TestClient(create_app(enable_auth=False))
 
 
 # ---------------------------------------------------------------------------
@@ -335,7 +335,7 @@ class TestBatchEndpointNoModel:
 
     def test_exceeds_max_batch_size_422(self) -> None:
         """Exceeding max batch size returns 422."""
-        app = create_app()
+        app = create_app(enable_auth=False)
         app.state.max_batch_size = 2  # type: ignore[attr-defined]
         c = TestClient(app)
 

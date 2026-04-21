@@ -96,7 +96,7 @@ def _make_synthetic_wfdb_files(
 @pytest.fixture()
 def app() -> Any:
     """Return a default-configured FastAPI application (no model loaded)."""
-    return create_app()
+    return create_app(enable_auth=False)
 
 
 @pytest.fixture()
@@ -247,7 +247,7 @@ class TestPredictEndpointNoModel:
         """Upload a WFDB file and get quality report + empty predictions."""
         base_path = _make_synthetic_wfdb_files(tmp_path)
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         hea_path = base_path + ".hea"
@@ -298,7 +298,7 @@ class TestPredictEndpointNoModel:
             source_format="wfdb",
         )
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record):
@@ -328,7 +328,7 @@ class TestPredictEndpointNoModel:
             source_format="csv",
         )
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record):
@@ -358,7 +358,7 @@ class TestPredictEndpointNoModel:
             source_format="dicom",
         )
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record) as mock_read:
@@ -380,7 +380,7 @@ class TestPredictEndpointNoModel:
         """Unsupported format returns 422 with error detail."""
         from aortica.io.dispatcher import UnsupportedFormatError
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch(
@@ -397,7 +397,7 @@ class TestPredictEndpointNoModel:
 
     def test_returns_422_for_parse_error(self) -> None:
         """Files that fail to parse return 422."""
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch(
@@ -426,7 +426,7 @@ class TestPredictEndpointNoModel:
             source_format="wfdb",
         )
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record):
@@ -451,7 +451,7 @@ class TestPredictEndpointNoModel:
             source_format="wfdb",
         )
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record):
@@ -478,7 +478,7 @@ class TestPredictEndpointNoModel:
             source_format="wfdb",
         )
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record):
@@ -544,7 +544,7 @@ class TestPredictEndpointWithModel:
         )
 
         mock_model = self._make_mock_model()
-        app = create_app(model=mock_model, model_loaded=True)
+        app = create_app(model=mock_model, model_loaded=True, enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record):
@@ -580,6 +580,7 @@ class TestPredictEndpointWithModel:
             model=mock_model,
             model_loaded=True,
             enabled_tasks=["rhythm"],
+            enable_auth=False,
         )
         client = TestClient(app)
 
@@ -616,7 +617,7 @@ class TestPredictEndpointWithModel:
         )
 
         mock_model = self._make_mock_model()
-        app = create_app(model=mock_model, model_loaded=True)
+        app = create_app(model=mock_model, model_loaded=True, enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record):
@@ -1122,7 +1123,7 @@ class TestPipelineIncludeXAI:
             source_format="wfdb",
         )
 
-        app = create_app()
+        app = create_app(enable_auth=False)
         client = TestClient(app)
 
         with patch("aortica.api.predict.read_ecg", return_value=mock_record):

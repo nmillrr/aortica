@@ -70,6 +70,11 @@ scan = [
 hub = [
     "huggingface-hub>=0.16",
 ]
+auth = [
+    "authlib>=1.2",
+    "PyJWT>=2.8",
+    "itsdangerous>=2.1",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
