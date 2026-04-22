@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { ECGWaveformChart, generateDemoECGData } from '../components/ECGWaveformChart';
 import { XAIControls, TopFeaturesPanel, generateDemoXAIData } from '../components/XAIOverlay';
+import { CopilotPanel } from '../components/CopilotPanel';
 import type { XAIAttribution } from '../components/XAIOverlay';
 import type { PredictionResult } from '../services/InferenceClient';
 import './Results.css';
@@ -394,6 +395,19 @@ export function Results() {
     return activeXAI.top_features;
   }, [activeXAI]);
 
+  /* ── Copilot finding click — scroll to waveform + activate XAI ── */
+  const handleCopilotFindingClick = useCallback((findingName: string, _task: string) => {
+    // Activate XAI overlay and set the finding
+    setXaiVisible(true);
+    setActiveFinding(findingName);
+
+    // Scroll the waveform into view
+    const waveformEl = document.getElementById('ecg-waveform');
+    if (waveformEl) {
+      waveformEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, []);
+
   return (
     <div className="results-page" id="page-results">
       {/* Breadcrumb */}
@@ -445,7 +459,14 @@ export function Results() {
         />
       )}
 
-      {/* Findings panels */}
+      {/* AI Copilot panel — ranked findings with clinical cues */}
+      <CopilotPanel
+        findings={allFindings}
+        onFindingClick={handleCopilotFindingClick}
+        activeFinding={activeFinding}
+      />
+
+      {/* Detailed findings panels */}
       <div className="results-panels" id="findings-panels">
         {/* Rhythm */}
         <TaskPanel id="panel-rhythm" icon="♥" title="Rhythm &amp; Conduction" defaultExpanded={true}>

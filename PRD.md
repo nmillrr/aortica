@@ -809,16 +809,16 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want a ranked AI findings panel so that the most important detections are surfaced first with clear confidence levels and relevant clinical next-step prompts.
 
 **Acceptance Criteria:**
-- [ ] `CopilotPanel` React component showing all positive findings ranked by confidence
-- [ ] Each finding shows: condition name, confidence percentage, severity badge (critical/warning/info)
-- [ ] Each finding includes a **clinical suggestion prompt** — a short, non-prescriptive plain-language cue (e.g. "Consider cardiology referral", "Electrolytes warrant checking", "Urgent 12-lead repeat recommended") sourced from the condition's suggestion map (see US-049b)
-- [ ] Suggestion prompts are clearly labelled as AI-generated clinical prompts, not treatment orders, with a visible disclaimer: "Decision support only — requires clinician judgment"
-- [ ] Critical findings (≥90% confidence on high-severity conditions) highlighted with red accent
-- [ ] Clicking a finding scrolls the waveform to the relevant region and activates XAI overlay
-- [ ] Empty state message when no significant findings detected
-- [ ] Integrates with results page layout
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `CopilotPanel` React component showing all positive findings ranked by confidence
+- [x] Each finding shows: condition name, confidence percentage, severity badge (critical/warning/info)
+- [x] Each finding includes a **clinical suggestion prompt** — a short, non-prescriptive plain-language cue (e.g. "Consider cardiology referral", "Electrolytes warrant checking", "Urgent 12-lead repeat recommended") sourced from the condition's suggestion map (see US-049b)
+- [x] Suggestion prompts are clearly labelled as AI-generated clinical prompts, not treatment orders, with a visible disclaimer: "Decision support only — requires clinician judgment"
+- [x] Critical findings (≥90% confidence on high-severity conditions) highlighted with red accent
+- [x] Clicking a finding scrolls the waveform to the relevant region and activates XAI overlay
+- [x] Empty state message when no significant findings detected
+- [x] Integrates with results page layout
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
