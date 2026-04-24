@@ -826,13 +826,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a developer, I want a structured, maintainable mapping of AI-detected conditions to plain-language clinical suggestion prompts so that the copilot panel can surface non-prescriptive next-step cues without hard-coding them in the frontend.
 
 **Acceptance Criteria:**
-- [ ] `aortica/api/clinical_suggestions.py` with a `CONDITION_SUGGESTIONS` dict mapping each class name (from RHYTHM_CLASSES, STRUCTURAL_CLASSES, ISCHAEMIA_CLASSES) to a `ClinicalSuggestion` dataclass containing: `prompt` (str, ≤100 chars), `urgency` ("routine" | "prompt" | "urgent" | "emergent"), `rationale` (str, 1–2 sentence clinical justification)
-- [ ] Populated for all high-severity conditions at minimum: STEMI territories, VT, VF, Wellens, de Winter, Brugada, WPW, severe hyperkalaemia, complete AV block, LVSD
-- [ ] `GET /api/v1/suggestions/{condition_name}` endpoint returning the `ClinicalSuggestion` for a given class
-- [ ] Inference response (`POST /api/v1/predict`) optionally includes suggestions for active findings when `include_suggestions=true` query param is set
-- [ ] Suggestions are loaded from an editable JSON file (`data/clinical_suggestions.json`) so clinicians can customize prompts without code changes
-- [ ] Unit tests verifying: all high-severity conditions have entries, JSON round-trip, API endpoint 200/404 behavior, inference response inclusion
-- [ ] Typecheck passes
+- [x] `aortica/api/clinical_suggestions.py` with a `CONDITION_SUGGESTIONS` dict mapping each class name (from RHYTHM_CLASSES, STRUCTURAL_CLASSES, ISCHAEMIA_CLASSES) to a `ClinicalSuggestion` dataclass containing: `prompt` (str, ≤100 chars), `urgency` ("routine" | "prompt" | "urgent" | "emergent"), `rationale` (str, 1–2 sentence clinical justification)
+- [x] Populated for all high-severity conditions at minimum: STEMI territories, VT, VF, Wellens, de Winter, Brugada, WPW, severe hyperkalaemia, complete AV block, LVSD
+- [x] `GET /api/v1/suggestions/{condition_name}` endpoint returning the `ClinicalSuggestion` for a given class
+- [x] Inference response (`POST /api/v1/predict`) optionally includes suggestions for active findings when `include_suggestions=true` query param is set
+- [x] Suggestions are loaded from an editable JSON file (`data/clinical_suggestions.json`) so clinicians can customize prompts without code changes
+- [x] Unit tests verifying: all high-severity conditions have entries, JSON round-trip, API endpoint 200/404 behavior, inference response inclusion
+- [x] Typecheck passes
 
 ---
 

@@ -122,6 +122,15 @@ class XAIAttributionResponse(BaseModel):
     )
 
 
+class SuggestionEntry(BaseModel):
+    """A single clinical suggestion included in the predict response."""
+
+    condition: str = Field(..., description="Condition class name")
+    prompt: str = Field(..., description="Short clinical cue")
+    urgency: str = Field(..., description="Urgency level")
+    rationale: str = Field(..., description="Clinical justification")
+
+
 class PredictResponse(BaseModel):
     """Full response from the single ECG inference endpoint."""
 
@@ -138,6 +147,10 @@ class PredictResponse(BaseModel):
     xai: Optional[List[XAIAttributionResponse]] = Field(
         default=None,
         description="XAI attribution data (when include_xai=true)",
+    )
+    suggestions: Optional[List[SuggestionEntry]] = Field(
+        default=None,
+        description="Clinical suggestions for active findings (when include_suggestions=true)",
     )
 
 
@@ -200,6 +213,7 @@ def run_inference_pipeline(
     conformal_predictor: Any = None,
     enabled_tasks: Optional[List[str]] = None,
     include_xai: bool = False,
+    include_suggestions: bool = False,
 ) -> PredictResponse:
     """Execute the full ECG inference pipeline on uploaded file bytes.
 
@@ -380,11 +394,37 @@ def run_inference_pipeline(
                 except Exception:
                     pass  # XAI is best-effort; skip task on failure
 
+        # ── 7. Clinical suggestions (optional) ──────────────────────
+        suggestion_entries: Optional[List[SuggestionEntry]] = None
+
+        if include_suggestions and predictions:
+            from aortica.api.clinical_suggestions import get_suggestion
+
+            suggestion_entries = []
+            for task_pred in predictions:
+                for class_name, prob in zip(
+                    task_pred.class_names, task_pred.probabilities
+                ):
+                    if prob >= 0.30:  # Only suggest for positive findings
+                        suggestion = get_suggestion(class_name)
+                        if suggestion is not None:
+                            suggestion_entries.append(
+                                SuggestionEntry(
+                                    condition=class_name,
+                                    prompt=suggestion.prompt,
+                                    urgency=suggestion.urgency,
+                                    rationale=suggestion.rationale,
+                                )
+                            )
+            if not suggestion_entries:
+                suggestion_entries = None
+
         return PredictResponse(
             quality_report=quality_resp,
             predictions=predictions,
             uncertainty=uncertainty_resp,
             xai=xai_results if xai_results else None,
+            suggestions=suggestion_entries,
         )
     finally:
         # Clean up temp file

@@ -1,0 +1,244 @@
+{
+  "_meta": {
+    "description": "Clinical suggestion prompts for Aortica AI copilot. These are non-prescriptive decision-support cues — NOT treatment orders. Editable by clinicians without code changes.",
+    "version": "1.0.0",
+    "disclaimer": "Decision support only — requires clinician judgment"
+  },
+  "suggestions": {
+    "AF": {
+      "prompt": "Evaluate stroke risk (CHA₂DS₂-VASc) and consider anticoagulation",
+      "urgency": "prompt",
+      "rationale": "Atrial fibrillation carries significant thromboembolic risk; CHA₂DS₂-VASc scoring guides anticoagulation decisions and reduces stroke incidence."
+    },
+    "AFL": {
+      "prompt": "Cardiology referral recommended for rate/rhythm control",
+      "urgency": "prompt",
+      "rationale": "Atrial flutter often requires catheter ablation of the cavotricuspid isthmus for definitive treatment and carries similar stroke risk to AF."
+    },
+    "SVT": {
+      "prompt": "If symptomatic, consider vagal manoeuvres or adenosine",
+      "urgency": "prompt",
+      "rationale": "Supraventricular tachycardia is usually haemodynamically stable; vagal manoeuvres are first-line, adenosine for acute termination."
+    },
+    "AVNRT": {
+      "prompt": "Electrophysiology referral for ablation consideration",
+      "urgency": "prompt",
+      "rationale": "AV nodal re-entrant tachycardia has high cure rates (>95%) with catheter ablation of the slow pathway."
+    },
+    "AVRT": {
+      "prompt": "Electrophysiology referral — assess for accessory pathway",
+      "urgency": "prompt",
+      "rationale": "AV re-entrant tachycardia involves an accessory pathway that may carry risk of rapid conduction in AF, warranting risk stratification."
+    },
+    "VT": {
+      "prompt": "Urgent cardiology review — assess hemodynamic stability",
+      "urgency": "emergent",
+      "rationale": "Ventricular tachycardia can degenerate to VF; immediate assessment of haemodynamic stability and underlying substrate is critical."
+    },
+    "VF": {
+      "prompt": "Immediate defibrillation and ACLS protocol",
+      "urgency": "emergent",
+      "rationale": "Ventricular fibrillation is a cardiac arrest rhythm requiring immediate defibrillation; survival decreases ~10% per minute without intervention."
+    },
+    "idioventricular": {
+      "prompt": "Monitor — usually self-limiting post-reperfusion",
+      "urgency": "routine",
+      "rationale": "Accelerated idioventricular rhythm is typically a benign reperfusion arrhythmia that resolves spontaneously."
+    },
+    "sinus_brady": {
+      "prompt": "Assess for symptoms; consider reversible causes",
+      "urgency": "routine",
+      "rationale": "Sinus bradycardia is often physiologic (athletes, sleep) but may indicate sick sinus syndrome, hypothyroidism, or drug effect."
+    },
+    "sinus_tachy": {
+      "prompt": "Evaluate underlying cause (fever, pain, volume status)",
+      "urgency": "routine",
+      "rationale": "Sinus tachycardia is almost always a secondary response; treating the underlying cause is the appropriate intervention."
+    },
+    "PAC": {
+      "prompt": "Usually benign — reassurance unless highly symptomatic",
+      "urgency": "routine",
+      "rationale": "Premature atrial complexes are common and rarely require treatment; frequent PACs may predict AF development."
+    },
+    "PVC": {
+      "prompt": "If frequent (>10%), consider echocardiography",
+      "urgency": "routine",
+      "rationale": "Frequent PVCs (>10% burden) can cause PVC-induced cardiomyopathy; echocardiography assesses LV function."
+    },
+    "av_block_1st": {
+      "prompt": "Monitor — usually benign unless progressive",
+      "urgency": "routine",
+      "rationale": "First-degree AV block is typically an incidental finding; progressive PR prolongation warrants follow-up."
+    },
+    "av_block_2nd": {
+      "prompt": "Differentiate Mobitz I vs II — cardiology input if Mobitz II",
+      "urgency": "prompt",
+      "rationale": "Mobitz type I (Wenckebach) is usually benign; Mobitz type II carries risk of progression to complete heart block and may require pacing."
+    },
+    "av_block_3rd": {
+      "prompt": "Urgent cardiology — temporary pacing may be required",
+      "urgency": "emergent",
+      "rationale": "Complete heart block causes haemodynamic compromise and syncope; temporary pacing is often needed as a bridge to permanent pacemaker."
+    },
+    "LBBB": {
+      "prompt": "New LBBB warrants acute coronary syndrome workup",
+      "urgency": "urgent",
+      "rationale": "New-onset LBBB may represent acute MI (Sgarbossa criteria apply); chronic LBBB requires assessment for underlying cardiomyopathy."
+    },
+    "RBBB": {
+      "prompt": "Evaluate for right heart strain if new onset",
+      "urgency": "routine",
+      "rationale": "Isolated RBBB is often benign; new RBBB should prompt evaluation for pulmonary embolism, right heart disease, or conduction disease."
+    },
+    "LAFB": {
+      "prompt": "Usually benign — note for trend monitoring",
+      "urgency": "routine",
+      "rationale": "Left anterior fascicular block is common and usually benign; bifascicular block (LAFB + RBBB) warrants closer monitoring."
+    },
+    "LPFB": {
+      "prompt": "Rare — consider structural heart disease evaluation",
+      "urgency": "prompt",
+      "rationale": "Left posterior fascicular block is uncommon and may indicate underlying structural disease given the robust dual blood supply of the posterior fascicle."
+    },
+    "WPW": {
+      "prompt": "Electrophysiology referral — risk stratification for SCD",
+      "urgency": "urgent",
+      "rationale": "Wolff-Parkinson-White syndrome carries risk of sudden cardiac death if the accessory pathway has short anterograde refractory period during AF."
+    },
+    "pacemaker_rhythm": {
+      "prompt": "Verify appropriate pacing capture and sensing",
+      "urgency": "routine",
+      "rationale": "Pacemaker rhythm should be evaluated for appropriate capture, sensing, and programmed parameters at regular intervals."
+    },
+    "normal_sinus_rhythm": {
+      "prompt": "Normal sinus rhythm — no specific action needed",
+      "urgency": "routine",
+      "rationale": "Normal sinus rhythm is the expected baseline rhythm; no intervention is required."
+    },
+    "LVH": {
+      "prompt": "Blood pressure optimisation and echo assessment",
+      "urgency": "prompt",
+      "rationale": "ECG-detected LVH is an independent cardiovascular risk factor; echocardiography quantifies mass and identifies underlying cause."
+    },
+    "RVH": {
+      "prompt": "Evaluate for pulmonary hypertension or right heart strain",
+      "urgency": "prompt",
+      "rationale": "Right ventricular hypertrophy suggests chronically elevated right-sided pressures; pulmonary hypertension workup is indicated."
+    },
+    "LVSD": {
+      "prompt": "Echocardiography and HF workup recommended",
+      "urgency": "urgent",
+      "rationale": "AI-detected LVSD (subclinical or overt) warrants echocardiographic confirmation and initiation of guideline-directed medical therapy."
+    },
+    "HFpEF_risk": {
+      "prompt": "NT-proBNP and exercise testing may clarify diagnosis",
+      "urgency": "prompt",
+      "rationale": "HFpEF is underdiagnosed; NT-proBNP and diastolic stress testing improve diagnostic yield in patients with exertional dyspnoea."
+    },
+    "DCM": {
+      "prompt": "Cardiology referral for comprehensive imaging",
+      "urgency": "prompt",
+      "rationale": "Dilated cardiomyopathy requires cardiac MRI for characterisation, genetic testing consideration, and optimisation of heart failure therapy."
+    },
+    "HCM": {
+      "prompt": "Family screening and SCD risk assessment",
+      "urgency": "urgent",
+      "rationale": "Hypertrophic cardiomyopathy is the leading cause of SCD in young athletes; first-degree relative screening and risk stratification are essential."
+    },
+    "ARVC": {
+      "prompt": "Cardiac MRI and genetic testing recommended",
+      "urgency": "urgent",
+      "rationale": "Arrhythmogenic right ventricular cardiomyopathy is diagnosed via modified Task Force criteria requiring imaging, genetics, and electrophysiology data."
+    },
+    "amyloidosis": {
+      "prompt": "Consider Tc-PYP scan and haematology referral",
+      "urgency": "urgent",
+      "rationale": "Cardiac amyloidosis (ATTR or AL) requires prompt subtyping; Tc-PYP scintigraphy is highly specific for ATTR amyloidosis."
+    },
+    "aortic_stenosis": {
+      "prompt": "Echocardiography for valve assessment",
+      "urgency": "prompt",
+      "rationale": "ECG findings suggestive of aortic stenosis (LVH, strain) warrant echo-Doppler to quantify severity and guide intervention timing."
+    },
+    "mitral_regurgitation": {
+      "prompt": "Echo assessment for severity grading",
+      "urgency": "prompt",
+      "rationale": "Mitral regurgitation severity guides management — moderate-to-severe MR may require surgical or transcatheter intervention."
+    },
+    "pulmonary_HTN": {
+      "prompt": "Right heart catheterisation may be needed",
+      "urgency": "prompt",
+      "rationale": "ECG signs of pulmonary hypertension warrant haemodynamic confirmation via right heart catheterisation for definitive diagnosis and classification."
+    },
+    "LA_enlargement": {
+      "prompt": "Evaluate atrial fibrillation risk and valvular disease",
+      "urgency": "routine",
+      "rationale": "Left atrial enlargement is a strong predictor of AF and may indicate significant mitral valve disease or diastolic dysfunction."
+    },
+    "RA_enlargement": {
+      "prompt": "Assess for right-sided volume/pressure overload",
+      "urgency": "routine",
+      "rationale": "Right atrial enlargement suggests right-sided volume or pressure overload from conditions such as tricuspid regurgitation or pulmonary hypertension."
+    },
+    "pericarditis": {
+      "prompt": "NSAIDs ± colchicine; rule out effusion",
+      "urgency": "prompt",
+      "rationale": "Pericarditis treatment includes NSAIDs with colchicine adjunct; echocardiography is needed to exclude significant pericardial effusion."
+    },
+    "myocarditis": {
+      "prompt": "Cardiac MRI and troponin trend recommended",
+      "urgency": "urgent",
+      "rationale": "Myocarditis requires cardiac MRI for confirmation (Lake Louise criteria) and serial troponins to assess extent of myocardial injury."
+    },
+    "STEMI": {
+      "prompt": "Activate cath lab — door-to-balloon time critical",
+      "urgency": "emergent",
+      "rationale": "STEMI requires emergent percutaneous coronary intervention; door-to-balloon time <90 minutes is the standard of care."
+    },
+    "posterior_MI": {
+      "prompt": "Obtain posterior leads (V7-V9); emergent cath consideration",
+      "urgency": "emergent",
+      "rationale": "Posterior MI is frequently missed on standard 12-lead ECG; posterior leads confirm the diagnosis and guide emergent reperfusion."
+    },
+    "occlusive_NSTEMI": {
+      "prompt": "Serial troponins and urgent cardiology consultation",
+      "urgency": "urgent",
+      "rationale": "Occlusive NSTEMI (OMI) may have a similar prognosis to STEMI; early invasive strategy within 2 hours improves outcomes."
+    },
+    "old_MI": {
+      "prompt": "Verify with prior ECGs; optimise secondary prevention",
+      "urgency": "routine",
+      "rationale": "Q waves suggesting old MI should be correlated with clinical history; secondary prevention medications should be optimised."
+    },
+    "hyperkalaemia": {
+      "prompt": "Urgent electrolytes — calcium gluconate if severe",
+      "urgency": "emergent",
+      "rationale": "Severe hyperkalaemia causes life-threatening arrhythmias; IV calcium gluconate stabilises the myocardium while definitive treatment is initiated."
+    },
+    "hypokalaemia": {
+      "prompt": "Electrolytes warrant checking and potassium replacement",
+      "urgency": "prompt",
+      "rationale": "Hypokalaemia prolongs QT interval and increases arrhythmia risk; potassium replacement is indicated when K+ <3.5 mmol/L."
+    },
+    "hypercalcaemia": {
+      "prompt": "Check corrected calcium and parathyroid hormone",
+      "urgency": "prompt",
+      "rationale": "ECG changes of hypercalcaemia (short QT) warrant laboratory confirmation; primary hyperparathyroidism and malignancy are the most common causes."
+    },
+    "hypothyroidism_pattern": {
+      "prompt": "Thyroid function tests recommended",
+      "urgency": "routine",
+      "rationale": "ECG features suggestive of hypothyroidism (low voltage, bradycardia, T-wave changes) should prompt thyroid function testing."
+    },
+    "digitalis_effect": {
+      "prompt": "Check digoxin level — assess for toxicity signs",
+      "urgency": "prompt",
+      "rationale": "Digitalis effect (reverse tick ST depression) is expected at therapeutic levels; toxicity causes arrhythmias and requires level monitoring."
+    },
+    "QTc_prolongation": {
+      "prompt": "Review QT-prolonging medications; electrolytes check",
+      "urgency": "urgent",
+      "rationale": "QTc prolongation increases risk of torsades de pointes; medication review and electrolyte correction (Mg²⁺, K⁺) are priority interventions."
+    }
+  }
+}

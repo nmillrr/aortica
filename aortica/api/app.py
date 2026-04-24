@@ -160,6 +160,12 @@ def create_app(
     auth_router = create_auth_router(api_key_store)
     app.include_router(auth_router)
 
+    # Mount clinical suggestions router
+    from aortica.api.clinical_suggestions import create_suggestions_router
+
+    suggestions_router = create_suggestions_router()
+    app.include_router(suggestions_router)
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:
@@ -225,6 +231,10 @@ def create_app(
             default=False,
             description="Include XAI attribution data in response",
         ),
+        include_suggestions: bool = Query(
+            default=False,
+            description="Include clinical suggestions for active findings",
+        ),
         _user: Any = Depends(_auth_dependency),
     ) -> Any:
         """Upload a single ECG file and receive multi-task AI predictions.
@@ -252,6 +262,7 @@ def create_app(
                 conformal_predictor=app.state.conformal_predictor,  # type: ignore[attr-defined]
                 enabled_tasks=list(app.state.enabled_tasks),  # type: ignore[attr-defined]
                 include_xai=include_xai,
+                include_suggestions=include_suggestions,
             )
         except UnsupportedFormatError as exc:
             return JSONResponse(
