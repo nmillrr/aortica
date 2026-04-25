@@ -166,6 +166,14 @@ def create_app(
     suggestions_router = create_suggestions_router()
     app.include_router(suggestions_router)
 
+    # Mount clinician feedback router
+    from aortica.api.feedback import FeedbackStore, create_feedback_router
+
+    feedback_store = FeedbackStore()
+    app.state.feedback_store = feedback_store  # type: ignore[attr-defined]
+    feedback_router = create_feedback_router(feedback_store)
+    app.include_router(feedback_router)
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:

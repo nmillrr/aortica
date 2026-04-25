@@ -1,0 +1,209 @@
+/* ===== FeedbackButtons — Clinician feedback on AI findings ===== */
+
+.feedback-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* ---- Action buttons ---- */
+
+.feedback-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.feedback-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.feedback-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Accept */
+.feedback-btn--accept:hover:not(:disabled) {
+  background: rgba(52, 211, 153, 0.15);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #34d399;
+}
+
+/* Reject */
+.feedback-btn--reject:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.15);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #f87171;
+}
+
+/* Modify */
+.feedback-btn--modify:hover:not(:disabled) {
+  background: rgba(251, 191, 36, 0.15);
+  border-color: rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+}
+
+/* ---- Submitted state ---- */
+
+.feedback-buttons--submitted {
+  gap: 6px;
+}
+
+.feedback-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
+  animation: feedbackFadeIn 0.3s ease;
+}
+
+.feedback-badge--accept {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.feedback-badge--reject {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.feedback-badge--modify {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.feedback-undo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-tertiary, #64748b);
+  cursor: pointer;
+  font-size: 0.65rem;
+  transition: all 0.2s ease;
+}
+
+.feedback-undo:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary, #94a3b8);
+}
+
+/* ---- Modify form ---- */
+
+.feedback-buttons--modify {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  animation: feedbackSlideDown 0.25s ease;
+}
+
+.feedback-comment {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-primary, #f1f5f9);
+  font-family: inherit;
+  font-size: 0.8rem;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.feedback-comment:focus {
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+.feedback-comment::placeholder {
+  color: var(--text-tertiary, #64748b);
+}
+
+.feedback-modify-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.feedback-btn--modify-submit {
+  width: auto;
+  padding: 4px 14px;
+  height: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #a78bfa;
+}
+
+.feedback-btn--modify-submit:hover:not(:disabled) {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.6);
+  color: #c4b5fd;
+}
+
+.feedback-btn--cancel {
+  width: auto;
+  padding: 4px 10px;
+  height: auto;
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #64748b);
+}
+
+.feedback-btn--cancel:hover:not(:disabled) {
+  color: var(--text-secondary, #94a3b8);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ---- Animations ---- */
+
+@keyframes feedbackFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes feedbackSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

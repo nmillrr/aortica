@@ -762,3 +762,22 @@
   - Mock data in Results.tsx only triggers Hyperkalaemia (52% > 30% threshold) from the edge-case list; WPW (58% LBBB in mock is not WPW) and PVC (31% not in edge list) correctly excluded
   - Pre-existing BrowserRouter setState-in-render warning from Login component — unrelated to this change
 ---
+
+## Iteration 49 - US-052: Explanation Cards
+- Implemented: `ExplanationCard` React component — expandable per-finding detail view with clinical reference, XAI feature attributions, confidence intervals, clinical suggestions, and Phase 4 placeholder
+- Files changed:
+  - frontend/src/components/ExplanationCard.tsx (new) - ExplanationCard component with: FeatureAttributionChart (top-3 ranked bar chart with delta scores), ConfidenceIntervalBar (range bar with point estimate and bounds), clinical reference texts (47 conditions), urgency-colored suggestion tags, Similar Historical Cases Phase 4 placeholder
+  - frontend/src/components/ExplanationCard.css (new) - Premium dark-theme styles: animated feature bars, CI range bar animation, urgency tag color variants, responsive breakpoints
+  - frontend/src/pages/Results.tsx (modified) - Integrated ExplanationCard into all 3 classification task panels; added SUGGESTION_MAP with 30+ conditions; added findSuggestion and getFeatureAttributionsForFinding helpers
+  - frontend/src/pages/Results.css (modified) - Added finding-item--with-explanation class for card flow
+  - PRD.md (modified) - marked US-052 complete
+- Verification:
+  - TypeScript typecheck passes (tsc -b --noEmit)
+  - Production build succeeds (58 modules)
+  - Browser verification: Explain buttons visible on all findings, card expands with all sections, urgency tags color-coded, feature bars animated, CI range bar displayed, Phase 4 placeholder visible
+- Learnings for future iterations:
+  - TypeScript strict mode catches duplicate object literal keys — duplicate 'LBBB' caused TS1117 error
+  - Underscore prefix (_findingName) silences TS6133 for intentionally unused parameters
+  - finding-item--with-explanation uses flex-wrap + flex-basis 100% to make the card break onto its own line
+  - Feature attributions are per-task not per-finding — future iteration could implement per-class integrated gradients
+---

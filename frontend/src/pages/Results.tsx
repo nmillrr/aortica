@@ -6,6 +6,7 @@ import { CopilotPanel } from '../components/CopilotPanel';
 import { SecondReaderMode } from '../components/SecondReaderMode';
 import { EdgeCaseSpotlight } from '../components/EdgeCaseSpotlight';
 import { ExplanationCard } from '../components/ExplanationCard';
+import { FeedbackButtons } from '../components/FeedbackButtons';
 import type { XAIAttribution } from '../components/XAIOverlay';
 import type { ECGFeatureAttribution, ClinicalSuggestionInfo } from '../components/ExplanationCard';
 import type { PredictionResult } from '../services/InferenceClient';
@@ -589,6 +590,12 @@ export function Results() {
                   <span className="finding-prob">{(f.prob * 100).toFixed(0)}%</span>
                 </div>
                 <UncertaintyBadge setSize={f.predictionSetSize} />
+                <FeedbackButtons
+                  findingName={f.name}
+                  task="rhythm"
+                  confidence={f.prob}
+                  ecgReferenceId={id}
+                />
                 <ExplanationCard
                   findingName={f.name}
                   task="rhythm"
@@ -619,6 +626,12 @@ export function Results() {
                   <span className="finding-prob">{(f.prob * 100).toFixed(0)}%</span>
                 </div>
                 <UncertaintyBadge setSize={f.predictionSetSize} />
+                <FeedbackButtons
+                  findingName={f.name}
+                  task="structural"
+                  confidence={f.prob}
+                  ecgReferenceId={id}
+                />
                 <ExplanationCard
                   findingName={f.name}
                   task="structural"
@@ -649,6 +662,12 @@ export function Results() {
                   <span className="finding-prob">{(f.prob * 100).toFixed(0)}%</span>
                 </div>
                 <UncertaintyBadge setSize={f.predictionSetSize} />
+                <FeedbackButtons
+                  findingName={f.name}
+                  task="ischaemia"
+                  confidence={f.prob}
+                  ecgReferenceId={id}
+                />
                 <ExplanationCard
                   findingName={f.name}
                   task="ischaemia"
