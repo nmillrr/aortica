@@ -340,4 +340,40 @@ def create_app(
 
         return result
 
+    # ---- POST /api/v1/compare -------------------------------------------
+
+    @app.post(
+        "/api/v1/compare",
+        tags=["comparison"],
+        summary="Second Reader comparison",
+    )
+    async def compare(
+        request: Request,  # type: ignore[arg-type]
+        _user: Any = Depends(_auth_dependency),
+    ) -> Any:
+        """Compare a cardiologist's interpretation against AI predictions.
+
+        Accepts a JSON body with the clinician's selected findings and
+        AI prediction probabilities.  Returns a categorised diff:
+        green (agreement), red (AI found but clinician missed), and
+        yellow (clinician found but AI didn't), ranked by clinical
+        importance.
+        """
+        from aortica.api.compare import (
+            CompareRequest,
+            CompareResponse,
+            compare_interpretations,
+        )
+
+        body = await request.json()
+        req = CompareRequest(**body)
+
+        result: CompareResponse = compare_interpretations(
+            interpretation=req.interpretation,
+            ai_predictions=req.ai_predictions,
+            threshold=req.threshold,
+        )
+
+        return result
+
     return app

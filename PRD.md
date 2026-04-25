@@ -840,14 +840,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a cardiologist, I want to enter my interpretation and compare it against the AI so that I can identify discrepancies I might have missed.
 
 **Acceptance Criteria:**
-- [ ] `SecondReaderMode` React component with structured interpretation input (checkboxes for common findings + free-text)
-- [ ] `POST /api/v1/compare` endpoint accepting cardiologist interpretation + ECG reference
-- [ ] Backend comparison logic: maps cardiologist findings to model output classes, identifies agreements and discrepancies
-- [ ] Visual diff: green (agreement), red (AI found but cardiologist missed), yellow (cardiologist found but AI didn't)
-- [ ] Discrepancy severity ranking based on clinical importance
-- [ ] Unit tests for comparison logic
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `SecondReaderMode` React component with structured interpretation input (checkboxes for common findings + free-text)
+- [x] `POST /api/v1/compare` endpoint accepting cardiologist interpretation + ECG reference
+- [x] Backend comparison logic: maps cardiologist findings to model output classes, identifies agreements and discrepancies
+- [x] Visual diff: green (agreement), red (AI found but cardiologist missed), yellow (cardiologist found but AI didn't)
+- [x] Discrepancy severity ranking based on clinical importance
+- [x] Unit tests for comparison logic
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

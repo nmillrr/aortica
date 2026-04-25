@@ -3,6 +3,7 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import { ECGWaveformChart, generateDemoECGData } from '../components/ECGWaveformChart';
 import { XAIControls, TopFeaturesPanel, generateDemoXAIData } from '../components/XAIOverlay';
 import { CopilotPanel } from '../components/CopilotPanel';
+import { SecondReaderMode } from '../components/SecondReaderMode';
 import type { XAIAttribution } from '../components/XAIOverlay';
 import type { PredictionResult } from '../services/InferenceClient';
 import './Results.css';
@@ -351,6 +352,23 @@ export function Results() {
   const inferenceMode = state.predictionResult?.inference_mode;
   const fileName = state.fileName ?? `ECG ${id}`;
 
+  /* ── Second Reader state ──────────────────────────────────── */
+  const [secondReaderVisible, setSecondReaderVisible] = useState(false);
+
+  // Extract AI predictions for the Second Reader component
+  const aiPredictions = useMemo((): Record<string, number[]> => {
+    if (!state.predictionResult?.predictions) return {};
+    const preds = state.predictionResult.predictions as Record<string, unknown>;
+    const result: Record<string, number[]> = {};
+    for (const task of ['rhythm', 'structural', 'ischaemia']) {
+      const raw = preds[task];
+      if (Array.isArray(raw)) {
+        result[task] = raw.map((v: unknown) => (typeof v === 'number' ? v : 0));
+      }
+    }
+    return result;
+  }, [state.predictionResult]);
+
   /* ── XAI state ────────────────────────────────────────────── */
   const [xaiVisible, setXaiVisible] = useState(false);
   const [activeFinding, setActiveFinding] = useState<string | null>(null);
@@ -428,6 +446,14 @@ export function Results() {
             {inferenceMode === 'server' ? '🟢 Server — Full Model' : '🟠 Offline — Edge Model'}
           </span>
         )}
+        <button
+          className={`second-reader-toggle ${secondReaderVisible ? 'second-reader-toggle--active' : ''}`}
+          onClick={() => setSecondReaderVisible(prev => !prev)}
+          id="second-reader-toggle"
+          title="Toggle Second Reader Mode"
+        >
+          🔍 Second Reader
+        </button>
       </div>
 
       {/* XAI controls */}
@@ -458,6 +484,13 @@ export function Results() {
           findingName={activeFinding || 'All Findings'}
         />
       )}
+
+      {/* Second Reader comparison mode */}
+      <SecondReaderMode
+        aiPredictions={aiPredictions}
+        visible={secondReaderVisible}
+        onToggle={() => setSecondReaderVisible(prev => !prev)}
+      />
 
       {/* AI Copilot panel — ranked findings with clinical cues */}
       <CopilotPanel
