@@ -855,13 +855,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a cardiologist, I want a dedicated panel highlighting rare but dangerous findings so that edge-case conditions are never buried in routine results.
 
 **Acceptance Criteria:**
-- [ ] `EdgeCaseSpotlight` React component filtering for low-prevalence, moderate-to-high confidence findings
-- [ ] Configurable edge-case condition list (WPW, Brugada pattern, subtle flutter, fascicular VT, de Winter T-waves, Wellens syndrome, aVR ST-elevation)
-- [ ] Each flagged item shows: condition, confidence, why it's flagged as edge-case (prevalence note)
-- [ ] Visual emphasis: distinct panel styling with pulsing indicator for new edge-case detections
-- [ ] Links to explanation cards for each finding
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `EdgeCaseSpotlight` React component filtering for low-prevalence, moderate-to-high confidence findings
+- [x] Configurable edge-case condition list (WPW, Brugada pattern, subtle flutter, fascicular VT, de Winter T-waves, Wellens syndrome, aVR ST-elevation)
+- [x] Each flagged item shows: condition, confidence, why it's flagged as edge-case (prevalence note)
+- [x] Visual emphasis: distinct panel styling with pulsing indicator for new edge-case detections
+- [x] Links to explanation cards for each finding
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

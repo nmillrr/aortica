@@ -4,6 +4,7 @@ import { ECGWaveformChart, generateDemoECGData } from '../components/ECGWaveform
 import { XAIControls, TopFeaturesPanel, generateDemoXAIData } from '../components/XAIOverlay';
 import { CopilotPanel } from '../components/CopilotPanel';
 import { SecondReaderMode } from '../components/SecondReaderMode';
+import { EdgeCaseSpotlight } from '../components/EdgeCaseSpotlight';
 import type { XAIAttribution } from '../components/XAIOverlay';
 import type { PredictionResult } from '../services/InferenceClient';
 import './Results.css';
@@ -497,6 +498,12 @@ export function Results() {
         findings={allFindings}
         onFindingClick={handleCopilotFindingClick}
         activeFinding={activeFinding}
+      />
+
+      {/* Edge-Case Spotlight — rare but dangerous findings */}
+      <EdgeCaseSpotlight
+        findings={allFindings}
+        onEdgeCaseClick={handleCopilotFindingClick}
       />
 
       {/* Detailed findings panels */}
