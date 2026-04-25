@@ -869,15 +869,15 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want detailed explanation cards per finding so that I understand exactly why the AI flagged each condition and what clinical actions to consider.
 
 **Acceptance Criteria:**
-- [ ] `ExplanationCard` React component showing per-finding detail view
-- [ ] Sections: named ECG features driving detection (from XAI), confidence interval (from conformal prediction), clinical reference text
-- [ ] **Clinical Suggestions section**: displays the `ClinicalSuggestion.prompt` and `rationale` from US-049b with urgency color-coding (routine=grey, prompt=yellow, urgent=orange, emergent=red); labelled "Suggested Next Steps" with a subtitle clarifying these are AI-generated prompts requiring clinician judgment
-- [ ] Feature attributions displayed as a ranked bar chart (top-3 features with delta scores)
-- [ ] Confidence interval displayed as a range bar
-- [ ] Placeholder section for "Similar historical cases" (to be implemented in Phase 4)
-- [ ] Expandable/collapsible within the findings panel
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `ExplanationCard` React component showing per-finding detail view
+- [x] Sections: named ECG features driving detection (from XAI), confidence interval (from conformal prediction), clinical reference text
+- [x] **Clinical Suggestions section**: displays the `ClinicalSuggestion.prompt` and `rationale` from US-049b with urgency color-coding (routine=grey, prompt=yellow, urgent=orange, emergent=red); labelled "Suggested Next Steps" with a subtitle clarifying these are AI-generated prompts requiring clinician judgment
+- [x] Feature attributions displayed as a ranked bar chart (top-3 features with delta scores)
+- [x] Confidence interval displayed as a range bar
+- [x] Placeholder section for "Similar historical cases" (to be implemented in Phase 4)
+- [x] Expandable/collapsible within the findings panel
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

@@ -325,6 +325,15 @@
   border-radius: var(--radius-sm);
 }
 
+.finding-item--with-explanation {
+  flex-wrap: wrap;
+}
+
+.finding-item--with-explanation > .explanation-card {
+  flex-basis: 100%;
+  margin-top: 2px;
+}
+
 .finding-info {
   display: flex;
   align-items: center;

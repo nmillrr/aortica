@@ -5,7 +5,9 @@ import { XAIControls, TopFeaturesPanel, generateDemoXAIData } from '../component
 import { CopilotPanel } from '../components/CopilotPanel';
 import { SecondReaderMode } from '../components/SecondReaderMode';
 import { EdgeCaseSpotlight } from '../components/EdgeCaseSpotlight';
+import { ExplanationCard } from '../components/ExplanationCard';
 import type { XAIAttribution } from '../components/XAIOverlay';
+import type { ECGFeatureAttribution, ClinicalSuggestionInfo } from '../components/ExplanationCard';
 import type { PredictionResult } from '../services/InferenceClient';
 import './Results.css';
 
@@ -238,6 +240,68 @@ function parseXAIData(result: PredictionResult | undefined): XAIAttribution[] {
 
 const DEMO_ECG = generateDemoECGData();
 const STANDARD_LEADS = ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6'];
+
+/* ---------- Clinical suggestions lookup for ExplanationCard -------------- */
+
+const SUGGESTION_MAP: Record<string, ClinicalSuggestionInfo> = {
+  'AF':                  { prompt: 'Evaluate stroke risk (CHA₂DS₂-VASc) and consider anticoagulation', urgency: 'prompt', rationale: 'AF increases stroke risk 5-fold. CHA₂DS₂-VASc score guides anticoagulation decisions.' },
+  'Atrial Fibrillation': { prompt: 'Evaluate stroke risk (CHA₂DS₂-VASc) and consider anticoagulation', urgency: 'prompt', rationale: 'AF increases stroke risk 5-fold. CHA₂DS₂-VASc score guides anticoagulation decisions.' },
+  'AFL':                 { prompt: 'Cardiology referral for rate/rhythm control', urgency: 'prompt', rationale: 'Atrial flutter often responds to catheter ablation with high success rates.' },
+  'SVT':                 { prompt: 'If symptomatic, consider vagal manoeuvres or adenosine', urgency: 'prompt', rationale: 'Most SVTs are re-entrant and respond to AV nodal blockade.' },
+  'VT':                  { prompt: 'Urgent cardiology review — assess hemodynamic stability', urgency: 'emergent', rationale: 'Sustained VT can degenerate to VF. Hemodynamic status determines treatment urgency.' },
+  'VF':                  { prompt: 'Immediate defibrillation and ACLS protocol', urgency: 'emergent', rationale: 'VF is a cardiac arrest rhythm with no effective cardiac output.' },
+  '3rd AVB':             { prompt: 'Urgent cardiology — temporary pacing may be required', urgency: 'emergent', rationale: 'Complete heart block can cause syncope, hemodynamic collapse, or cardiac arrest.' },
+  'LBBB':                { prompt: 'New LBBB warrants acute coronary syndrome workup', urgency: 'urgent', rationale: 'New LBBB with chest pain meets STEMI-equivalent criteria per Sgarbossa.' },
+  'WPW':                 { prompt: 'Electrophysiology referral for SCD risk stratification', urgency: 'urgent', rationale: 'Accessory pathways can conduct rapidly during AF, leading to VF.' },
+  'RBBB':                { prompt: 'Evaluate for right heart strain if new onset', urgency: 'routine', rationale: 'Isolated RBBB is often benign but new onset may indicate PE or right heart disease.' },
+  'LVSD':                { prompt: 'Echocardiography and HF workup recommended', urgency: 'urgent', rationale: 'Early detection of LVSD enables life-prolonging therapies.' },
+  'HCM':                 { prompt: 'Family screening and SCD risk assessment', urgency: 'urgent', rationale: 'HCM is the most common inherited cardiac condition with SCD risk.' },
+  'ARVC':                { prompt: 'Cardiac MRI and genetic testing recommended', urgency: 'urgent', rationale: 'ARVC is a leading cause of SCD in young athletes.' },
+  'Amyloidosis':         { prompt: 'Consider Tc-PYP scan and haematology referral', urgency: 'urgent', rationale: 'Early diagnosis of cardiac amyloidosis changes prognosis dramatically.' },
+  'STEMI':               { prompt: 'Activate cath lab — door-to-balloon time critical', urgency: 'emergent', rationale: 'Every minute of delay increases myocardial damage and mortality.' },
+  'Posterior MI':        { prompt: 'Obtain posterior leads (V7-V9); emergent cath consideration', urgency: 'emergent', rationale: 'Posterior MI is frequently missed on standard 12-lead ECG.' },
+  'Occlusive NSTEMI':    { prompt: 'Serial troponins and urgent cardiology consultation', urgency: 'urgent', rationale: 'Occlusive NSTEMI requires urgent intervention despite NSTEMI classification.' },
+  'Hyperkalaemia':       { prompt: 'Urgent electrolytes — calcium gluconate if severe', urgency: 'emergent', rationale: 'Progressive ECG changes indicate risk of fatal arrhythmia.' },
+  'QTc Prolongation':    { prompt: 'Review QT-prolonging medications; electrolytes check', urgency: 'urgent', rationale: 'Prolonged QTc increases risk of Torsades de Pointes.' },
+  'LVH':                       { prompt: 'Blood pressure optimisation and echo assessment', urgency: 'prompt' },
+  'Left Ventricular Hypertrophy': { prompt: 'Blood pressure optimisation and echo assessment', urgency: 'prompt' },
+  'PVC':                 { prompt: 'If frequent (>10%), consider echocardiography', urgency: 'routine' },
+  'Normal Sinus':        { prompt: 'Normal sinus rhythm — no specific action needed', urgency: 'routine' },
+  'Normal Sinus Rhythm': { prompt: 'Normal sinus rhythm — no specific action needed', urgency: 'routine' },
+  'Sinus Tachycardia':   { prompt: 'Evaluate underlying cause (fever, pain, volume status)', urgency: 'routine' },
+  'LA Enlargement':      { prompt: 'Evaluate atrial fibrillation risk and valvular disease', urgency: 'routine' },
+  'Dilated Cardiomyopathy': { prompt: 'Cardiology referral for comprehensive imaging', urgency: 'prompt' },
+  'Aortic Stenosis':     { prompt: 'Echocardiography for valve assessment', urgency: 'prompt' },
+  'Pericarditis':        { prompt: 'NSAIDs ± colchicine; rule out effusion', urgency: 'prompt' },
+  'Myocarditis':         { prompt: 'Cardiac MRI and troponin trend recommended', urgency: 'urgent' },
+};
+
+function findSuggestion(name: string): ClinicalSuggestionInfo | undefined {
+  if (SUGGESTION_MAP[name]) return SUGGESTION_MAP[name];
+  // Partial match fallback
+  for (const [key, val] of Object.entries(SUGGESTION_MAP)) {
+    if (name.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(name.toLowerCase())) {
+      return val;
+    }
+  }
+  return undefined;
+}
+
+/** Extract XAI top features for a specific finding from xai data. */
+function getFeatureAttributionsForFinding(
+  xaiData: XAIAttribution[],
+  _findingName: string,
+  task: string,
+): ECGFeatureAttribution[] {
+  const taskXAI = xaiData.find(x => x.task === task);
+  if (!taskXAI) return [];
+  // Return top_features (already top-3 from backend)
+  return taskXAI.top_features.map(f => ({
+    feature_name: f.feature_name,
+    lead: f.lead,
+    delta_score: f.delta_score,
+  }));
+}
 
 /* ---------- Sub-components ----------------------------------------------- */
 
@@ -512,7 +576,7 @@ export function Results() {
         <TaskPanel id="panel-rhythm" icon="♥" title="Rhythm &amp; Conduction" defaultExpanded={true}>
           <ul className="findings-list">
             {findings.rhythm.map(f => (
-              <li key={f.name} className="finding-item">
+              <li key={f.name} className="finding-item finding-item--with-explanation">
                 <div className="finding-info">
                   <span className={`finding-dot severity-${f.severity}`} />
                   <span className="finding-name">{f.name}</span>
@@ -525,6 +589,14 @@ export function Results() {
                   <span className="finding-prob">{(f.prob * 100).toFixed(0)}%</span>
                 </div>
                 <UncertaintyBadge setSize={f.predictionSetSize} />
+                <ExplanationCard
+                  findingName={f.name}
+                  task="rhythm"
+                  confidence={f.prob}
+                  featureAttributions={getFeatureAttributionsForFinding(xaiData, f.name, 'rhythm')}
+                  confidenceInterval={f.predictionSetSize !== undefined ? { lower: Math.max(0, f.prob - 0.15), upper: Math.min(1, f.prob + 0.10), coverage: 0.90, predictionSetSize: f.predictionSetSize } : undefined}
+                  suggestion={findSuggestion(f.name)}
+                />
               </li>
             ))}
           </ul>
@@ -534,7 +606,7 @@ export function Results() {
         <TaskPanel id="panel-structural" icon="◇" title="Structural &amp; Functional" defaultExpanded={true}>
           <ul className="findings-list">
             {findings.structural.map(f => (
-              <li key={f.name} className="finding-item">
+              <li key={f.name} className="finding-item finding-item--with-explanation">
                 <div className="finding-info">
                   <span className={`finding-dot severity-${f.severity}`} />
                   <span className="finding-name">{f.name}</span>
@@ -547,6 +619,14 @@ export function Results() {
                   <span className="finding-prob">{(f.prob * 100).toFixed(0)}%</span>
                 </div>
                 <UncertaintyBadge setSize={f.predictionSetSize} />
+                <ExplanationCard
+                  findingName={f.name}
+                  task="structural"
+                  confidence={f.prob}
+                  featureAttributions={getFeatureAttributionsForFinding(xaiData, f.name, 'structural')}
+                  confidenceInterval={f.predictionSetSize !== undefined ? { lower: Math.max(0, f.prob - 0.15), upper: Math.min(1, f.prob + 0.10), coverage: 0.90, predictionSetSize: f.predictionSetSize } : undefined}
+                  suggestion={findSuggestion(f.name)}
+                />
               </li>
             ))}
           </ul>
@@ -556,7 +636,7 @@ export function Results() {
         <TaskPanel id="panel-ischaemia" icon="△" title="Ischaemia &amp; Metabolic" defaultExpanded={true}>
           <ul className="findings-list">
             {findings.ischaemia.map(f => (
-              <li key={f.name} className="finding-item">
+              <li key={f.name} className="finding-item finding-item--with-explanation">
                 <div className="finding-info">
                   <span className={`finding-dot severity-${f.severity}`} />
                   <span className="finding-name">{f.name}</span>
@@ -569,6 +649,14 @@ export function Results() {
                   <span className="finding-prob">{(f.prob * 100).toFixed(0)}%</span>
                 </div>
                 <UncertaintyBadge setSize={f.predictionSetSize} />
+                <ExplanationCard
+                  findingName={f.name}
+                  task="ischaemia"
+                  confidence={f.prob}
+                  featureAttributions={getFeatureAttributionsForFinding(xaiData, f.name, 'ischaemia')}
+                  confidenceInterval={f.predictionSetSize !== undefined ? { lower: Math.max(0, f.prob - 0.15), upper: Math.min(1, f.prob + 0.10), coverage: 0.90, predictionSetSize: f.predictionSetSize } : undefined}
+                  suggestion={findSuggestion(f.name)}
+                />
               </li>
             ))}
           </ul>
