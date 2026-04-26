@@ -903,13 +903,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a deployment admin, I want ECG results stored locally with encryption so that patient data is protected at rest on edge devices.
 
 **Acceptance Criteria:**
-- [ ] `aortica/sync/` subpackage with `result_store.py`
-- [ ] `ResultStore` class wrapping SQLite with schema: `results` table (id, ecg_hash, predictions_json, quality_json, timestamp, synced)
-- [ ] AES-256 encryption for the predictions_json column (using `cryptography` library Fernet)
-- [ ] CRUD methods: `store_result()`, `get_result()`, `list_results()`, `delete_result()`
-- [ ] Database file created automatically in configurable directory
-- [ ] Unit tests for CRUD operations and encrypted vs. plaintext verification
-- [ ] Typecheck passes
+- [x] `aortica/sync/` subpackage with `result_store.py`
+- [x] `ResultStore` class wrapping SQLite with schema: `results` table (id, ecg_hash, predictions_json, quality_json, timestamp, synced)
+- [x] AES-256 encryption for the predictions_json column (using `cryptography` library Fernet)
+- [x] CRUD methods: `store_result()`, `get_result()`, `list_results()`, `delete_result()`
+- [x] Database file created automatically in configurable directory
+- [x] Unit tests for CRUD operations and encrypted vs. plaintext verification
+- [x] Typecheck passes
 
 ---
 
