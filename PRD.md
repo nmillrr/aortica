@@ -932,14 +932,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a deployment admin, I want configurable sync thresholds so that sync doesn't consume excessive bandwidth on limited connections.
 
 **Acceptance Criteria:**
-- [ ] `aortica/sync/config.py` with `SyncConfig` dataclass
-- [ ] Configurable fields: sync_interval_minutes (default 30), min_bandwidth_kbps (default 256), max_batch_size (default 20), remote_url, device_id
-- [ ] `check_connectivity(url)` function testing network availability and estimating bandwidth
-- [ ] Auto-sync scheduler that respects bandwidth thresholds
-- [ ] Anonymization function stripping patient metadata before sync
-- [ ] YAML config file loading
-- [ ] Unit tests for config loading, connectivity check, and anonymization
-- [ ] Typecheck passes
+- [x] `aortica/sync/config.py` with `SyncConfig` dataclass
+- [x] Configurable fields: sync_interval_minutes (default 30), min_bandwidth_kbps (default 256), max_batch_size (default 20), remote_url, device_id
+- [x] `check_connectivity(url)` function testing network availability and estimating bandwidth
+- [x] Auto-sync scheduler that respects bandwidth thresholds
+- [x] Anonymization function stripping patient metadata before sync
+- [x] YAML config file loading
+- [x] Unit tests for config loading, connectivity check, and anonymization
+- [x] Typecheck passes
 
 ---
 
