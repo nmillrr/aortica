@@ -18,6 +18,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+try:
+    from fastapi import APIRouter, Request
+    from fastapi.responses import JSONResponse as _JSONResponse
+
+    HAS_FASTAPI = True
+except ImportError:  # pragma: no cover
+    HAS_FASTAPI = False
+
 
 # ---------------------------------------------------------------------------
 # Pydantic models
@@ -393,14 +401,13 @@ def create_feedback_router(store: Optional[FeedbackStore] = None) -> Any:
         A :class:`FeedbackStore` instance.  If ``None`` a default
         store is created using ``feedback.db`` in the cwd.
     """
-    try:
-        from fastapi import APIRouter, Request
-        from fastapi.responses import JSONResponse
-    except ImportError:  # pragma: no cover
+    if not HAS_FASTAPI:  # pragma: no cover
         raise ImportError(
             "FastAPI is required for the feedback router. "
             "Install with: pip install aortica[api]"
-        ) from None
+        )
+
+    JSONResponse = _JSONResponse  # local alias for readability
 
     if store is None:
         store = FeedbackStore()

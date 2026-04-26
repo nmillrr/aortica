@@ -556,17 +556,21 @@ except ImportError:
 
 @pytest.fixture
 def api_client(temp_db: str) -> Any:
-    """Create a FastAPI test client with feedback router."""
-    pytest.importorskip("fastapi")
+    """Create a FastAPI test client with feedback router.
+
+    Builds a minimal FastAPI app with the temp-backed store injected
+    directly into ``create_feedback_router`` so that the router closure
+    references the correct (isolated) database.
+    """
+    fastapi = pytest.importorskip("fastapi")
     from starlette.testclient import TestClient
 
-    from aortica.api.app import create_app
+    from aortica.api.feedback import create_feedback_router
 
-    # Create app with auth disabled for testing
-    app = create_app(enable_auth=False)
-    # Replace the feedback store with our temp one
+    app = fastapi.FastAPI()
     temp_store = FeedbackStore(db_path=temp_db)
-    app.state.feedback_store = temp_store  # type: ignore[attr-defined]
+    feedback_router = create_feedback_router(temp_store)
+    app.include_router(feedback_router)
 
     return TestClient(app)
 

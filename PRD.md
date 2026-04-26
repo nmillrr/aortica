@@ -885,13 +885,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a developer, I want to collect clinician feedback on AI findings so that future model calibration and improvement can be data-driven.
 
 **Acceptance Criteria:**
-- [ ] `POST /api/v1/feedback` endpoint accepting: ECG reference ID, finding ID, action (accept/reject/modify), optional comment, clinician ID
-- [ ] `aortica/api/feedback.py` with Pydantic models and SQLite-backed storage
-- [ ] `GET /api/v1/feedback/stats` returning aggregate feedback statistics (agreement rate, most-rejected findings)
-- [ ] React feedback buttons (accept, reject, modify) on each finding in the copilot panel
-- [ ] Unit tests for feedback CRUD and stats aggregation
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `POST /api/v1/feedback` endpoint accepting: ECG reference ID, finding ID, action (accept/reject/modify), optional comment, clinician ID
+- [x] `aortica/api/feedback.py` with Pydantic models and SQLite-backed storage
+- [x] `GET /api/v1/feedback/stats` returning aggregate feedback statistics (agreement rate, most-rejected findings)
+- [x] React feedback buttons (accept, reject, modify) on each finding in the copilot panel
+- [x] Unit tests for feedback CRUD and stats aggregation
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
