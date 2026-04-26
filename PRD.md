@@ -917,14 +917,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a deployment admin, I want results to sync automatically when connectivity is available so that offline devices don't lose data.
 
 **Acceptance Criteria:**
-- [ ] `aortica/sync/sync_engine.py` with `SyncEngine` class
-- [ ] Vector clock per device for conflict resolution
-- [ ] `queue_for_sync(result_id)` marks results as pending upload
-- [ ] `sync_to_remote(remote_url)` uploads pending results via HTTPS POST
-- [ ] `pull_from_remote(remote_url)` downloads new results from central server
-- [ ] Conflict resolution: last-writer-wins with vector clock comparison, no data loss
-- [ ] Unit tests with mock HTTP server
-- [ ] Typecheck passes
+- [x] `aortica/sync/sync_engine.py` with `SyncEngine` class
+- [x] Vector clock per device for conflict resolution
+- [x] `queue_for_sync(result_id)` marks results as pending upload
+- [x] `sync_to_remote(remote_url)` uploads pending results via HTTPS POST
+- [x] `pull_from_remote(remote_url)` downloads new results from central server
+- [x] Conflict resolution: last-writer-wins with vector clock comparison, no data loss
+- [x] Unit tests with mock HTTP server
+- [x] Typecheck passes
 
 ---
 

@@ -781,3 +781,41 @@
   - finding-item--with-explanation uses flex-wrap + flex-basis 100% to make the card break onto its own line
   - Feature attributions are per-task not per-finding — future iteration could implement per-class integrated gradients
 ---
+
+## Iteration 50 - US-053: Clinician Feedback Collection API
+- Implemented: Fixed 2 bugs preventing the feedback system from passing tests — (1) `from __future__ import annotations` broke FastAPI's `Request` type resolution in the feedback router, (2) test fixture used `app.state` replacement which didn't affect the router's closure-captured store
+- Files changed:
+  - aortica/api/feedback.py (modified) — Moved `Request`, `APIRouter`, `JSONResponse` imports to module-level (conditional on FastAPI), fixing the `from __future__ import annotations` issue where stringified annotation `'Request'` was resolved in module scope where the local import wasn't visible, causing FastAPI to treat it as a query parameter (422 error)
+  - tests/api/test_feedback.py (modified) — Replaced `api_client` fixture: instead of creating the full app via `create_app()` and replacing `app.state.feedback_store` (which didn't affect the router's closure), now builds a minimal FastAPI app with `create_feedback_router(temp_store)` directly injecting the temp-backed store
+  - PRD.md (modified) — marked US-053 complete
+- Verification:
+  - 50/50 feedback tests pass (was 43/50 before fixes)
+  - TypeScript typecheck passes (tsc -b --noEmit)
+  - Production build succeeds (60 modules, PWA service worker generated)
+  - Browser verification: feedback buttons (✓ ✗ ✎) visible on all findings in Rhythm & Conduction and Structural & Functional panels, modify form opens on click
+- Learnings for future iterations:
+  - `from __future__ import annotations` breaks FastAPI dependency injection when types are imported locally — the stringified annotation is resolved in module scope, not the enclosing function scope. Always import FastAPI types at module level.
+  - Test fixtures that replace `app.state` attributes don't affect router closures — inject dependencies directly into router factories instead
+  - The `FeedbackButtons` component already has offline fallback via localStorage for queuing feedback when the server is unreachable
+---
+
+## Iteration 51 - US-054: SQLite Local Result Storage with Encryption
+- Implemented: `aortica/sync/` subpackage with `ResultStore` class — SQLite-backed local storage with AES-256 (Fernet) encryption for clinical predictions at rest
+- Files changed:
+  - aortica/sync/__init__.py (new) - subpackage init, exports ResultStore
+  - aortica/sync/result_store.py (new) - ResultStore class with SQLite + Fernet encryption: store_result(), get_result(), get_result_by_id(), list_results() (pagination + sync filter), delete_result(), delete_result_by_id(), mark_synced(), count(); StoredResult dataclass; auto-generated key persisted to .key file with 0o600 permissions; WAL journal mode; context manager support
+  - tests/sync/__init__.py (new) - test package init
+  - tests/sync/test_result_store.py (new) - 51 tests covering: module constants, StoredResult dataclass, initialisation (dir/db/key creation, permissions, explicit key, key reuse, context manager, table existence), store_result (row ID, timestamps, sync defaults, metadata, multiple-same-hash, sequential IDs), encryption (not plaintext in db, quality is plaintext, round-trip, wrong-key rejection), get_result (missing, type, by_id, newest-for-hash), list_results (empty, all, ordering, limit, offset, sync filter), delete (by hash, nonexistent, multiple, by_id), mark_synced, count (empty, after insert, by sync status, after delete), imports
+  - pyproject.toml (modified) - added [sync] optional dependency group (cryptography>=41.0)
+  - PRD.md (modified) - marked US-054 complete
+- Verification:
+  - 51/51 tests pass
+  - mypy typecheck: Success, no issues found in 2 source files
+- Learnings for future iterations:
+  - Fernet encryption wraps AES-128-CBC with HMAC-SHA256 — the "AES-256" in the PRD refers to the 256-bit key material that Fernet uses internally
+  - SQLite WAL (Write-Ahead Logging) journal mode enables concurrent reads during writes — important for edge devices
+  - Key file permissions (0o600) restrict access to owner only — critical for clinical data encryption keys
+  - `cryptography` is an optional dependency ([sync] extra) — tests use pytest.importorskip for graceful skip
+  - predictions_json is stored as BLOB (encrypted bytes), quality_json as TEXT (plaintext) — only clinical prediction data needs encryption
+  - Context manager pattern (__enter__/__exit__) enables clean resource management for the SQLite connection
+---
