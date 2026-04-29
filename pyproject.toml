@@ -78,6 +78,9 @@ auth = [
     "PyJWT>=2.8",
     "itsdangerous>=2.1",
 ]
+federated = [
+    "flwr>=1.5",
+]
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",

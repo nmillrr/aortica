@@ -1033,13 +1033,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want a Flower-based federated learning server so that multiple institutions can collaboratively train Aortica models without sharing raw data.
 
 **Acceptance Criteria:**
-- [ ] `aortica/federated/` subpackage with `__init__.py`
-- [ ] `aortica.federated.FLServer` class wrapping `flwr.server.start_server()` with configurable rounds, min clients, and strategy
-- [ ] Supports FedAvg aggregation strategy out of the box
-- [ ] Server configuration via YAML (num_rounds, min_fit_clients, min_evaluate_clients, server_address)
-- [ ] Logs per-round aggregated metrics (loss, per-task F1)
-- [ ] Unit tests with mock Flower server
-- [ ] Typecheck passes
+- [x] `aortica/federated/` subpackage with `__init__.py`
+- [x] `aortica.federated.FLServer` class wrapping `flwr.server.start_server()` with configurable rounds, min clients, and strategy
+- [x] Supports FedAvg aggregation strategy out of the box
+- [x] Server configuration via YAML (num_rounds, min_fit_clients, min_evaluate_clients, server_address)
+- [x] Logs per-round aggregated metrics (loss, per-task F1)
+- [x] Unit tests with mock Flower server
+- [x] Typecheck passes
 
 ---
 

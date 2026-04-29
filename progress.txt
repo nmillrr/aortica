@@ -963,3 +963,24 @@
   - Locale resolution: file path → load JSON, unknown string → fallback to English defaults
   - Same pattern as other edge modules: no torch dependency, pure Python, comprehensive tests
 ---
+
+## Iteration 58 - US-061: Inference Profiling and Power Optimization
+- Implemented: `profile_inference()` function, `InferenceProfile` dataclass, `_estimate_peak_memory()`, `_estimate_power()`, and `aortica profile` CLI command
+- Files changed:
+  - aortica/edge/profiling.py (new) - profile_inference() with ONNX Runtime session, warmup runs, timed inference loops, latency statistics (mean/p50/p95/min/max/std), memory estimation (model size + input + 2x activation heuristic), power estimation (TDP × latency for RPi4/RPi5/Jetson Nano/Jetson Orin Nano); InferenceProfile dataclass with summary_table() and to_dict(); HARDWARE_TDP constant dict
+  - aortica/cli/profile_cmd.py (new) - `aortica profile <model_path>` Click command with --format (table/json), --n-runs, --hardware, --warmup, --batch-size, --leads, --duration-samples options; Rich-formatted output with latency/resource/power panels; JSON output mode
+  - aortica/cli/__init__.py (modified) - registered profile_cmd in the CLI group
+  - aortica/edge/__init__.py (modified) - exports InferenceProfile and profile_inference
+  - tests/edge/test_profiling.py (new) - 57 tests: constants (8), InferenceProfile dataclass (9 — defaults/custom/properties/summary/to_dict/json), memory estimation (3), power estimation (9 — all hardware profiles/unknown fallback/energy scaling/calculation), profile_inference with real ONNX model (19 — return type/statistics/n_runs/model size/memory/input shape/model path/hardware/energy/power/2D input expansion/errors/session options/latency ordering/std/summary/dict), CLI (6 — help/table/json/nonexistent/custom hardware/group registration), imports (3)
+  - PRD.md (modified) - marked US-061 complete
+- Verification:
+  - 57/57 tests pass
+  - mypy typecheck: Success, no issues found in profiling.py (pre-existing error in predict.py unrelated)
+- Learnings for future iterations:
+  - ONNX model for testing can be created with onnx.helper (Identity node) — no torch needed for test model creation
+  - Memory estimation is heuristic (3x model size + input) — real measurement would need psutil or tracemalloc but adds complexity
+  - Power estimation uses TDP × latency which is a conservative upper bound (assumes full TDP during inference)
+  - train_multitask.py's @torch.no_grad() at module level causes NameError cascade when torch is not installed — tests need to catch NameError alongside ImportError
+  - WARMUP_RUNS (5) before timed runs stabilises ONNX Runtime's internal JIT and memory allocation
+  - time.perf_counter() provides highest resolution monotonic timing for latency measurement
+---
