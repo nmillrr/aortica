@@ -187,6 +187,25 @@ pip install aortica[cli,edge]
 aortica predict ecg_file.hea  # uses INT8 ONNX model
 ```
 
+### Docker Deployment
+
+```bash
+# Build the server image (amd64 — includes API server + built frontend)
+docker build -f Dockerfile.server -t aortica/server:latest .
+
+# Build the edge image (arm64 — CLI + ONNX edge inference only)
+docker build -f Dockerfile.edge -t aortica/edge:latest .
+
+# Run the server
+docker run -p 8000:8000 aortica/server:latest
+
+# Run edge inference on a file
+docker run -v /path/to/ecg:/data aortica/edge:latest predict /data/recording.hea
+
+# Local development with docker-compose (API + frontend dev server)
+docker compose up
+```
+
 ### CHW-Facing Simplified Output
 For community health workers without cardiology training:
 - **Three-tier system**: Low risk → Refer for assessment → Urgent referral

@@ -1,0 +1,59 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.eggs
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.venv
+.venv312
+*.egg
+
+# Node / Frontend build artifacts
+frontend/node_modules
+frontend/dist
+frontend/.cache
+
+# Tests (not needed in production images)
+tests/
+test_output.txt
+
+# Documentation files
+docs/
+*.md
+!README.md
+!LICENSE
+
+# IDE and OS
+.DS_Store
+.vscode
+.idea
+*.swp
+*.swo
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Data files (bind-mounted at runtime)
+data/
+feedback.db
+
+# Development artifacts
+.agents
+deep-research-report.md
+project-plan.md
+progress.txt
+PRD.md
+PRD-2.md
+
+# CI/CD
+.github/

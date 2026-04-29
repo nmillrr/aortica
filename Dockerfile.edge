@@ -1,0 +1,46 @@
+# Dockerfile.edge — Aortica edge inference for arm64
+# Optimized for small image size on resource-constrained hardware
+
+FROM python:3.12-slim
+
+# Metadata
+LABEL org.opencontainers.image.title="Aortica Edge" \
+      org.opencontainers.image.description="AI ECG analysis platform — edge inference for ARM64" \
+      org.opencontainers.image.version="0.2.0" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.source="https://github.com/nmillrr/aortica"
+
+# Create non-root user for security
+RUN groupadd --gid 1000 aortica && \
+    useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash aortica
+
+# Install minimal system dependencies
+# hadolint ignore=DL3008
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        libgomp1 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python package files first for layer caching
+COPY pyproject.toml README.md LICENSE ./
+COPY aortica/ ./aortica/
+
+# Install with CLI and edge extras only (minimal footprint)
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir ".[cli,edge]" && \
+    pip cache purge 2>/dev/null || true
+
+# Create data and cache directories
+RUN mkdir -p /app/data /home/aortica/.cache/aortica && \
+    chown -R aortica:aortica /app /home/aortica/.cache
+
+# Switch to non-root user
+USER aortica
+
+# Default command: show help
+ENTRYPOINT ["aortica"]
+CMD ["--help"]

@@ -1,0 +1,50 @@
+# docker-compose.yml — Aortica local development environment
+#
+# Usage:
+#   docker compose up              # Start API server + frontend dev server
+#   docker compose up api          # Start API server only
+#   docker compose up frontend     # Start frontend dev server only
+#   docker compose down            # Stop all services
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+      target: runtime
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./aortica:/app/aortica:ro
+      - aortica-data:/app/data
+      - aortica-cache:/home/aortica/.cache/aortica
+    environment:
+      - AORTICA_ENV=development
+      - AORTICA_LOG_LEVEL=info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    image: node:22-slim
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  aortica-data:
+  aortica-cache:
+  frontend-node-modules:

@@ -951,13 +951,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a DevOps engineer, I want Docker images for server (amd64) and edge (arm64) so that Aortica can be deployed consistently across environments.
 
 **Acceptance Criteria:**
-- [ ] `Dockerfile.server` for amd64: Python 3.12, installs `aortica[api,cli]`, exposes port 8000, runs uvicorn
-- [ ] `Dockerfile.edge` for arm64: Python 3.12 slim, installs `aortica[cli,edge]`, optimized for small image size
-- [ ] `docker-compose.yml` for local development (API server + frontend dev server)
-- [ ] `.dockerignore` excluding tests, docs, and development files
-- [ ] Build instructions in README
-- [ ] Dockerfiles pass `hadolint` linting (no critical warnings)
-- [ ] Typecheck passes
+- [x] `Dockerfile.server` for amd64: Python 3.12, installs `aortica[api,cli]`, exposes port 8000, runs uvicorn
+- [x] `Dockerfile.edge` for arm64: Python 3.12 slim, installs `aortica[cli,edge]`, optimized for small image size
+- [x] `docker-compose.yml` for local development (API server + frontend dev server)
+- [x] `.dockerignore` excluding tests, docs, and development files
+- [x] Build instructions in README
+- [x] Dockerfiles pass `hadolint` linting (no critical warnings)
+- [x] Typecheck passes
 
 ---
 
