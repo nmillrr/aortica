@@ -64,3 +64,6 @@ checkpoints/
 *.log
 wandb/
 runs/
+
+# MkDocs build output
+site/

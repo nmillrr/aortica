@@ -1,0 +1,100 @@
+site_name: Aortica Documentation
+site_description: Open-source AI ECG analysis platform — documentation, API reference, and deployment guides.
+site_url: https://nmillrr.github.io/aortica/
+repo_url: https://github.com/nmillrr/aortica
+repo_name: nmillrr/aortica
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: deep purple
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_category_heading: true
+            heading_level: 3
+            docstring_style: google
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+  - API Reference:
+      - Overview: api/overview.md
+      - IO — Format Readers: api/io.md
+      - Signal Processing: api/signal.md
+      - Models: api/models.md
+      - XAI — Explainability: api/xai.md
+      - Evaluation: api/evaluation.md
+      - Edge Deployment: api/edge.md
+      - REST API: api/rest.md
+      - Sync: api/sync.md
+  - CLI Reference:
+      - Commands: cli/commands.md
+  - Deployment Guide:
+      - Docker: deployment/docker.md
+      - Raspberry Pi: deployment/raspberry-pi.md
+      - Offline / PWA: deployment/offline.md
+  - Clinical Background:
+      - ECG Primer: clinical/ecg-primer.md
+      - AI Findings Guide: clinical/ai-findings.md
+  - Contributing:
+      - Development Setup: contributing/setup.md
+      - Code Style: contributing/code-style.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/nmillrr/aortica

@@ -819,3 +819,105 @@
   - predictions_json is stored as BLOB (encrypted bytes), quality_json as TEXT (plaintext) — only clinical prediction data needs encryption
   - Context manager pattern (__enter__/__exit__) enables clean resource management for the SQLite connection
 ---
+
+## Iteration 52 - US-055: Offline-First Sync Engine with Vector Clocks
+- Implemented: `SyncEngine` class with `VectorClock` for conflict resolution, `queue_for_sync()`, `sync_to_remote()`, `pull_from_remote()`, conflict archive, and mock HTTP server tests
+- Files changed:
+  - aortica/sync/sync_engine.py (new) - SyncEngine class with: VectorClock dataclass (increment/merge/dominates/concurrent_with/serialisation), SyncQueueEntry/SyncReport/ConflictRecord dataclasses, sync_queue/conflict_archive/device_state SQLite tables, queue_for_sync (validates result exists, increments clock, inserts to queue), sync_to_remote (iterates pending, HTTP POST to /push, marks synced), pull_from_remote (HTTP POST to /pull with clock, conflict resolution via clock dominance then LWW timestamp, conflict archiving), _http_post via stdlib urllib
+  - aortica/sync/__init__.py (modified) - exports SyncEngine, VectorClock, SyncReport, ConflictRecord, SyncQueueEntry
+  - tests/sync/test_sync_engine.py (new) - 45 tests: VectorClock (empty/increment/merge/dominates/concurrent/serialisation/equality), SyncReport (defaults/errors), dataclasses, SyncEngine init (device_id/clock/tables), queue_for_sync (id/clock/pending/list/invalid/multiple/persisted/predictions), sync_to_remote with mock HTTP server (upload/marks_synced/result_synced/payload/no_pending/server_error/unreachable), pull_from_remote (download_new/empty/remote_dominates/local_dominates/concurrent_remote_wins/concurrent_local_wins/merges_clock/network_error), conflict archive (list/fields), imports
+  - PRD.md (modified) - marked US-055 complete
+- Verification:
+  - 45/45 sync_engine tests pass
+  - 96/96 total sync tests pass (51 result_store + 45 sync_engine)
+  - mypy typecheck: Success, no issues found in 2 source files
+- Learnings for future iterations:
+  - SyncEngine reuses ResultStore's SQLite connection for sync tables — avoids separate DB file management
+  - VectorClock uses partial order: dominates = all ≥ and at least one >; concurrent = neither dominates
+  - Conflict resolution: first check clock dominance, then fall back to LWW by timestamp for concurrent writes
+  - Conflict archive preserves both versions (local + remote predictions and clocks) — no data is ever lost
+  - stdlib urllib.request is sufficient for sync HTTP — no external HTTP library dependency needed
+  - Mock HTTP server using http.server.HTTPServer + BaseHTTPRequestHandler on random port is effective for integration tests
+  - Class-level attributes on the handler (_MockSyncHandler.push_received) act as shared state for test assertions
+---
+
+## Iteration 53 - US-056: Sync Configuration and Bandwidth Management
+- Implemented: `SyncConfig` dataclass with YAML I/O, `check_connectivity()` probe, `AutoSyncScheduler` with bandwidth gating, `anonymise_result()` for stripping patient metadata
+- Files changed:
+  - aortica/sync/config.py (new) - SyncConfig dataclass (sync_interval_minutes/min_bandwidth_kbps/max_batch_size/remote_url/device_id/sensitive_keys), to_dict/from_dict serialisation, to_yaml/from_yaml with fallback simple YAML parser when pyyaml not installed, ConnectivityStatus dataclass, check_connectivity() using stdlib urllib GET + latency/bandwidth measurement, AutoSyncScheduler with daemon Timer thread + bandwidth threshold gating + tick() for testing, anonymise_result() with _DEFAULT_SENSITIVE_KEYS frozenset (14 keys) + extra_sensitive_keys + case-insensitive matching + deep copy
+  - aortica/sync/__init__.py (modified) - exports SyncConfig, ConnectivityStatus, AutoSyncScheduler, check_connectivity, anonymise_result
+  - tests/sync/test_config.py (new) - 58 tests: SyncConfig defaults (7), serialisation (4), YAML I/O (6), simple YAML parser (9), ConnectivityStatus (2), check_connectivity with mock HTTP server (3), AutoSyncScheduler (10), anonymisation (10), constants (2), imports (5)
+  - PRD.md (modified) - marked US-056 complete
+- Verification:
+  - 58/58 config tests pass
+  - 154/154 total sync tests pass (51 result_store + 45 sync_engine + 58 config)
+  - mypy typecheck: Success, no issues found in 1 source file
+- Learnings for future iterations:
+  - json.loads() returns Any — must assign to explicitly typed variable (dict[str, Any]) to avoid mypy no-any-return
+  - _simple_yaml_load fallback parser handles flat key:value and simple lists (  - item) — sufficient for SyncConfig without requiring pyyaml dependency
+  - AutoSyncScheduler uses threading.Timer with daemon=True — auto-cleanup when main thread exits
+  - check_connectivity treats HTTP errors (e.g., 500) as "available=True" with error message — server is reachable even if returning errors
+  - anonymise_result uses json.loads(json.dumps()) for deep copy — avoids import copy and handles nested dicts cleanly
+  - frozenset for _DEFAULT_SENSITIVE_KEYS prevents accidental mutation of the default sensitive key set
+---
+
+## Iteration 54 - US-057: Docker Images for Multi-Architecture Deployment
+- Implemented: Dockerfile.server (multi-stage amd64), Dockerfile.edge (slim arm64), docker-compose.yml, .dockerignore, README Docker section
+- Files changed:
+  - Dockerfile.server (new) - Multi-stage build: Stage 1 (node:22-slim) builds frontend assets via npm ci + npm run build; Stage 2 (python:3.12-slim) installs aortica[api,cli], copies built frontend, non-root user (aortica:1000), HEALTHCHECK via curl /health, CMD aortica-server, EXPOSE 8000, hadolint-clean
+  - Dockerfile.edge (new) - python:3.12-slim, installs aortica[cli,edge] only (minimal footprint), non-root user, ENTRYPOINT aortica with --help default CMD, hadolint-clean
+  - docker-compose.yml (new) - Two services: api (builds from Dockerfile.server with health check, volume mounts for dev, restart policy) + frontend (node:22-slim with npm run dev --host 0.0.0.0, depends_on api healthy), three named volumes (data, cache, node_modules)
+  - .dockerignore (new) - Excludes .git, __pycache__, node_modules, tests, docs, *.md (except README/LICENSE), IDE files, Docker files themselves, data, .github
+  - README.md (modified) - Added Docker Deployment section with build/run commands for server, edge, and docker-compose
+  - PRD.md (modified) - marked US-057 complete
+- Verification:
+  - hadolint: 0 warnings/errors on both Dockerfiles
+  - docker compose config: validates clean
+  - mypy: no new errors (pre-existing 35 from torch-optional pattern)
+- Learnings for future iterations:
+  - FastAPI app uses factory pattern (create_app) with no module-level `app` — use `aortica-server` entry point (which calls run_server → create_app → uvicorn.run) instead of `uvicorn aortica.api.app:app`
+  - Multi-stage Docker builds with node:22-slim as frontend-builder keep the final Python image small
+  - hadolint DL3013 (pin pip versions) is suppressed via inline comments since pyproject.toml handles version constraints
+  - .dockerignore should exclude Dockerfile* and docker-compose* to avoid recursive context issues
+  - docker compose `depends_on` with `condition: service_healthy` ensures frontend waits for API health check to pass
+---
+
+## Iteration 55 - US-058: MkDocs Documentation Site
+- Implemented: Full MkDocs documentation site with Material theme, mkdocstrings API reference, 6 sections, dark/light toggle, GitHub Pages deployment workflow
+- Files changed:
+  - mkdocs.yml (new) - MkDocs config with Material theme (dark/light toggle), mkdocstrings Python handler with Google-style docstrings, navigation tabs, search, code copy, full nav structure
+  - docs/index.md (new) - Landing page with project overview, feature highlights, quick install/start, architecture diagram
+  - docs/getting-started/installation.md (new) - Installation guide: basic, extras table, development, Docker, verify
+  - docs/getting-started/quickstart.md (new) - Quick start: CLI, Python API, REST API, Web UI, benchmarking
+  - docs/api/overview.md (new) - API reference overview with module table, ECGRecord and MultiTaskOutput patterns
+  - docs/api/io.md (new) - IO reference: ECGRecord, read_ecg, all format readers (WFDB, CSV, MAT, DICOM, SCP, HL7, PDF) via mkdocstrings
+  - docs/api/signal.md (new) - Signal reference: detect_qrs, denoise, score_quality, QualityReport, LeadQuality
+  - docs/api/models.md (new) - Models reference: backbone, attention, 4 task heads, AorticaModel, registry, calibration, conformal prediction
+  - docs/api/xai.md (new) - XAI reference: explain, FeatureAttribution, MedianBeatVAE, vae_report
+  - docs/api/evaluation.md (new) - Evaluation reference: benchmark, BenchmarkReport, TaskReport, ClassMetrics, SubgroupReport
+  - docs/api/edge.md (new) - Edge reference: export_onnx, MobileNetBackbone1D, distillation, quantization, validation
+  - docs/api/rest.md (new) - REST API reference: endpoint table, create_app, run_inference_pipeline, batch, compare
+  - docs/api/sync.md (new) - Sync reference: ResultStore, SyncEngine, VectorClock, SyncConfig, AutoSyncScheduler, anonymise_result
+  - docs/cli/commands.md (new) - CLI reference: predict, benchmark, train, info with options tables and examples
+  - docs/deployment/docker.md (new) - Docker guide: server/edge images, compose, health check, volumes
+  - docs/deployment/raspberry-pi.md (new) - RPi guide: hardware requirements, installation, systemd, performance targets
+  - docs/deployment/offline.md (new) - Offline/PWA guide: hybrid inference, service worker caching, install instructions
+  - docs/clinical/ecg-primer.md (new) - ECG primer: 12 leads, PQRST complex, signal quality, supported formats
+  - docs/clinical/ai-findings.md (new) - AI findings guide: all task heads, confidence levels, uncertainty, suggestions
+  - docs/contributing/setup.md (new) - Dev setup: clone, test, lint, typecheck, frontend, docs
+  - docs/contributing/code-style.md (new) - Code style: Ruff, type hints, Google docstrings, optional deps, TypeScript, git conventions
+  - .github/workflows/docs.yml (new) - GitHub Actions: build MkDocs on push to main (docs/** or mkdocs.yml changes), deploy to GitHub Pages via upload-pages-artifact + deploy-pages
+  - pyproject.toml (modified) - Added [docs] optional dependency group (mkdocs-material>=9.5, mkdocstrings[python]>=0.24)
+  - PRD.md (modified) - marked US-058 complete
+- Verification:
+  - `mkdocs build` succeeds — 21 HTML pages generated in site/
+  - `mkdocs serve` runs local preview at http://127.0.0.1:8888/aortica/
+  - mkdocstrings auto-generates API reference from Python docstrings for all modules
+  - mypy typecheck: no new errors
+- Learnings for future iterations:
+  - Module file names must match exactly in mkdocstrings references — `mobilenet_backbone` not `mobilenet`
+  - MkDocs Material warning about MkDocs 2.0 incompatibility is informational only — current version works fine
+  - `mkdocstrings[python]` requires the Python handler extra — bare `mkdocstrings` won't resolve Python modules
+  - GitHub Pages deployment uses upload-pages-artifact + deploy-pages actions (not ghp-import) for modern OIDC-based permissions
+  - `site/` should be in .gitignore (MkDocs output directory, generated at build time)
+---

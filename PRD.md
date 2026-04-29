@@ -965,13 +965,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a developer, I want a documentation site so that users can find API reference, deployment guides, and clinical background in one place.
 
 **Acceptance Criteria:**
-- [ ] `docs/` directory with MkDocs project (`mkdocs.yml` using Material theme)
-- [ ] Sections: Getting Started, API Reference, CLI Reference, Deployment Guide, Clinical Background, Contributing
-- [ ] API reference auto-generated from docstrings (using `mkdocstrings`)
-- [ ] `mkdocs serve` runs local preview
-- [ ] `mkdocs build` produces static site in `site/`
-- [ ] GitHub Actions step to deploy docs to GitHub Pages on push to main
-- [ ] Typecheck passes
+- [x] `docs/` directory with MkDocs project (`mkdocs.yml` using Material theme)
+- [x] Sections: Getting Started, API Reference, CLI Reference, Deployment Guide, Clinical Background, Contributing
+- [x] API reference auto-generated from docstrings (using `mkdocstrings`)
+- [x] `mkdocs serve` runs local preview
+- [x] `mkdocs build` produces static site in `site/`
+- [x] GitHub Actions step to deploy docs to GitHub Pages on push to main
+- [x] Typecheck passes
 
 ---
 

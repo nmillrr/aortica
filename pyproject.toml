@@ -78,6 +78,10 @@ auth = [
     "PyJWT>=2.8",
     "itsdangerous>=2.1",
 ]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
