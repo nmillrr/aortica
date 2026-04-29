@@ -997,13 +997,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a community health worker, I want plain-language risk tiers instead of detailed medical findings so that I can act on ECG results without cardiology training.
 
 **Acceptance Criteria:**
-- [ ] `aortica.edge.simplify_output(multi_task_output, thresholds=None)` function
-- [ ] Maps multi-task predictions to three tiers: 'Low risk — no immediate action', 'Refer for assessment — schedule follow-up', 'Urgent referral recommended — seek immediate care'
-- [ ] Tier assignment based on configurable confidence thresholds per condition category
-- [ ] Returns `SimplifiedReport` dataclass with tier, key finding summary (1-2 sentences), and recommended actions
-- [ ] Localization support: output strings loadable from JSON locale files (English default)
-- [ ] Unit tests with synthetic predictions mapping to each tier
-- [ ] Typecheck passes
+- [x] `aortica.edge.simplify_output(multi_task_output, thresholds=None)` function
+- [x] Maps multi-task predictions to three tiers: 'Low risk — no immediate action', 'Refer for assessment — schedule follow-up', 'Urgent referral recommended — seek immediate care'
+- [x] Tier assignment based on configurable confidence thresholds per condition category
+- [x] Returns `SimplifiedReport` dataclass with tier, key finding summary (1-2 sentences), and recommended actions
+- [x] Localization support: output strings loadable from JSON locale files (English default)
+- [x] Unit tests with synthetic predictions mapping to each tier
+- [x] Typecheck passes
 
 ---
 
