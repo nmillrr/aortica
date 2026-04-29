@@ -1,0 +1,30 @@
+[Unit]
+Description=Aortica Edge ECG Analysis Service
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=aortica
+Group=aortica
+Environment=AORTICA_DATA_DIR=/var/lib/aortica/data
+Environment=AORTICA_LOG_DIR=/var/log/aortica
+Environment=ORT_NUM_THREADS=4
+ExecStart=/usr/bin/env aortica predict --watch /var/lib/aortica/data/inbox --model ~/.cache/aortica/aortica_edge_int8.onnx
+Restart=on-failure
+RestartSec=5
+WatchdogSec=60
+
+# Resource limits
+MemoryMax=512M
+CPUQuota=90%
+
+# Security hardening
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/aortica/data /var/log/aortica
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

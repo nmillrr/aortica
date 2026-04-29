@@ -27,7 +27,18 @@ try:
 
     HAS_TORCH = True
 except ImportError:
+    import types
+
     HAS_TORCH = False
+    torch = types.ModuleType("torch")  # type: ignore[assignment]
+
+    class _DummyModule:
+        """Placeholder base when torch is absent."""
+
+        pass
+
+    nn = types.ModuleType("nn")  # type: ignore[assignment]
+    nn.Module = _DummyModule  # type: ignore[attr-defined]
 
 try:
     import onnx  # noqa: F401

@@ -1,5 +1,12 @@
 """Edge deployment: ONNX export, quantization, and edge-optimized models."""
 
+from aortica.edge.deploy_profiles import (
+    RaspberryPiProfile,
+    generate_pi_image_script,
+    generate_systemd_service,
+    write_pi_image_script,
+    write_systemd_service,
+)
 from aortica.edge.distillation import (
     DistillationConfig,
     DistillationEpochMetrics,
@@ -29,12 +36,17 @@ __all__ = [
     "EdgeValidationReport",
     "MobileNetBackbone1D",
     "QuantizationReport",
+    "RaspberryPiProfile",
     "TaskValidation",
     "distillation_loss_classification",
     "distillation_loss_regression",
     "export_onnx",
+    "generate_pi_image_script",
+    "generate_systemd_service",
     "quantize_int8",
     "train_distillation",
     "validate_edge",
     "validate_onnx",
+    "write_pi_image_script",
+    "write_systemd_service",
 ]

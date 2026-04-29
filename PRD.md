@@ -983,13 +983,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a field deployment engineer, I want a Raspberry Pi deployment profile so that Aortica can run on low-cost ARM hardware in rural clinics.
 
 **Acceptance Criteria:**
-- [ ] `aortica/edge/deploy_profiles.py` with `RaspberryPiProfile` dataclass (model_path, quantization=INT8, max_memory_mb=512, target_latency_ms=350)
-- [ ] `create_pi_image_script.sh` shell script that assembles: Python environment, edge model, CLI tool, systemd service file
-- [ ] Systemd service file (`aortica-edge.service`) for auto-start on boot
-- [ ] `aortica predict` works with edge model on ARM (ONNX Runtime ARM64)
-- [ ] Documentation: hardware requirements, SD card preparation, first-run instructions
-- [ ] Unit tests for profile configuration
-- [ ] Typecheck passes
+- [x] `aortica/edge/deploy_profiles.py` with `RaspberryPiProfile` dataclass (model_path, quantization=INT8, max_memory_mb=512, target_latency_ms=350)
+- [x] `create_pi_image_script.sh` shell script that assembles: Python environment, edge model, CLI tool, systemd service file
+- [x] Systemd service file (`aortica-edge.service`) for auto-start on boot
+- [x] `aortica predict` works with edge model on ARM (ONNX Runtime ARM64)
+- [x] Documentation: hardware requirements, SD card preparation, first-run instructions
+- [x] Unit tests for profile configuration
+- [x] Typecheck passes
 
 ---
 
