@@ -17,6 +17,7 @@ from aortica.edge.distillation import (
 )
 from aortica.edge.mobilenet_backbone import MobileNetBackbone1D
 from aortica.edge.onnx_export import export_onnx, validate_onnx
+from aortica.edge.profiling import InferenceProfile, profile_inference
 from aortica.edge.quantization import (
     ECGCalibrationDataReader,
     QuantizationReport,
@@ -41,6 +42,7 @@ __all__ = [
     "DistillationResult",
     "ECGCalibrationDataReader",
     "EdgeValidationReport",
+    "InferenceProfile",
     "KeyFinding",
     "MobileNetBackbone1D",
     "QuantizationReport",
@@ -54,6 +56,7 @@ __all__ = [
     "generate_pi_image_script",
     "generate_systemd_service",
     "load_locale",
+    "profile_inference",
     "quantize_int8",
     "simplify_output",
     "train_distillation",

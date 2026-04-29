@@ -1011,13 +1011,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a deployment engineer, I want inference profiling so that I can verify the edge model meets latency and power targets on ARM hardware.
 
 **Acceptance Criteria:**
-- [ ] `aortica.edge.profile_inference(model_path, input_data, n_runs=100)` function
-- [ ] Measures: mean/p50/p95 latency, peak memory usage, model size on disk
-- [ ] Returns `InferenceProfile` dataclass with all measurements
-- [ ] Power estimation based on latency × TDP for known hardware profiles (RPi4: 4W, Jetson Nano: 5W)
-- [ ] CLI integration: `aortica profile <model_path>` command
-- [ ] Unit tests with synthetic ONNX model
-- [ ] Typecheck passes
+- [x] `aortica.edge.profile_inference(model_path, input_data, n_runs=100)` function
+- [x] Measures: mean/p50/p95 latency, peak memory usage, model size on disk
+- [x] Returns `InferenceProfile` dataclass with all measurements
+- [x] Power estimation based on latency × TDP for known hardware profiles (RPi4: 4W, Jetson Nano: 5W)
+- [x] CLI integration: `aortica profile <model_path>` command
+- [x] Unit tests with synthetic ONNX model
+- [x] Typecheck passes
 
 ---
 

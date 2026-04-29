@@ -921,3 +921,45 @@
   - GitHub Pages deployment uses upload-pages-artifact + deploy-pages actions (not ghp-import) for modern OIDC-based permissions
   - `site/` should be in .gitignore (MkDocs output directory, generated at build time)
 ---
+
+## Iteration 56 - US-059: Raspberry Pi Deployment Profile
+- Implemented: `RaspberryPiProfile` dataclass with validation, JSON serialisation, systemd service generator, Pi image setup script generator, file writers, comprehensive documentation
+- Files changed:
+  - aortica/edge/deploy_profiles.py (new) - RaspberryPiProfile dataclass (model_path/quantization/max_memory_mb/target_latency_ms/device_name/num_threads/enable_sync/sync_interval_minutes/data_dir/log_dir/service_user/service_group/watchdog_timeout_sec), __post_init__ validation, to_dict/from_dict/to_json/from_json serialisation, resolved_model_path/tdp_watts/onnxruntime_session_options/summary helpers, generate_systemd_service (unit file with security hardening + resource limits), generate_pi_image_script (7-step setup: apt, user, venv, pip, model, dirs, systemd), write_systemd_service/write_pi_image_script file writers
+  - aortica/edge/__init__.py (modified) - exports RaspberryPiProfile, generate_systemd_service, generate_pi_image_script, write_systemd_service, write_pi_image_script
+  - aortica/edge/onnx_export.py (bugfix) - added dummy nn.Module stub for when torch is not installed (matching pattern from validation.py)
+  - aortica-edge.service (new) - static systemd unit file with default profile settings
+  - create_pi_image_script.sh (new) - standalone shell script for RPi setup (7 steps, executable)
+  - docs/deployment/raspberry-pi.md (rewritten) - expanded with: automated setup script, manual installation, deployment profile configuration table, systemd management commands, troubleshooting section
+  - tests/edge/test_deploy_profiles.py (new) - 93 tests: constants (7), defaults (13), custom construction (6), validation (8), serialisation (7), helpers (12), systemd generation (14), Pi script generation (11), file writers (7), documentation (4), imports (5)
+  - PRD.md (modified) - marked US-059 complete
+- Verification:
+  - 93/93 tests pass
+  - mypy typecheck: Success, no issues found in 1 source file
+- Learnings for future iterations:
+  - textwrap.dedent does NOT work properly with f-strings inside function bodies — the indent is relative to the source code, not the string content. Use explicit line assembly (list of strings joined with \n) instead
+  - onnx_export.py was missing the dummy nn.Module stub pattern used by all other edge modules — caused NameError on import when torch not installed. Fixed with the same pattern from validation.py
+  - RaspberryPiProfile uses os.path.join for default model_path — ensures cross-platform path separator
+  - HARDWARE_TDP dict allows power estimation for known boards without requiring hardware access
+  - onnxruntime_session_options() returns a plain dict (not an ORT SessionOptions object) — keeps the module dependency-free while being easy to apply to a real session
+  - generate_systemd_service includes security hardening (ProtectSystem, NoNewPrivileges, PrivateTmp) and resource limits (MemoryMax, CPUQuota) — important for clinical edge devices
+---
+
+## Iteration 57 - US-060: CHW-Facing Simplified Output Interface
+- Implemented: `simplify_output()` function, `SimplifiedReport`/`KeyFinding`/`TierThresholds` dataclasses, locale loading from JSON files, configurable per-condition thresholds for three risk tiers
+- Files changed:
+  - aortica/edge/simplified_output.py (new) - simplify_output() mapping multi-task predictions to low/refer/urgent tiers; TierThresholds with per-condition confidence thresholds for urgent (VT/VF/STEMI/etc) and refer (AF/LVSD/etc) categories; risk score thresholds for mortality/HF/AF onset; KeyFinding tracking class_name/confidence/task/tier_contribution; SimplifiedReport with tier/tier_label/summary/actions/key_findings/locale + to_dict(); _extract_predictions supporting MultiTaskOutput dataclass, dict with lists, and dict with nested dicts; load_locale/get_locale for JSON locale file I/O; _DEFAULT_LOCALE with English tier labels/summaries/actions
+  - aortica/edge/__init__.py (modified) - exports SimplifiedReport, TierThresholds, KeyFinding, simplify_output, load_locale
+  - tests/edge/test_simplified_output.py (new) - 51 tests: constants (10), TierThresholds (2), KeyFinding (1), SimplifiedReport (3), locale (5), prediction extraction (5), simplify_output (21 — all tiers, urgent overrides refer, below threshold stays low, risk scores, custom thresholds, locale file, none/partial tasks, multiple urgent findings, specific conditions), imports (2)
+  - PRD.md (modified) - marked US-060 complete
+- Verification:
+  - 51/51 tests pass
+  - mypy typecheck: Success, no issues found in 1 source file
+- Learnings for future iterations:
+  - No external dependencies needed — simplified_output uses only stdlib (json, os, pathlib, dataclasses)
+  - _extract_predictions handles torch tensors, numpy arrays, plain lists, and nested dicts uniformly
+  - Tier escalation is one-way: urgent overrides refer, but refer never downgrades urgent
+  - Per-condition thresholds vary by clinical severity: VF at 0.30 (very low threshold) vs sinus_tachy at 0.60 (higher threshold needed)
+  - Locale resolution: file path → load JSON, unknown string → fallback to English defaults
+  - Same pattern as other edge modules: no torch dependency, pure Python, comprehensive tests
+---
