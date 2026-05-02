@@ -1047,13 +1047,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a site administrator, I want a Flower client that wraps the Aortica training pipeline so that my site can participate in federated training with minimal setup.
 
 **Acceptance Criteria:**
-- [ ] `aortica.federated.AorticaFlowerClient` class implementing `flwr.client.NumPyClient`
-- [ ] `get_parameters()` returns model weights as numpy arrays
-- [ ] `fit()` runs local training (configurable epochs, batch size) on site-local data and returns updated weights + num_examples
-- [ ] `evaluate()` runs local evaluation and returns loss + per-task metrics
-- [ ] Client startup function accepting data path + server address
-- [ ] Unit tests with synthetic data and mock server connection
-- [ ] Typecheck passes
+- [x] `aortica.federated.AorticaFlowerClient` class implementing `flwr.client.NumPyClient`
+- [x] `get_parameters()` returns model weights as numpy arrays
+- [x] `fit()` runs local training (configurable epochs, batch size) on site-local data and returns updated weights + num_examples
+- [x] `evaluate()` runs local evaluation and returns loss + per-task metrics
+- [x] Client startup function accepting data path + server address
+- [x] Unit tests with synthetic data and mock server connection
+- [x] Typecheck passes
 
 ---
 
@@ -1061,11 +1061,11 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want pluggable aggregation strategies beyond FedAvg so that federated training is robust to non-IID data distributions across sites.
 
 **Acceptance Criteria:**
-- [ ] `aortica.federated.FedProxStrategy` implementing Flower Strategy with proximal term (μ configurable, default 0.01)
-- [ ] `aortica.federated.SCAFFOLDStrategy` implementing SCAFFOLD with server/client control variates
-- [ ] Strategy selectable via server config YAML (`strategy: fedavg | fedprox | scaffold`)
-- [ ] Unit tests verifying FedProx proximal penalty is applied, SCAFFOLD control variates update correctly
-- [ ] Typecheck passes
+- [x] `aortica.federated.FedProxStrategy` implementing Flower Strategy with proximal term (μ configurable, default 0.01)
+- [x] `aortica.federated.SCAFFOLDStrategy` implementing SCAFFOLD with server/client control variates
+- [x] Strategy selectable via server config YAML (`strategy: fedavg | fedprox | scaffold`)
+- [x] Unit tests verifying FedProx proximal penalty is applied, SCAFFOLD control variates update correctly
+- [x] Typecheck passes
 
 ---
 
@@ -1073,12 +1073,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a privacy officer, I want differential privacy applied during federated training so that individual patient data cannot be reconstructed from model updates.
 
 **Acceptance Criteria:**
-- [ ] `aortica.federated.DPWrapper` class wrapping the Flower client with per-round gradient clipping and Gaussian noise injection
-- [ ] Uses OpenDP library for privacy accounting (Rényi DP composition)
-- [ ] Configurable privacy budget ε (default 1.0), δ (default 1e-5), and max_grad_norm (default 1.0)
-- [ ] Privacy budget tracker that logs cumulative ε spent and warns when budget approaches exhaustion
-- [ ] Unit tests verifying noise is applied, budget decrements per round, and gradients are clipped
-- [ ] Typecheck passes
+- [x] `aortica.federated.DPWrapper` class wrapping the Flower client with per-round gradient clipping and Gaussian noise injection
+- [x] Uses OpenDP library for privacy accounting (Rényi DP composition)
+- [x] Configurable privacy budget ε (default 1.0), δ (default 1e-5), and max_grad_norm (default 1.0)
+- [x] Privacy budget tracker that logs cumulative ε spent and warns when budget approaches exhaustion
+- [x] Unit tests verifying noise is applied, budget decrements per round, and gradients are clipped
+- [x] Typecheck passes
 
 ---
 
@@ -1086,12 +1086,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a security engineer, I want homomorphic encryption for gradient exchange so that model updates are encrypted in transit and at rest on the aggregation server.
 
 **Acceptance Criteria:**
-- [ ] `aortica.federated.SecureAggregator` class using TenSEAL (CKKS scheme) for encrypting/decrypting model weight updates
-- [ ] Client encrypts weight deltas before sending to server; server aggregates in encrypted space; result decrypted by clients
-- [ ] Key generation and distribution protocol documented
-- [ ] Configurable polynomial modulus degree and coefficient modulus for security/performance trade-off
-- [ ] Unit tests verifying encrypted aggregation produces same result as plaintext aggregation (within floating-point tolerance)
-- [ ] Typecheck passes
+- [x] `aortica.federated.SecureAggregator` class using TenSEAL (CKKS scheme) for encrypting/decrypting model weight updates
+- [x] Client encrypts weight deltas before sending to server; server aggregates in encrypted space; result decrypted by clients
+- [x] Key generation and distribution protocol documented
+- [x] Configurable polynomial modulus degree and coefficient modulus for security/performance trade-off
+- [x] Unit tests verifying encrypted aggregation produces same result as plaintext aggregation (within floating-point tolerance)
+- [x] Typecheck passes
 
 ---
 
@@ -1099,11 +1099,11 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a site administrator, I want a DUA template and onboarding guide so that new federated learning partners can join with minimal legal and technical friction.
 
 **Acceptance Criteria:**
-- [ ] `docs/federated/DUA_TEMPLATE.md` with standard data use agreement covering: data retention, model update usage, publication rights, withdrawal process
-- [ ] `docs/federated/ONBOARDING.md` with step-by-step guide: prerequisites, client installation, data preparation, connection test, first federated round
-- [ ] CLI command `aortica federated test-connection <server_url>` that verifies client can reach server and authenticate
-- [ ] Unit tests for connection test command
-- [ ] Typecheck passes
+- [x] `docs/federated/DUA_TEMPLATE.md` with standard data use agreement covering: data retention, model update usage, publication rights, withdrawal process
+- [x] `docs/federated/ONBOARDING.md` with step-by-step guide: prerequisites, client installation, data preparation, connection test, first federated round
+- [x] CLI command `aortica federated test-connection <server_url>` that verifies client can reach server and authenticate
+- [x] Unit tests for connection test command
+- [x] Typecheck passes
 
 ---
 
