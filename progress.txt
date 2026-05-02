@@ -984,3 +984,54 @@
   - WARMUP_RUNS (5) before timed runs stabilises ONNX Runtime's internal JIT and memory allocation
   - time.perf_counter() provides highest resolution monotonic timing for latency measurement
 ---
+
+## Iteration 59 — US-063: Flower Federated Learning Client Wrapper (COMPLETE)
+### Files Created
+- aortica/federated/fl_client.py — AorticaFlowerClient implementing Flower NumPyClient
+- tests/federated/test_fl_client.py — 55 comprehensive tests
+
+### Files Modified
+- aortica/federated/__init__.py — Added AorticaFlowerClient and FLClientConfig exports
+- PRD.md — Marked US-063 acceptance criteria as complete
+
+### Implementation Details
+- AorticaFlowerClient wraps the Aortica multi-task training pipeline as a Flower NumPyClient
+- get_parameters(): Extracts model state_dict values as numpy arrays
+- set_parameters(): Reconstructs state_dict from numpy arrays with dtype preservation
+- fit(): Runs configurable local_epochs of training with AdamW + gradient clipping, returns updated weights + num_examples + per-task metrics
+- evaluate(): Runs inference on validation data, returns loss + per-task F1/C-index metrics
+- to_flower_client(): Creates a proper flwr.client.NumPyClient adapter via inner class delegation
+- start(): Convenience method connecting to FL server via flwr.client.start_numpy_client
+- FLClientConfig dataclass with validation and dict serialisation
+- Model init: loads from base_checkpoint, load_pretrained('latest'), or creates fresh AorticaModel
+- feature_dim must be divisible by num_leads (12) due to CrossLeadAttention constraint — tests use 252
+
+### Test Results
+- 55/55 tests passed (test_fl_client.py)
+- 129/129 tests passed across full federated test suite (no regressions)
+
+### Key Decisions
+- Inlined _compute_f1 and _compute_c_index helpers for module independence (avoids circular import with train_multitask)
+- Server config can override local_epochs per-round via fit(config={"local_epochs": N})
+- Graceful degradation: HAS_FLOWER and HAS_TORCH guards match fl_server.py pattern
+---
+
+## Iteration 60 - US-067: Data Use Agreement Template and Onboarding Guide
+- Implemented: DUA template, onboarding guide, ortica federated test-connection CLI command with TCP connectivity testing
+- Files changed:
+  - docs/federated/DUA_TEMPLATE.md (new) - Standard DUA covering data retention, model update usage, publication rights, withdrawal process, compliance/audit, limitation of liability, signature block
+  - docs/federated/ONBOARDING.md (new) - Step-by-step guide: prerequisites table, pip install with [federated] extras, data preparation with label format, YAML client config with reference table, test-connection usage, first federated round walkthrough, troubleshooting table, security checklist
+  - aortica/cli/federated_cmd.py (new) - ederated Click group with 	est-connection subcommand; check_fl_connection() helper using TCP socket probe with latency measurement; _parse_server_url() for host:port parsing (IPv4/IPv6); Rich-formatted success/failure output; JSON output mode; --timeout option
+  - aortica/cli/__init__.py (modified) - Registered ederated_group in the CLI group
+  - tests/cli/test_federated_cmd.py (new) - 41 tests: URL parsing (15), connection helper with mocked sockets (9), CLI command (8), group registration (5), docs existence (4)
+  - PRD.md (modified) - Marked US-067 complete
+- Verification:
+  - 41/41 tests pass
+  - mypy typecheck: Success, no issues found in 1 source file (federated_cmd.py)
+- Learnings for future iterations:
+  - Function names starting with 	est_ in source modules get collected by pytest as test fixtures â€” renamed 	est_fl_connection to check_fl_connection to avoid this
+  - Click Command objects named 	est_connection_cmd produce harmless PytestCollectionWarning â€” unavoidable but benign
+  - socket.timeout is a subclass of OSError but catching it separately allows more specific error messages
+  - IPv6 addresses in host:port format use bracket notation [::1]:8080 â€” need special parsing
+  - All pre-existing mypy errors (105) are in other modules (models, edge, xai), not in new code
+---

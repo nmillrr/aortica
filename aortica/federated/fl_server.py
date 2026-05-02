@@ -190,7 +190,7 @@ class FLServerConfig:
 # Constants
 # ---------------------------------------------------------------------------
 
-_SUPPORTED_STRATEGIES = frozenset({"fedavg"})
+_SUPPORTED_STRATEGIES = frozenset({"fedavg", "fedprox", "scaffold"})
 
 DEFAULT_SERVER_CONFIG = FLServerConfig()
 
@@ -297,6 +297,28 @@ class FLServer:
                 min_evaluate_clients=self._config.min_evaluate_clients,
                 min_available_clients=self._config.min_available_clients,
             )
+        elif self._config.strategy == "fedprox":
+            from aortica.federated.strategies import FedProxStrategy
+
+            proxy = FedProxStrategy(
+                fraction_fit=self._config.fraction_fit,
+                fraction_evaluate=self._config.fraction_evaluate,
+                min_fit_clients=self._config.min_fit_clients,
+                min_evaluate_clients=self._config.min_evaluate_clients,
+                min_available_clients=self._config.min_available_clients,
+            )
+            strategy = proxy.build()
+        elif self._config.strategy == "scaffold":
+            from aortica.federated.strategies import SCAFFOLDStrategy
+
+            scaffold = SCAFFOLDStrategy(
+                fraction_fit=self._config.fraction_fit,
+                fraction_evaluate=self._config.fraction_evaluate,
+                min_fit_clients=self._config.min_fit_clients,
+                min_evaluate_clients=self._config.min_evaluate_clients,
+                min_available_clients=self._config.min_available_clients,
+            )
+            strategy = scaffold.build()
         else:
             raise ValueError(f"Unsupported strategy: {self._config.strategy}")
 

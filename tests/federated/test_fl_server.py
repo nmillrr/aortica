@@ -234,7 +234,7 @@ class TestFLServerConfigValidation:
         from aortica.federated.fl_server import FLServerConfig
 
         with pytest.raises(ValueError, match="Unsupported strategy"):
-            FLServerConfig(strategy="scaffold")
+            FLServerConfig(strategy="invalid_strategy")
 
     def test_invalid_fraction_fit_zero(self) -> None:
         from aortica.federated.fl_server import FLServerConfig
