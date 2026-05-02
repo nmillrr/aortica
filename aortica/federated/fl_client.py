@@ -143,6 +143,67 @@ class FLClientConfig:
         filtered = {k: v for k, v in data.items() if k in known_keys}
         return cls(**filtered)
 
+    def to_yaml(self, path: str | Path) -> None:
+        """Write config to a YAML file.
+
+        Uses ``yaml.safe_dump`` when available, otherwise writes a simple
+        key: value format.
+        """
+        data = self.to_dict()
+        path_obj = Path(path)
+        path_obj.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            import yaml  # type: ignore[import-untyped]
+
+            with open(path_obj, "w") as fh:
+                yaml.safe_dump(
+                    data, fh, default_flow_style=False, sort_keys=False
+                )
+        except ImportError:
+            lines: List[str] = []
+            for key, val in data.items():
+                if val is None:
+                    lines.append(f"{key}: null")
+                elif isinstance(val, bool):
+                    lines.append(f"{key}: {'true' if val else 'false'}")
+                elif isinstance(val, str):
+                    lines.append(f'{key}: "{val}"')
+                elif isinstance(val, list):
+                    # Inline list format: [a, b, c]
+                    items = ", ".join(f'"{v}"' if isinstance(v, str) else str(v) for v in val)
+                    lines.append(f"{key}: [{items}]")
+                else:
+                    lines.append(f"{key}: {val}")
+            path_obj.write_text("\n".join(lines) + "\n")
+
+    @classmethod
+    def from_yaml(cls, path: str | Path) -> "FLClientConfig":
+        """Load config from a YAML file.
+
+        Uses ``yaml.safe_load`` when available, otherwise parses simple
+        key: value lines (sufficient for flat config).
+        """
+        from aortica.federated.fl_server import _simple_yaml_load
+
+        path_obj = Path(path)
+        if not path_obj.exists():
+            raise FileNotFoundError(f"Config file not found: {path_obj}")
+
+        text = path_obj.read_text()
+
+        try:
+            import yaml  # type: ignore[import-untyped]
+
+            data = yaml.safe_load(text)
+        except ImportError:
+            data = _simple_yaml_load(text)
+
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"Expected YAML mapping, got {type(data).__name__}"
+            )
+        return cls.from_dict(data)
+
 
 # ---------------------------------------------------------------------------
 # Task output dimensions

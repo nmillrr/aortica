@@ -1111,13 +1111,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want CLI commands for federated training so that server and client operations are scriptable and reproducible.
 
 **Acceptance Criteria:**
-- [ ] `aortica federated server <config.yaml>` starts the FL server with configured strategy and rounds
-- [ ] `aortica federated client <config.yaml>` starts the FL client connecting to specified server
-- [ ] YAML config schema documented with all configurable fields
-- [ ] Both commands share the Click group with existing CLI commands
-- [ ] `--dry-run` flag that validates config without starting training
-- [ ] Unit tests for CLI invocation
-- [ ] Typecheck passes
+- [x] `aortica federated server <config.yaml>` starts the FL server with configured strategy and rounds
+- [x] `aortica federated client <config.yaml>` starts the FL client connecting to specified server
+- [x] YAML config schema documented with all configurable fields
+- [x] Both commands share the Click group with existing CLI commands
+- [x] `--dry-run` flag that validates config without starting training
+- [x] Unit tests for CLI invocation
+- [x] Typecheck passes
 
 ---
 
