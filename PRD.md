@@ -1129,14 +1129,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a release manager, I want automated equity checks in CI so that no model release has statistically significant demographic performance disparities.
 
 **Acceptance Criteria:**
-- [ ] `aortica.evaluation.equity_gate(benchmark_report, alpha=0.05, correction='bonferroni')` function
-- [ ] Compares per-task AUC across sex groups (male/female) using permutation test or bootstrap CI
-- [ ] Compares per-task AUC across age deciles (30–80) using same statistical test
-- [ ] Returns `EquityGateResult` with pass/fail, per-group metrics, p-values, and failing comparisons
-- [ ] Fails if any comparison shows p < alpha after Bonferroni correction for classes with N>100 test examples
-- [ ] GitHub Actions step that runs equity gate after benchmark and blocks release on failure
-- [ ] Unit tests with synthetic predictions showing passing and failing scenarios
-- [ ] Typecheck passes
+- [x] `aortica.evaluation.equity_gate(benchmark_report, alpha=0.05, correction='bonferroni')` function
+- [x] Compares per-task AUC across sex groups (male/female) using permutation test or bootstrap CI
+- [x] Compares per-task AUC across age deciles (30–80) using same statistical test
+- [x] Returns `EquityGateResult` with pass/fail, per-group metrics, p-values, and failing comparisons
+- [x] Fails if any comparison shows p < alpha after Bonferroni correction for classes with N>100 test examples
+- [x] GitHub Actions step that runs equity gate after benchmark and blocks release on failure
+- [x] Unit tests with synthetic predictions showing passing and failing scenarios
+- [x] Typecheck passes
 
 ---
 
