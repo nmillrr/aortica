@@ -202,6 +202,16 @@ class TestMetricHelpers:
         from aortica.federated.fl_client import _compute_c_index
         assert _compute_c_index(np.array([[0.5]]), np.array([[0.5]])) == 0.5
 
+    def test_compute_c_index_multi_output(self) -> None:
+        """Verify c-index is independent per output and correctly averaged."""
+        from aortica.federated.fl_client import _compute_c_index
+        # Output 0: perfectly concordant; output 1: perfectly discordant
+        preds = np.array([[0.1, 0.9], [0.5, 0.5], [0.9, 0.1]])
+        targets = np.array([[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]])
+        result = _compute_c_index(preds, targets)
+        # Output 0: c=1.0, output 1: c=0.0 → avg = 0.5
+        assert abs(result - 0.5) < 1e-6
+
 
 # ---------------------------------------------------------------------------
 # AorticaFlowerClient — construction
@@ -440,6 +450,123 @@ class TestClientFitEvaluate:
         loss, n, metrics = client.evaluate(params)
         assert n == 0
         assert loss == 0.0
+
+
+# ---------------------------------------------------------------------------
+# FedProx proximal term verification
+# ---------------------------------------------------------------------------
+
+
+class TestFedProxProximalTerm:
+
+    @pytest.fixture
+    def _skip_no_torch(self) -> None:
+        pytest.importorskip("torch")
+
+    @pytest.fixture
+    def client_with_data(self, _skip_no_torch: None) -> Any:
+        """Create a client with synthetic train/val loaders."""
+        import torch
+        from torch.utils.data import DataLoader, TensorDataset
+        from aortica.federated.fl_client import AorticaFlowerClient, FLClientConfig
+        from aortica.models.aortica_model import AorticaModel
+
+        cfg = FLClientConfig(
+            enabled_tasks=["rhythm"],
+            local_epochs=2,
+            batch_size=4,
+            lr=1e-2,
+            feature_dim=252,
+            seed=42,
+        )
+
+        x = torch.randn(8, 12, 500)
+        y = torch.zeros(8, 22)
+        y[:, 0] = 1.0
+
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=4, shuffle=False)
+
+        model = AorticaModel(enabled_tasks=["rhythm"], feature_dim=252)
+        client = AorticaFlowerClient(
+            cfg, model=model, train_loader=train_loader
+        )
+        client._device = torch.device("cpu")
+        return client
+
+    def test_proximal_term_constrains_updates(
+        self, client_with_data: Any
+    ) -> None:
+        """FedProx with large mu should keep weights closer to global."""
+        import torch
+        from aortica.federated.fl_client import AorticaFlowerClient, FLClientConfig
+        from aortica.models.aortica_model import AorticaModel
+        from torch.utils.data import DataLoader, TensorDataset
+
+        # Train without FedProx (mu=0)
+        cfg = FLClientConfig(
+            enabled_tasks=["rhythm"], local_epochs=2, batch_size=4,
+            lr=1e-2, feature_dim=252, seed=42,
+        )
+        x = torch.randn(8, 12, 500)
+        y = torch.zeros(8, 22)
+        y[:, 0] = 1.0
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=4, shuffle=False)
+
+        model_no_prox = AorticaModel(enabled_tasks=["rhythm"], feature_dim=252)
+        client_no_prox = AorticaFlowerClient(
+            cfg, model=model_no_prox, train_loader=train_loader
+        )
+        client_no_prox._device = torch.device("cpu")
+        params = client_no_prox.get_parameters()
+        updated_no_prox, _, metrics_no_prox = client_no_prox.fit(params)
+
+        # Train WITH FedProx (mu=10.0 — strong regularisation)
+        model_prox = AorticaModel(enabled_tasks=["rhythm"], feature_dim=252)
+        # Copy the same initial weights
+        model_prox.load_state_dict(model_no_prox.state_dict())
+        client_prox = AorticaFlowerClient(
+            cfg, model=model_prox, train_loader=train_loader
+        )
+        client_prox._device = torch.device("cpu")
+        params2 = client_prox.get_parameters()
+        updated_prox, _, metrics_prox = client_prox.fit(
+            params2, config={"proximal_mu": 10.0}
+        )
+
+        # Compute total parameter drift for each
+        drift_no_prox = sum(
+            float(np.sum((u - p) ** 2))
+            for u, p in zip(updated_no_prox, params)
+        )
+        drift_prox = sum(
+            float(np.sum((u - p) ** 2))
+            for u, p in zip(updated_prox, params2)
+        )
+
+        # With strong proximal term, drift should be smaller
+        assert drift_prox < drift_no_prox, (
+            f"FedProx drift ({drift_prox:.6f}) should be less than "
+            f"no-prox drift ({drift_no_prox:.6f})"
+        )
+
+    def test_proximal_mu_in_metrics(self, client_with_data: Any) -> None:
+        """When proximal_mu is active, it should appear in fit metrics."""
+        params = client_with_data.get_parameters()
+        _, _, metrics = client_with_data.fit(
+            params, config={"proximal_mu": 0.01}
+        )
+        assert "proximal_mu" in metrics
+        assert metrics["proximal_mu"] == 0.01
+
+    def test_no_proximal_mu_key_without_config(
+        self, client_with_data: Any
+    ) -> None:
+        """Without proximal_mu in config, key should not be in metrics."""
+        params = client_with_data.get_parameters()
+        _, _, metrics = client_with_data.fit(params)
+        assert "proximal_mu" not in metrics
 
 
 # ---------------------------------------------------------------------------

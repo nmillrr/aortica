@@ -183,10 +183,16 @@ class SCAFFOLDStrategy:
     uses server and client control variates to correct for client drift
     in heterogeneous federated settings.
 
-    The server maintains a global control variate ``c`` and each client
-    maintains a local control variate ``c_i``.  During aggregation, the
-    server updates ``c`` using the client updates and distributes the
-    corrected global model.
+    The server maintains a global control variate ``c`` and tracks
+    previous global weights to compute per-client control variate
+    deltas ``Δc_i`` using the SCAFFOLD update rule::
+
+        Δc_i = (w_global_prev - w_i_new) / (K * η) - c
+        c_new = c + (1/N) * Σ(Δc_i)
+
+    The server also injects ``scaffold_round`` into each client's fit
+    config so that clients can apply the control variate correction
+    during local training.
 
     Args:
         fraction_fit: Fraction of clients sampled per fit round.
@@ -219,6 +225,7 @@ class SCAFFOLDStrategy:
         self._min_available_clients = min_available_clients
         self._learning_rate = learning_rate
         self._server_control: Optional[List[np.ndarray]] = None
+        self._previous_global: Optional[List[np.ndarray]] = None
         self._flower_strategy: Any = None
 
     @property
@@ -283,22 +290,26 @@ class SCAFFOLDStrategy:
                     for i, w in enumerate(client_weights):
                         averaged[i] += w * weight
 
-                # Update server control variate
-                # c_new = c_old + (1/S) * sum(delta_c_i)
-                # where delta_c_i is extracted from client metrics
+                # SCAFFOLD control variate update:
+                # Δc_i = (w_global_prev - w_i_new) / (K * η) - c
+                # c_new = c + (1/N) * Σ Δc_i
+                # We use learning_rate as the (K * η) proxy.
                 n_clients = len(results)
-                for i in range(len(outer._server_control)):
-                    # Approximate: control variate drift = avg(client_w - global_w)
-                    client_delta_sum = np.zeros_like(outer._server_control[i])
-                    for client_weights, _ in weights_results:
-                        client_delta_sum += (
-                            client_weights[i] - averaged[i]
+                if outer._previous_global is not None:
+                    for i in range(len(outer._server_control)):
+                        delta_c_sum = np.zeros_like(outer._server_control[i])
+                        for client_weights, _ in weights_results:
+                            delta_c_i = (
+                                (outer._previous_global[i] - client_weights[i])
+                                / outer._learning_rate
+                            ) - outer._server_control[i]
+                            delta_c_sum += delta_c_i
+                        outer._server_control[i] += (
+                            delta_c_sum / max(n_clients, 1)
                         )
-                    outer._server_control[i] += (
-                        outer._learning_rate
-                        * client_delta_sum
-                        / max(n_clients, 1)
-                    )
+
+                # Store current global weights for next round's Δc_i
+                outer._previous_global = [w.copy() for w in averaged]
 
                 # Apply control variate correction to averaged weights
                 corrected: List[np.ndarray] = []
@@ -321,6 +332,25 @@ class SCAFFOLDStrategy:
                     }
 
                 return ndarrays_to_parameters(corrected), metrics_aggregated
+
+            def configure_fit(
+                self,
+                server_round: int,
+                parameters: Parameters,
+                client_manager: Any,
+            ) -> List[Tuple[ClientProxy, FitIns]]:
+                """Inject SCAFFOLD metadata into each client's fit config."""
+                configs = super().configure_fit(
+                    server_round, parameters, client_manager
+                )
+                augmented: List[Tuple[ClientProxy, FitIns]] = []
+                for client_proxy, fit_ins in configs:
+                    config = dict(fit_ins.config)
+                    config["scaffold_round"] = server_round
+                    augmented.append(
+                        (client_proxy, FitIns(fit_ins.parameters, config))
+                    )
+                return augmented
 
         strategy = _SCAFFOLDFlower(
             fraction_fit=self._fraction_fit,

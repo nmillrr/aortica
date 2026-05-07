@@ -102,6 +102,22 @@ class TestPrivacyAccounting:
         achieved = _compute_rdp_epsilon(sigma, 10, 1e-5)
         assert achieved <= 1.0 + 0.01  # within tolerance
 
+    def test_calibrate_noise_small_epsilon(self) -> None:
+        """Calibration should handle small epsilon without hitting ceiling."""
+        from aortica.federated.dp import _calibrate_noise_multiplier, _compute_rdp_epsilon
+        sigma = _calibrate_noise_multiplier(epsilon=0.1, delta=1e-5, num_rounds=10)
+        assert sigma > 0
+        achieved = _compute_rdp_epsilon(sigma, 10, 1e-5)
+        # Should now reach the target with extended search range
+        assert achieved <= 0.1 + 0.01
+
+    def test_calibrate_noise_large_budget(self) -> None:
+        """Large epsilon should require small noise."""
+        from aortica.federated.dp import _calibrate_noise_multiplier
+        sigma_small_eps = _calibrate_noise_multiplier(0.5, 1e-5, 10)
+        sigma_large_eps = _calibrate_noise_multiplier(10.0, 1e-5, 10)
+        assert sigma_large_eps < sigma_small_eps
+
 
 # ---------------------------------------------------------------------------
 # PrivacyBudgetTracker
@@ -247,6 +263,34 @@ class TestDPWrapper:
         client = self._make_mock_client()
         dp = DPWrapper(client, DPConfig())
         assert "DPWrapper" in repr(dp)
+
+    def test_seeded_noise_reproducible(self) -> None:
+        """Noise with same seed should produce identical results."""
+        from aortica.federated.dp import DPWrapper, DPConfig
+        client1 = self._make_mock_client()
+        dp1 = DPWrapper(client1, DPConfig(noise_multiplier=1.0, seed=123))
+        params1 = [np.zeros(50)]
+        noisy1 = dp1.add_noise(params1)
+
+        client2 = self._make_mock_client()
+        dp2 = DPWrapper(client2, DPConfig(noise_multiplier=1.0, seed=123))
+        params2 = [np.zeros(50)]
+        noisy2 = dp2.add_noise(params2)
+
+        np.testing.assert_array_equal(noisy1[0], noisy2[0])
+
+    def test_different_seeds_produce_different_noise(self) -> None:
+        """Different seeds should produce different noise."""
+        from aortica.federated.dp import DPWrapper, DPConfig
+        client1 = self._make_mock_client()
+        dp1 = DPWrapper(client1, DPConfig(noise_multiplier=1.0, seed=100))
+        noisy1 = dp1.add_noise([np.zeros(50)])
+
+        client2 = self._make_mock_client()
+        dp2 = DPWrapper(client2, DPConfig(noise_multiplier=1.0, seed=200))
+        noisy2 = dp2.add_noise([np.zeros(50)])
+
+        assert not np.allclose(noisy1[0], noisy2[0])
 
 
 # ---------------------------------------------------------------------------

@@ -1035,3 +1035,52 @@
   - IPv6 addresses in host:port format use bracket notation [::1]:8080 — need special parsing
   - All pre-existing mypy errors (105) are in other modules (models, edge, xai), not in new code
 ---
+
+## Iteration 61 - US-069: Equity Gating CI Check
+- Implemented: `equity_gate()` function with two modes (raw-data permutation test and report-only heuristic), EquityGateResult/ComparisonResult/GroupMetrics dataclasses, Bonferroni correction
+- Files changed:
+  - aortica/evaluation/equity_gate.py (new) - equity_gate() with permutation test for raw data and Hanley-McNeil heuristic for report-only mode; _build_group_masks() for sex and age (30-80) subgroups; _permutation_test_auc() two-sample test; _auc_diff_p_heuristic() normal approximation; EquityGateResult with summary(); ComparisonResult and GroupMetrics dataclasses
+  - aortica/evaluation/__init__.py (modified) - exports equity_gate, EquityGateResult, ComparisonResult, GroupMetrics
+  - tests/evaluation/test_equity_gate.py (new) - 34 tests: dataclasses (7), math helpers (7), permutation test (3), group masks (3), report-only passing (3), report-only failing (3), raw-data mode (3), age comparisons (2), imports (2), typecheck (1)
+  - .github/workflows/release.yml (modified) - equity gate step now imports and validates the module
+  - PRD.md (modified) - marked US-069 complete
+- Verification:
+  - 34/34 tests pass
+  - mypy typecheck: Success, no issues found
+- Learnings for future iterations:
+  - Permutation test is O(n_permutations × n_samples) per comparison — keep n_permutations moderate (1000 default)
+  - Bonferroni correction divides alpha by total comparison count — with many age bins × classes this gets very conservative
+  - Two modes: raw data mode runs full permutation tests; report-only mode uses Hanley-McNeil normal approximation from pre-computed AUCs
+  - _erf() Abramowitz & Stegun approximation has ~1e-7 accuracy — sufficient for p-value computation
+  - Age bins only include 30-80 range per PRD spec (not all decades)
+  - min_group_size=100 default filters out underpowered comparisons
+---
+
+## Iteration 62 - US-070: Public Performance Card Generator (COMPLETE)
+### Files Created
+- aortica/evaluation/performance_card.py — generate_performance_card(), PerformanceCardResult dataclass, _compute_sha256(), _generate_markdown(), _generate_csv(), _write_csv_rows()
+- aortica/cli/performance_card_cmd.py — `aortica performance-card <report.json> --version <v>` CLI command with _load_benchmark_report() for JSON→dataclass reconstruction
+- tests/evaluation/test_performance_card.py — 46 tests across 8 test classes
+
+### Files Modified
+- aortica/evaluation/__init__.py — exports generate_performance_card, PerformanceCardResult
+- aortica/cli/__init__.py — registers performance_card_cmd in the CLI group
+- PRD.md — marked US-070 complete
+
+### Implementation Details
+- generate_performance_card() takes BenchmarkReport + version + output_dir, optionally model_weights_path (for SHA-256), dataset_info, equity_gate_result, timestamp
+- Markdown includes: header with version/timestamp/SHA-256/n_samples, per-task tables (AUC/sens/spec/F1 for classification, C-index/Brier for risk), demographic subgroup tables split by sex and age decile, equity gate results with failing comparison details, auto-generated footer
+- CSV includes: model_version, timestamp, weights_sha256, n_samples, subgroup, task, class, and all metric columns — one row per class per subgroup
+- CLI command loads BenchmarkReport from JSON (as_dict() format), reconstructs full dataclass hierarchy
+- PerformanceCardResult captures both file paths and content for programmatic use
+
+### Test Results
+- 45/45 tests passed, 1 skipped (CLI group registration requires torch — pre-existing train_multitask.py issue)
+- mypy: 0 errors in new files (34 pre-existing errors in other modules)
+
+### Learnings for future iterations
+- csv.writer type annotation not valid in mypy — use Any instead of csv.writer
+- csv module produces \r\n on some platforms — normalize line endings when comparing in tests
+- BenchmarkReport.as_dict() uses dataclasses.asdict() which produces plain dicts — need manual reconstruction for round-trip
+- CLI group import fails without torch due to train_multitask.py @torch.no_grad() at module level — wrap in try/except for tests
+---

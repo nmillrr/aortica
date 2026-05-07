@@ -15,6 +15,15 @@ Example::
     client = AorticaFlowerClient(FLClientConfig(data_path="/data"))
     dp = DPWrapper(client, DPConfig(epsilon=1.0, delta=1e-5))
     dp_params, n, metrics = dp.fit(server_params)
+
+.. note::
+
+   The PRD specifies OpenDP for privacy accounting.  This module uses a
+   built-in simplified RDP (Rényi Differential Privacy) accountant that
+   covers the standard Gaussian mechanism with composition across rounds.
+   For production deployments requiring formal privacy auditing, consider
+   replacing :func:`_compute_rdp_epsilon` with OpenDP's
+   ``make_base_gaussian`` and ``make_zCDP_to_approxDP`` transformations.
 """
 
 from __future__ import annotations
@@ -55,6 +64,7 @@ class DPConfig:
     max_grad_norm: float = 1.0
     noise_multiplier: Optional[float] = None
     expected_rounds: int = 10
+    seed: Optional[int] = None
 
     def __post_init__(self) -> None:
         if self.epsilon <= 0:
@@ -102,8 +112,8 @@ def _compute_rdp_epsilon(
         return float("inf")
 
     best_eps = float("inf")
-    # Search over RDP orders
-    for alpha in [1.5, 2, 3, 4, 5, 8, 16, 32, 64]:
+    # Search over RDP orders — wider range for tighter bounds
+    for alpha in [1.25, 1.5, 2, 3, 4, 5, 6, 8, 10, 16, 32, 64, 128, 256]:
         rdp = alpha / (2 * noise_multiplier**2)
         total_rdp = num_rounds * rdp
         eps = total_rdp + math.log(1 / delta) / (alpha - 1)
@@ -127,15 +137,24 @@ def _calibrate_noise_multiplier(
     Returns:
         The noise multiplier σ/sensitivity.
     """
-    lo, hi = 0.01, 100.0
+    lo, hi = 0.01, 1000.0
 
-    for _ in range(64):  # binary search iterations
+    for _ in range(100):  # binary search iterations
         mid = (lo + hi) / 2.0
         achieved_eps = _compute_rdp_epsilon(mid, num_rounds, delta)
         if achieved_eps <= epsilon:
             hi = mid
         else:
             lo = mid
+
+    # Warn if we hit the ceiling without achieving the target
+    achieved = _compute_rdp_epsilon(hi, num_rounds, delta)
+    if achieved > epsilon:
+        logger.warning(
+            "Could not calibrate noise for ε=%.4f: best achievable ε=%.4f "
+            "with σ=%.2f. Consider increasing epsilon or reducing rounds.",
+            epsilon, achieved, hi,
+        )
 
     return hi
 
@@ -288,6 +307,9 @@ class DPWrapper:
             noise_multiplier=noise_mult,
         )
 
+        # Seeded RNG for reproducible noise injection
+        self._rng = np.random.default_rng(self._config.seed)
+
     @property
     def config(self) -> DPConfig:
         """Return the DP configuration."""
@@ -341,7 +363,7 @@ class DPWrapper:
         noise_std = self._noise_multiplier * self._config.max_grad_norm
         noisy = []
         for p in parameters:
-            noise = np.random.normal(0, noise_std, size=p.shape).astype(p.dtype)
+            noise = self._rng.normal(0, noise_std, size=p.shape).astype(p.dtype)
             noisy.append(p + noise)
         return noisy
 

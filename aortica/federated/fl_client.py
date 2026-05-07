@@ -292,7 +292,7 @@ def _compute_c_index(predictions: np.ndarray, targets: np.ndarray) -> float:
                 else:
                     concordant += 0.5
                     discordant += 0.5
-            total = concordant + discordant
+        total = concordant + discordant
         c_indices.append(concordant / total if total > 0 else 0.5)
 
     return float(np.mean(c_indices))
@@ -488,12 +488,28 @@ class AorticaFlowerClient:
         """
         _check_torch()
         self._init_model()
+
+        # Set reproducible seed
+        torch.manual_seed(self._config.seed)
+
         self.set_parameters(parameters)
 
         # Override local_epochs from server config if provided
         local_epochs = self._config.local_epochs
         if config and "local_epochs" in config:
             local_epochs = int(config["local_epochs"])
+
+        # Extract FedProx proximal term μ from server config
+        proximal_mu = 0.0
+        if config and "proximal_mu" in config:
+            proximal_mu = float(config["proximal_mu"])
+
+        # Snapshot global parameters for FedProx proximal term
+        global_params: Optional[List["torch.Tensor"]] = None
+        if proximal_mu > 0:
+            global_params = [
+                p.clone().detach() for p in self._model.parameters()
+            ]
 
         # Train
         num_examples = 0
@@ -508,7 +524,11 @@ class AorticaFlowerClient:
             )
 
             for _epoch in range(local_epochs):
-                epoch_loss, epoch_per_task = self._train_one_epoch(optimizer)
+                epoch_loss, epoch_per_task = self._train_one_epoch(
+                    optimizer,
+                    proximal_mu=proximal_mu,
+                    global_params=global_params,
+                )
                 total_loss += epoch_loss
                 for k, v in epoch_per_task.items():
                     per_task_losses[k] = per_task_losses.get(k, 0.0) + v
@@ -525,6 +545,8 @@ class AorticaFlowerClient:
 
         metrics: Dict[str, float] = {"loss": total_loss}
         metrics.update(per_task_losses)
+        if proximal_mu > 0:
+            metrics["proximal_mu"] = proximal_mu
 
         updated_params = self.get_parameters()
         return updated_params, num_examples, metrics
@@ -566,8 +588,18 @@ class AorticaFlowerClient:
     def _train_one_epoch(
         self,
         optimizer: Any,
+        proximal_mu: float = 0.0,
+        global_params: Optional[List["torch.Tensor"]] = None,
     ) -> Tuple[float, Dict[str, float]]:
-        """Train for one epoch and return (avg_loss, per_task_losses)."""
+        """Train for one epoch and return (avg_loss, per_task_losses).
+
+        Args:
+            optimizer: PyTorch optimizer.
+            proximal_mu: FedProx proximal term coefficient.  When > 0,
+                adds ``(μ/2) * ||w - w_global||²`` to the loss.
+            global_params: Snapshot of global model parameters before
+                local training, used for the FedProx proximal term.
+        """
         from aortica.models.ischaemia_head import compute_ischaemia_loss
         from aortica.models.rhythm_head import compute_rhythm_loss
         from aortica.models.risk_head import compute_risk_loss
@@ -624,6 +656,19 @@ class AorticaFlowerClient:
                 total_loss = total_loss + loss
                 per_task["risk"] = loss.item()
 
+            # FedProx proximal term: (μ/2) * ||w - w_global||²
+            if proximal_mu > 0 and global_params is not None:
+                proximal_loss = torch.tensor(
+                    0.0, device=self._device, dtype=features.dtype
+                )
+                for local_p, global_p in zip(
+                    self._model.parameters(), global_params
+                ):
+                    proximal_loss = proximal_loss + torch.sum(
+                        (local_p - global_p.to(self._device)) ** 2
+                    )
+                total_loss = total_loss + (proximal_mu / 2.0) * proximal_loss
+
             total_loss.backward()
             nn.utils.clip_grad_norm_(
                 self._model.parameters(), self._config.max_grad_norm
@@ -672,6 +717,9 @@ class AorticaFlowerClient:
                     0.0, device=self._device, dtype=features.dtype
                 )
 
+                # Cache per-head predictions to avoid duplicate forward pass
+                head_preds: Dict[str, np.ndarray] = {}
+
                 if (
                     "rhythm" in task_labels
                     and self._model.rhythm_head is not None
@@ -679,6 +727,8 @@ class AorticaFlowerClient:
                     logits = self._model.rhythm_head.forward_logits(features)
                     loss = compute_rhythm_loss(logits, task_labels["rhythm"])
                     batch_loss = batch_loss + loss
+                    # Reuse logits → sigmoid for metric collection
+                    head_preds["rhythm"] = torch.sigmoid(logits).cpu().numpy()
 
                 if (
                     "structural" in task_labels
@@ -691,6 +741,7 @@ class AorticaFlowerClient:
                         logits, task_labels["structural"]
                     )
                     batch_loss = batch_loss + loss
+                    head_preds["structural"] = torch.sigmoid(logits).cpu().numpy()
 
                 if (
                     "ischaemia" in task_labels
@@ -701,6 +752,7 @@ class AorticaFlowerClient:
                         logits, task_labels["ischaemia"]
                     )
                     batch_loss = batch_loss + loss
+                    head_preds["ischaemia"] = torch.sigmoid(logits).cpu().numpy()
 
                 if (
                     "risk" in task_labels
@@ -709,18 +761,15 @@ class AorticaFlowerClient:
                     preds = self._model.risk_head(features)
                     loss = compute_risk_loss(preds, task_labels["risk"])
                     batch_loss = batch_loss + loss
+                    head_preds["risk"] = preds.cpu().numpy()
 
                 running_loss += batch_loss.item()
                 num_batches += 1
 
-                # Collect predictions for metrics
+                # Collect cached predictions for metrics
                 for task in self._config.enabled_tasks:
-                    head = getattr(self._model, f"{task}_head", None)
-                    if head is not None:
-                        pred_out = head(features)
-                        collectors[task]["preds"].append(
-                            pred_out.cpu().numpy()
-                        )
+                    if task in head_preds:
+                        collectors[task]["preds"].append(head_preds[task])
                         collectors[task]["targets"].append(
                             task_labels[task].cpu().numpy()
                         )
