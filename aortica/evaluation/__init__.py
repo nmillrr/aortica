@@ -13,6 +13,10 @@ from aortica.evaluation.equity_gate import (
     GroupMetrics,
     equity_gate,
 )
+from aortica.evaluation.performance_card import (
+    PerformanceCardResult,
+    generate_performance_card,
+)
 
 __all__ = [
     "BenchmarkReport",
@@ -20,8 +24,10 @@ __all__ = [
     "ComparisonResult",
     "EquityGateResult",
     "GroupMetrics",
+    "PerformanceCardResult",
     "SubgroupReport",
     "TaskReport",
     "benchmark",
     "equity_gate",
+    "generate_performance_card",
 ]

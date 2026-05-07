@@ -1144,13 +1144,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a release manager, I want auto-generated performance cards so that every model release has transparent, demographic-stratified performance documentation.
 
 **Acceptance Criteria:**
-- [ ] `aortica.evaluation.generate_performance_card(benchmark_report, model_version, output_dir)` function
-- [ ] Generates `PERFORMANCE_CARD.md` with: model version, training data summary, per-task metrics (AUC, F1, sensitivity, specificity), demographic subgroup breakdowns (age decile, sex), equity gate results
-- [ ] Generates `performance_card.csv` with the same data in tabular format
-- [ ] Card includes timestamp, dataset split info, and reproducibility hash (model weights SHA-256)
-- [ ] CLI command `aortica performance-card <benchmark_report.json> --version <v>` generates the card
-- [ ] Unit tests with synthetic benchmark report producing valid markdown and CSV
-- [ ] Typecheck passes
+- [x] `aortica.evaluation.generate_performance_card(benchmark_report, model_version, output_dir)` function
+- [x] Generates `PERFORMANCE_CARD.md` with: model version, training data summary, per-task metrics (AUC, F1, sensitivity, specificity), demographic subgroup breakdowns (age decile, sex), equity gate results
+- [x] Generates `performance_card.csv` with the same data in tabular format
+- [x] Card includes timestamp, dataset split info, and reproducibility hash (model weights SHA-256)
+- [x] CLI command `aortica performance-card <benchmark_report.json> --version <v>` generates the card
+- [x] Unit tests with synthetic benchmark report producing valid markdown and CSV
+- [x] Typecheck passes
 
 ---
 
