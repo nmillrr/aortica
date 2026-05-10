@@ -1158,13 +1158,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a release manager, I want to track non-Western site validations so that v-stable releases require at least 2 non-Western site validations.
 
 **Acceptance Criteria:**
-- [ ] `aortica.evaluation.SiteValidationRegistry` class tracking validation results per site (site_id, region, dataset_size, benchmark_report, timestamp)
-- [ ] `register_validation(site_id, region, benchmark_report)` stores validation result
-- [ ] `check_release_readiness()` returns pass/fail requiring ≥2 non-Western region validations
-- [ ] Region classification: Western (North America, Western Europe, Australia/NZ) vs. non-Western (all others)
-- [ ] Persists registry to JSON file
-- [ ] Unit tests for registration, region classification, and readiness check
-- [ ] Typecheck passes
+- [x] `aortica.evaluation.SiteValidationRegistry` class tracking validation results per site (site_id, region, dataset_size, benchmark_report, timestamp)
+- [x] `register_validation(site_id, region, benchmark_report)` stores validation result
+- [x] `check_release_readiness()` returns pass/fail requiring ≥2 non-Western region validations
+- [x] Region classification: Western (North America, Western Europe, Australia/NZ) vs. non-Western (all others)
+- [x] Persists registry to JSON file
+- [x] Unit tests for registration, region classification, and readiness check
+- [x] Typecheck passes
 
 ---
 
