@@ -100,6 +100,12 @@ _CLINICAL_IMPORTANCE: Dict[str, int] = {
     "hypothyroidism_pattern": 3,
     "digitalis_effect": 4,
     "QTc_prolongation": 7,
+    # Phase 3 STEMI mimics & subtle ischaemia (US-073)
+    "early_repol_vs_STEMI": 8,
+    "de_Winter_T_wave": 9,
+    "Wellens_syndrome": 8,
+    "aVR_ST_elevation": 9,
+    "Sgarbossa_criteria": 8,
 }
 
 DEFAULT_IMPORTANCE = 3
@@ -207,6 +213,25 @@ _ALIASES: Dict[str, str] = {
     "atypical atrial flutter": "atypical_atrial_flutter",
     "inappropriate sinus tachycardia": "inappropriate_sinus_tachy",
     "ist": "inappropriate_sinus_tachy",
+    # Phase 3 STEMI mimics & subtle ischaemia (US-073)
+    "early repolarization vs stemi": "early_repol_vs_STEMI",
+    "early repol vs stemi": "early_repol_vs_STEMI",
+    "benign early repolarization": "early_repol_vs_STEMI",
+    "de winter": "de_Winter_T_wave",
+    "de winter t wave": "de_Winter_T_wave",
+    "de winter t-wave": "de_Winter_T_wave",
+    "de winter pattern": "de_Winter_T_wave",
+    "wellens": "Wellens_syndrome",
+    "wellens syndrome": "Wellens_syndrome",
+    "wellens type a": "Wellens_syndrome",
+    "wellens type b": "Wellens_syndrome",
+    "avr st elevation": "aVR_ST_elevation",
+    "avr st-elevation": "aVR_ST_elevation",
+    "avr elevation": "aVR_ST_elevation",
+    "sgarbossa": "Sgarbossa_criteria",
+    "sgarbossa criteria": "Sgarbossa_criteria",
+    "modified sgarbossa": "Sgarbossa_criteria",
+    "smith-modified sgarbossa": "Sgarbossa_criteria",
 }
 
 

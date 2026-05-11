@@ -287,7 +287,7 @@ class MultiTaskEpochMetrics:
 _TASK_NUM_OUTPUTS: dict[str, int] = {
     "rhythm": 28,
     "structural": 15,
-    "ischaemia": 10,
+    "ischaemia": 15,
     "risk": 3,
 }
 

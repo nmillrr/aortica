@@ -49,7 +49,7 @@ class TestConstants:
         assert len(_STRUCTURAL_CLASSES) == 15
 
     def test_ischaemia_classes_count(self) -> None:
-        assert len(_ISCHAEMIA_CLASSES) == 10
+        assert len(_ISCHAEMIA_CLASSES) == 15
 
     def test_risk_outputs_count(self) -> None:
         assert len(_RISK_OUTPUTS) == 3
@@ -171,7 +171,7 @@ class TestExtractPredictions:
         output = {
             "rhythm": [0.1] * 28,
             "structural": [0.2] * 15,
-            "ischaemia": [0.3] * 10,
+            "ischaemia": [0.3] * 15,
             "risk": [0.4] * 3,
         }
         preds = _extract_predictions(output)
@@ -215,7 +215,7 @@ class TestSimplifyOutput:
         return {
             "rhythm": rhythm or [0.0] * 28,
             "structural": structural or [0.0] * 15,
-            "ischaemia": ischaemia or [0.0] * 10,
+            "ischaemia": ischaemia or [0.0] * 15,
             "risk": risk or [0.0] * 3,
         }
 
@@ -250,7 +250,7 @@ class TestSimplifyOutput:
         assert any(f.class_name == "VT" for f in report.key_findings)
 
     def test_urgent_from_stemi(self) -> None:
-        ischaemia = [0.0] * 10
+        ischaemia = [0.0] * 15
         stemi_idx = _ISCHAEMIA_CLASSES.index("STEMI")
         ischaemia[stemi_idx] = 0.80
         report = simplify_output(self._make_output(ischaemia=ischaemia))
@@ -370,7 +370,7 @@ class TestSimplifyOutput:
         assert len(urgent_findings) >= 2
 
     def test_hyperkalaemia_urgent(self) -> None:
-        ischaemia = [0.0] * 10
+        ischaemia = [0.0] * 15
         hk_idx = _ISCHAEMIA_CLASSES.index("hyperkalaemia")
         ischaemia[hk_idx] = 0.60
         report = simplify_output(self._make_output(ischaemia=ischaemia))

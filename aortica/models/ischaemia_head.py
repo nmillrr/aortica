@@ -1,12 +1,14 @@
 """Ischaemia & Metabolic Task Head for multi-task ECG analysis.
 
-Provides :class:`IschaemiaHead`, a multi-label classification head producing 10
+Provides :class:`IschaemiaHead`, a multi-label classification head producing 15
 sigmoid outputs corresponding to ischaemic and metabolic ECG patterns.
 
-The 10 classes are:
+The 15 classes are:
     STEMI, posterior_MI, occlusive_NSTEMI, old_MI, hyperkalaemia,
     hypokalaemia, hypercalcaemia, hypothyroidism_pattern,
-    digitalis_effect, QTc_prolongation
+    digitalis_effect, QTc_prolongation,
+    early_repol_vs_STEMI, de_Winter_T_wave, Wellens_syndrome,
+    aVR_ST_elevation, Sgarbossa_criteria
 
 The head connects to the backbone + attention output and uses binary
 cross-entropy with optional class-weight balancing.
@@ -44,7 +46,7 @@ def _check_torch() -> None:
         )
 
 
-# Canonical class ordering (10 ischaemia & metabolic classes).
+# Canonical class ordering (15 ischaemia & metabolic classes).
 ISCHAEMIA_CLASSES: list[str] = [
     "STEMI",
     "posterior_MI",
@@ -56,18 +58,24 @@ ISCHAEMIA_CLASSES: list[str] = [
     "hypothyroidism_pattern",
     "digitalis_effect",
     "QTc_prolongation",
+    # Phase 3 STEMI mimics & subtle ischaemia subtypes (US-073)
+    "early_repol_vs_STEMI",
+    "de_Winter_T_wave",
+    "Wellens_syndrome",
+    "aVR_ST_elevation",
+    "Sgarbossa_criteria",
 ]
 
 NUM_ISCHAEMIA_CLASSES: int = len(ISCHAEMIA_CLASSES)
 
 
 class IschaemiaHead(nn.Module):
-    """Multi-label ischaemia & metabolic classification head (10 classes).
+    """Multi-label ischaemia & metabolic classification head (15 classes).
 
     Architecture:
 
     * Linear(feature_dim, hidden_dim) + ReLU + Dropout
-    * Linear(hidden_dim, 10)
+    * Linear(hidden_dim, 15)
     * Sigmoid activation (applied in :meth:`forward`)
 
     The head outputs raw logits via :meth:`forward_logits` (for use with
@@ -83,8 +91,8 @@ class IschaemiaHead(nn.Module):
 
         head = IschaemiaHead(feature_dim=256)
         features = torch.randn(4, 256)
-        probs = head(features)       # [4, 10], values in (0, 1)
-        logits = head.forward_logits(features)  # [4, 10], raw logits
+        probs = head(features)       # [4, 15], values in (0, 1)
+        logits = head.forward_logits(features)  # [4, 15], raw logits
     """
 
     def __init__(
@@ -114,7 +122,7 @@ class IschaemiaHead(nn.Module):
             x: Feature tensor of shape ``[batch, feature_dim]``.
 
         Returns:
-            Logit tensor of shape ``[batch, 10]``.
+            Logit tensor of shape ``[batch, 15]``.
         """
         logits: torch.Tensor = self.classifier(x)
         return logits
@@ -126,7 +134,7 @@ class IschaemiaHead(nn.Module):
             x: Feature tensor of shape ``[batch, feature_dim]``.
 
         Returns:
-            Probability tensor of shape ``[batch, 10]``, values in ``(0, 1)``.
+            Probability tensor of shape ``[batch, 15]``, values in ``(0, 1)``.
         """
         logits = self.forward_logits(x)
         probs: torch.Tensor = torch.sigmoid(logits)
@@ -141,9 +149,9 @@ def compute_ischaemia_loss(
     """Compute BCE loss with optional per-class weight balancing.
 
     Args:
-        logits: Raw logits of shape ``[batch, 10]``.
-        targets: Binary targets of shape ``[batch, 10]``.
-        class_weights: Optional weight tensor of shape ``[10]`` for class
+        logits: Raw logits of shape ``[batch, 15]``.
+        targets: Binary targets of shape ``[batch, 15]``.
+        class_weights: Optional weight tensor of shape ``[15]`` for class
             balancing.  If ``None``, uniform weighting is used.
 
     Returns:

@@ -269,6 +269,31 @@
       "prompt": "Evaluate for secondary causes; consider ivabradine",
       "urgency": "routine",
       "rationale": "Inappropriate sinus tachycardia is a diagnosis of exclusion; secondary causes must be ruled out before considering ivabradine or beta-blockers."
+    },
+    "early_repol_vs_STEMI": {
+      "prompt": "Serial ECGs and troponins — differentiate benign from STEMI",
+      "urgency": "urgent",
+      "rationale": "Early repolarization can mimic STEMI; serial ECGs showing dynamic changes, troponin kinetics, and clinical context guide differentiation."
+    },
+    "de_Winter_T_wave": {
+      "prompt": "Treat as STEMI equivalent — emergent cath lab activation",
+      "urgency": "emergent",
+      "rationale": "De Winter T-wave pattern represents proximal LAD occlusion and is a STEMI equivalent requiring emergent reperfusion despite absence of classic ST elevation."
+    },
+    "Wellens_syndrome": {
+      "prompt": "Urgent cardiology — high-risk LAD lesion likely",
+      "urgency": "urgent",
+      "rationale": "Wellens syndrome (biphasic/deeply inverted T-waves in V2-V3) indicates critical proximal LAD stenosis with high risk of anterior wall MI."
+    },
+    "aVR_ST_elevation": {
+      "prompt": "Assess for left main or diffuse ischaemia — emergent eval",
+      "urgency": "emergent",
+      "rationale": "ST elevation in aVR with diffuse ST depression suggests left main or severe multivessel disease; emergent angiography may be indicated."
+    },
+    "Sgarbossa_criteria": {
+      "prompt": "Apply modified Sgarbossa — emergent cath if positive",
+      "urgency": "emergent",
+      "rationale": "Sgarbossa criteria detect acute MI in the presence of LBBB or paced rhythm; Smith-modified criteria improve sensitivity for emergent intervention."
     }
   }
 }

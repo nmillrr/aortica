@@ -64,6 +64,9 @@ _ISCHAEMIA_CLASSES: list[str] = [
     "STEMI", "posterior_MI", "occlusive_NSTEMI", "old_MI", "hyperkalaemia",
     "hypokalaemia", "hypercalcaemia", "hypothyroidism_pattern",
     "digitalis_effect", "QTc_prolongation",
+    # Phase 3 STEMI mimics & subtle ischaemia subtypes (US-073)
+    "early_repol_vs_STEMI", "de_Winter_T_wave", "Wellens_syndrome",
+    "aVR_ST_elevation", "Sgarbossa_criteria",
 ]
 
 _RISK_OUTPUTS: list[str] = [
@@ -88,6 +91,9 @@ _URGENT_CONDITIONS: dict[str, float] = {
     "occlusive_NSTEMI": 0.50,
     # Metabolic emergencies
     "hyperkalaemia": 0.40,
+    # Phase 3 STEMI mimics — high urgency (US-073)
+    "de_Winter_T_wave": 0.40,
+    "aVR_ST_elevation": 0.40,
 }
 
 #: Conditions that trigger **refer** when above their threshold.
@@ -137,6 +143,10 @@ _REFER_CONDITIONS: dict[str, float] = {
     "fascicular_VT": 0.40,
     "atypical_atrial_flutter": 0.50,
     "inappropriate_sinus_tachy": 0.60,
+    # Phase 3 STEMI mimics — refer for specialist evaluation (US-073)
+    "early_repol_vs_STEMI": 0.50,
+    "Wellens_syndrome": 0.40,
+    "Sgarbossa_criteria": 0.40,
 }
 
 #: Risk score thresholds for tier escalation.
