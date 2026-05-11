@@ -58,6 +58,9 @@ _STRUCTURAL_CLASSES: list[str] = [
     "LVH", "RVH", "LVSD", "HFpEF_risk", "DCM", "HCM", "ARVC", "amyloidosis",
     "aortic_stenosis", "mitral_regurgitation", "pulmonary_HTN",
     "LA_enlargement", "RA_enlargement", "pericarditis", "myocarditis",
+    # Phase 3 strain pattern sub-classifiers (US-074)
+    "LV_strain_grade", "RV_strain_PE", "Takotsubo_pattern",
+    "infiltrative_cardiomyopathy_strain",
 ]
 
 _ISCHAEMIA_CLASSES: list[str] = [
@@ -147,6 +150,11 @@ _REFER_CONDITIONS: dict[str, float] = {
     "early_repol_vs_STEMI": 0.50,
     "Wellens_syndrome": 0.40,
     "Sgarbossa_criteria": 0.40,
+    # Phase 3 strain pattern sub-classifiers — need specialist evaluation (US-074)
+    "LV_strain_grade": 0.50,
+    "RV_strain_PE": 0.40,
+    "Takotsubo_pattern": 0.40,
+    "infiltrative_cardiomyopathy_strain": 0.50,
 }
 
 #: Risk score thresholds for tier escalation.

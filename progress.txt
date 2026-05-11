@@ -1151,3 +1151,39 @@ brugada_pattern, short_QT_syndrome, CPVT, fascicular_VT, atypical_atrial_flutter
 - AorticaModel dynamically instantiates RhythmHead so it auto-picks up NUM_RHYTHM_CLASSES changes
 - predict.py and compare.py use lazy imports from RHYTHM_CLASSES — they cascade automatically
 ---
+
+## Iteration US-073 - STEMI Mimics & Subtle Ischaemia: Expanded Ischaemia Head
+### Goal
+Expand the IschaemiaHead output from 10 to 15 classes by adding 5 STEMI mimic / subtle ischaemia subtypes:
+early_repol_vs_STEMI, de_Winter_T_wave, Wellens_syndrome, aVR_ST_elevation, Sgarbossa_criteria
+
+### Files Modified
+- aortica/models/ischaemia_head.py - Added 5 classes to ISCHAEMIA_CLASSES, updated docstrings (10->15)
+- aortica/models/ischaemia_head_tf.py - Updated NUM_ISCHAEMIA_CLASSES to 15, updated docstrings
+- aortica/models/train_multitask.py - Updated _TASK_NUM_OUTPUTS ischaemia entry from 10 to 15
+- aortica/edge/simplified_output.py - Added 5 new classes to _ISCHAEMIA_CLASSES, de_Winter and aVR_ST_elevation to _URGENT_CONDITIONS, 3 others to _REFER_CONDITIONS
+- aortica/api/compare.py - Added clinical importance scores and alias mappings for 5 new classes
+- data/clinical_suggestions.json - Added clinical suggestion entries for all 5 new classes
+- tests/models/test_ischaemia_head.py - Updated all shape assertions (10->15), added test_stemi_mimic_classes_present
+- tests/edge/test_simplified_output.py - Updated all ischaemia array sizes (10->15)
+
+### Implementation Details
+- de_Winter_T_wave and aVR_ST_elevation classified as urgent (0.40 threshold) due to representing occluded arteries / left main disease
+- early_repol_vs_STEMI classified as refer (0.50) — needs serial ECGs to differentiate
+- Wellens_syndrome and Sgarbossa_criteria classified as refer (0.40) — need specialist evaluation
+- Clinical importance: de_Winter=9, aVR_ST_elevation=9, early_repol_vs_STEMI=8, Wellens=8, Sgarbossa=8
+- All downstream consumers (predict.py, compare.py) use lazy imports from ISCHAEMIA_CLASSES -> auto-compatible
+
+### Test Results
+- 18/18 passed, 4 skipped (TF) in test_ischaemia_head.py (22 total including new test)
+- 51/51 passed in test_simplified_output.py
+- 94/94 passed in test_compare.py + test_clinical_suggestions.py
+- mypy: 0 new errors (pre-existing errors in other modules unchanged)
+
+### Learnings
+- Same pattern as US-072 (rhythm head expansion) — extend class list, update TF/Keras hardcoded count, update train pipeline _TASK_NUM_OUTPUTS, update simplified output + compare downstream
+- _extract_predictions rejects list inputs with wrong length -> test arrays must match class count exactly
+- AorticaModel dynamically instantiates IschaemiaHead so it auto-picks up NUM_ISCHAEMIA_CLASSES changes
+- predict.py and compare.py use lazy imports from ISCHAEMIA_CLASSES -> they cascade automatically
+- data/clinical_suggestions.json is gitignored by data/ pattern but already tracked -> need git add -f
+---

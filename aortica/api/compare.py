@@ -89,6 +89,11 @@ _CLINICAL_IMPORTANCE: Dict[str, int] = {
     "RA_enlargement": 4,
     "pericarditis": 5,
     "myocarditis": 7,
+    # Phase 3 strain pattern sub-classifiers (US-074)
+    "LV_strain_grade": 6,
+    "RV_strain_PE": 8,
+    "Takotsubo_pattern": 8,
+    "infiltrative_cardiomyopathy_strain": 7,
     # Ischaemia — high urgency
     "STEMI": 10,
     "posterior_MI": 9,
@@ -232,6 +237,22 @@ _ALIASES: Dict[str, str] = {
     "sgarbossa criteria": "Sgarbossa_criteria",
     "modified sgarbossa": "Sgarbossa_criteria",
     "smith-modified sgarbossa": "Sgarbossa_criteria",
+    # Phase 3 strain pattern sub-classifiers (US-074)
+    "lv strain": "LV_strain_grade",
+    "lv strain grade": "LV_strain_grade",
+    "left ventricular strain": "LV_strain_grade",
+    "rv strain pe": "RV_strain_PE",
+    "rv strain": "RV_strain_PE",
+    "s1q3t3": "RV_strain_PE",
+    "right ventricular strain": "RV_strain_PE",
+    "takotsubo": "Takotsubo_pattern",
+    "takotsubo pattern": "Takotsubo_pattern",
+    "takotsubo cardiomyopathy": "Takotsubo_pattern",
+    "stress cardiomyopathy": "Takotsubo_pattern",
+    "apical ballooning": "Takotsubo_pattern",
+    "infiltrative cardiomyopathy": "infiltrative_cardiomyopathy_strain",
+    "infiltrative cardiomyopathy strain": "infiltrative_cardiomyopathy_strain",
+    "infiltrative strain": "infiltrative_cardiomyopathy_strain",
 }
 
 

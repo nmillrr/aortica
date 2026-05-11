@@ -294,6 +294,26 @@
       "prompt": "Apply modified Sgarbossa — emergent cath if positive",
       "urgency": "emergent",
       "rationale": "Sgarbossa criteria detect acute MI in the presence of LBBB or paced rhythm; Smith-modified criteria improve sensitivity for emergent intervention."
+    },
+    "LV_strain_grade": {
+      "prompt": "Echocardiography for LV strain severity assessment",
+      "urgency": "prompt",
+      "rationale": "LV strain pattern grading (mild/moderate/severe) on ECG correlates with LV hypertrophy severity and diastolic dysfunction; echocardiography quantifies wall motion and strain."
+    },
+    "RV_strain_PE": {
+      "prompt": "Urgent CT pulmonary angiography — assess for PE",
+      "urgency": "urgent",
+      "rationale": "RV strain pattern (S1Q3T3, right axis, T-wave inversions V1-V4) suggests acute right heart pressure overload; pulmonary embolism must be excluded urgently."
+    },
+    "Takotsubo_pattern": {
+      "prompt": "Urgent cardiology — differentiate from ACS",
+      "urgency": "urgent",
+      "rationale": "Takotsubo (stress cardiomyopathy) mimics acute MI with ST elevation and wall motion abnormalities; coronary angiography is needed to exclude ACS."
+    },
+    "infiltrative_cardiomyopathy_strain": {
+      "prompt": "Cardiac MRI and specialist referral for infiltrative disease",
+      "urgency": "prompt",
+      "rationale": "Infiltrative cardiomyopathy strain patterns (low voltage with strain) suggest amyloidosis, sarcoidosis, or storage disease requiring tissue characterisation via cardiac MRI."
     }
   }
 }

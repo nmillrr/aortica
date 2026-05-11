@@ -1189,12 +1189,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an emergency physician, I want AI detection of STEMI mimics and subtle ischaemia patterns so that dangerous conditions masquerading as benign findings are caught.
 
 **Acceptance Criteria:**
-- [ ] Extend `ISCHAEMIA_CLASSES` list with 5 new classes: early repolarization vs STEMI, de Winter T-wave pattern, Wellens syndrome (type A/B combined), aVR ST-elevation pattern, Sgarbossa criteria (LBBB/paced)
-- [ ] Update `IschaemiaHead` output dimension from 10 to 15 (both PyTorch and TF/Keras)
-- [ ] Update `compute_ischaemia_loss` to handle 15-class output with class weights
-- [ ] Update all downstream code referencing ISCHAEMIA_CLASSES count
-- [ ] Unit tests verifying new output shape, loss computation, and backward compatibility
-- [ ] Typecheck passes
+- [x] Extend `ISCHAEMIA_CLASSES` list with 5 new classes: early repolarization vs STEMI, de Winter T-wave pattern, Wellens syndrome (type A/B combined), aVR ST-elevation pattern, Sgarbossa criteria (LBBB/paced)
+- [x] Update `IschaemiaHead` output dimension from 10 to 15 (both PyTorch and TF/Keras)
+- [x] Update `compute_ischaemia_loss` to handle 15-class output with class weights
+- [x] Update all downstream code referencing ISCHAEMIA_CLASSES count
+- [x] Unit tests verifying new output shape, loss computation, and backward compatibility
+- [x] Typecheck passes
 
 ---
 
@@ -1202,13 +1202,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a cardiologist, I want AI grading of strain patterns so that LV strain severity, RV strain in PE, and Takotsubo can be differentiated from generic structural findings.
 
 **Acceptance Criteria:**
-- [ ] Extend `STRUCTURAL_CLASSES` list with 4 new classes: LV strain grade (mild/moderate/severe as ordinal), RV strain in PE (S1Q3T3 pattern), Takotsubo pattern, infiltrative cardiomyopathy strain
-- [ ] Update `StructuralHead` output dimension from 15 to 19 (both PyTorch and TF/Keras)
-- [ ] LV strain grade uses ordinal encoding (single sigmoid output mapped to severity thresholds)
-- [ ] Update `compute_structural_loss` to handle 19-class output
-- [ ] Update all downstream code referencing STRUCTURAL_CLASSES count
-- [ ] Unit tests verifying new output shape, loss computation, and ordinal encoding
-- [ ] Typecheck passes
+- [x] Extend `STRUCTURAL_CLASSES` list with 4 new classes: LV strain grade (mild/moderate/severe as ordinal), RV strain in PE (S1Q3T3 pattern), Takotsubo pattern, infiltrative cardiomyopathy strain
+- [x] Update `StructuralHead` output dimension from 15 to 19 (both PyTorch and TF/Keras)
+- [x] LV strain grade uses ordinal encoding (single sigmoid output mapped to severity thresholds)
+- [x] Update `compute_structural_loss` to handle 19-class output
+- [x] Update all downstream code referencing STRUCTURAL_CLASSES count
+- [x] Unit tests verifying new output shape, loss computation, and ordinal encoding
+- [x] Typecheck passes
 
 ---
 

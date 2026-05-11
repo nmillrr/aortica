@@ -46,7 +46,7 @@ class TestConstants:
         assert len(_RHYTHM_CLASSES) == 28
 
     def test_structural_classes_count(self) -> None:
-        assert len(_STRUCTURAL_CLASSES) == 15
+        assert len(_STRUCTURAL_CLASSES) == 19
 
     def test_ischaemia_classes_count(self) -> None:
         assert len(_ISCHAEMIA_CLASSES) == 15
@@ -170,7 +170,7 @@ class TestExtractPredictions:
     def test_dict_with_lists(self) -> None:
         output = {
             "rhythm": [0.1] * 28,
-            "structural": [0.2] * 15,
+            "structural": [0.2] * 19,
             "ischaemia": [0.3] * 15,
             "risk": [0.4] * 3,
         }
@@ -214,7 +214,7 @@ class TestSimplifyOutput:
     ) -> dict[str, list[float] | None]:
         return {
             "rhythm": rhythm or [0.0] * 28,
-            "structural": structural or [0.0] * 15,
+            "structural": structural or [0.0] * 19,
             "ischaemia": ischaemia or [0.0] * 15,
             "risk": risk or [0.0] * 3,
         }
@@ -272,7 +272,7 @@ class TestSimplifyOutput:
         assert any(f.class_name == "AF" for f in report.key_findings)
 
     def test_refer_from_lvsd(self) -> None:
-        structural = [0.0] * 15
+        structural = [0.0] * 19
         lvsd_idx = _STRUCTURAL_CLASSES.index("LVSD")
         structural[lvsd_idx] = 0.60
         report = simplify_output(self._make_output(structural=structural))

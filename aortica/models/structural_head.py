@@ -1,12 +1,14 @@
 """Structural & Functional Task Head for multi-task ECG analysis.
 
-Provides :class:`StructuralHead`, a multi-label classification head producing 15
+Provides :class:`StructuralHead`, a multi-label classification head producing 19
 sigmoid outputs corresponding to structural and functional cardiac abnormalities.
 
-The 15 classes are:
+The 19 classes are:
     LVH, RVH, LVSD, HFpEF_risk, DCM, HCM, ARVC, amyloidosis,
     aortic_stenosis, mitral_regurgitation, pulmonary_HTN,
-    LA_enlargement, RA_enlargement, pericarditis, myocarditis
+    LA_enlargement, RA_enlargement, pericarditis, myocarditis,
+    LV_strain_grade, RV_strain_PE, Takotsubo_pattern,
+    infiltrative_cardiomyopathy_strain
 
 The head connects to the backbone + attention output and uses binary
 cross-entropy with an optional focal loss modifier for rare classes.
@@ -44,7 +46,7 @@ def _check_torch() -> None:
         )
 
 
-# Canonical class ordering (15 structural & functional classes).
+# Canonical class ordering (19 structural & functional classes).
 STRUCTURAL_CLASSES: list[str] = [
     "LVH",
     "RVH",
@@ -61,18 +63,23 @@ STRUCTURAL_CLASSES: list[str] = [
     "RA_enlargement",
     "pericarditis",
     "myocarditis",
+    # Phase 3 strain pattern sub-classifiers (US-074)
+    "LV_strain_grade",
+    "RV_strain_PE",
+    "Takotsubo_pattern",
+    "infiltrative_cardiomyopathy_strain",
 ]
 
 NUM_STRUCTURAL_CLASSES: int = len(STRUCTURAL_CLASSES)
 
 
 class StructuralHead(nn.Module):
-    """Multi-label structural & functional classification head (15 classes).
+    """Multi-label structural & functional classification head (19 classes).
 
     Architecture:
 
     * Linear(feature_dim, hidden_dim) + ReLU + Dropout
-    * Linear(hidden_dim, 15)
+    * Linear(hidden_dim, 19)
     * Sigmoid activation (applied in :meth:`forward`)
 
     The head outputs raw logits via :meth:`forward_logits` (for use with
@@ -88,8 +95,8 @@ class StructuralHead(nn.Module):
 
         head = StructuralHead(feature_dim=256)
         features = torch.randn(4, 256)
-        probs = head(features)       # [4, 15], values in (0, 1)
-        logits = head.forward_logits(features)  # [4, 15], raw logits
+        probs = head(features)       # [4, 19], values in (0, 1)
+        logits = head.forward_logits(features)  # [4, 19], raw logits
     """
 
     def __init__(
@@ -119,7 +126,7 @@ class StructuralHead(nn.Module):
             x: Feature tensor of shape ``[batch, feature_dim]``.
 
         Returns:
-            Logit tensor of shape ``[batch, 15]``.
+            Logit tensor of shape ``[batch, 19]``.
         """
         logits: torch.Tensor = self.classifier(x)
         return logits
@@ -131,7 +138,7 @@ class StructuralHead(nn.Module):
             x: Feature tensor of shape ``[batch, feature_dim]``.
 
         Returns:
-            Probability tensor of shape ``[batch, 15]``, values in ``(0, 1)``.
+            Probability tensor of shape ``[batch, 19]``, values in ``(0, 1)``.
         """
         logits = self.forward_logits(x)
         probs: torch.Tensor = torch.sigmoid(logits)
@@ -154,13 +161,13 @@ def compute_structural_loss(
     and focus training on hard/rare classes.
 
     Args:
-        logits: Raw logits of shape ``[batch, 15]``.
-        targets: Binary targets of shape ``[batch, 15]``.
-        class_weights: Optional weight tensor of shape ``[15]`` for class
+        logits: Raw logits of shape ``[batch, 19]``.
+        targets: Binary targets of shape ``[batch, 19]``.
+        class_weights: Optional weight tensor of shape ``[19]`` for class
             balancing (used only when ``focal=False``).
         focal: If ``True``, use focal loss instead of plain BCE.
         focal_gamma: Focusing parameter for focal loss.  Default ``2.0``.
-        focal_alpha: Optional per-class balancing factor of shape ``[15]``
+        focal_alpha: Optional per-class balancing factor of shape ``[19]``
             for focal loss.  If ``None``, uniform alpha is used.
 
     Returns:

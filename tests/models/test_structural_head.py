@@ -1,4 +1,4 @@
-"""Tests for Structural & Functional Task Head (US-018).
+"""Tests for Structural & Functional Task Head (US-018, US-074).
 
 Covers both PyTorch and TensorFlow/Keras implementations:
 - Constants and class list
@@ -6,6 +6,7 @@ Covers both PyTorch and TensorFlow/Keras implementations:
 - Loss computation (standard BCE and focal loss)
 - Gradient flow
 - Backbone + attention integration
+- Strain pattern sub-classifier expansion (US-074)
 - TF/Keras equivalent tests
 """
 
@@ -31,17 +32,25 @@ class TestStructuralConstants:
     """Verify canonical class list and count."""
 
     def test_num_classes(self) -> None:
-        assert NUM_STRUCTURAL_CLASSES == 15
+        assert NUM_STRUCTURAL_CLASSES == 19
 
     def test_class_list_length(self) -> None:
-        assert len(STRUCTURAL_CLASSES) == 15
+        assert len(STRUCTURAL_CLASSES) == 19
 
     def test_class_list_unique(self) -> None:
-        assert len(set(STRUCTURAL_CLASSES)) == 15
+        assert len(set(STRUCTURAL_CLASSES)) == 19
 
     def test_expected_classes_present(self) -> None:
         expected = {"LVH", "RVH", "LVSD", "HCM", "DCM", "ARVC",
                     "amyloidosis", "pericarditis", "myocarditis"}
+        assert expected.issubset(set(STRUCTURAL_CLASSES))
+
+    def test_strain_pattern_classes_present(self) -> None:
+        """US-074: verify all 4 strain pattern sub-classifiers are present."""
+        expected = {
+            "LV_strain_grade", "RV_strain_PE",
+            "Takotsubo_pattern", "infiltrative_cardiomyopathy_strain",
+        }
         assert expected.issubset(set(STRUCTURAL_CLASSES))
 
 
@@ -60,7 +69,7 @@ class TestStructuralHeadShape:
     def test_output_shape(self, head: StructuralHead) -> None:
         x = torch.randn(4, 256)
         out = head(x)
-        assert out.shape == (4, 15)
+        assert out.shape == (4, 19)
 
     def test_output_range(self, head: StructuralHead) -> None:
         x = torch.randn(8, 256)
@@ -70,7 +79,7 @@ class TestStructuralHeadShape:
     def test_logits_shape(self, head: StructuralHead) -> None:
         x = torch.randn(4, 256)
         logits = head.forward_logits(x)
-        assert logits.shape == (4, 15)
+        assert logits.shape == (4, 19)
 
     def test_logits_unbounded(self, head: StructuralHead) -> None:
         """Logits can be negative or greater than 1."""
@@ -82,12 +91,12 @@ class TestStructuralHeadShape:
     def test_single_sample(self, head: StructuralHead) -> None:
         x = torch.randn(1, 256)
         out = head(x)
-        assert out.shape == (1, 15)
+        assert out.shape == (1, 19)
 
     def test_custom_feature_dim(self) -> None:
         head = StructuralHead(feature_dim=512, hidden_dim=64)
         x = torch.randn(2, 512)
-        assert head(x).shape == (2, 15)
+        assert head(x).shape == (2, 19)
 
 
 # ---------------------------------------------------------------------------
@@ -99,17 +108,17 @@ class TestStructuralLoss:
     """Loss function tests (standard BCE)."""
 
     def test_loss_scalar(self) -> None:
-        logits = torch.randn(4, 15)
-        targets = torch.zeros(4, 15)
+        logits = torch.randn(4, 19)
+        targets = torch.zeros(4, 19)
         targets[:, 0] = 1.0  # LVH positive
         loss = compute_structural_loss(logits, targets)
         assert loss.shape == ()
         assert loss.item() > 0.0
 
     def test_loss_with_class_weights(self) -> None:
-        logits = torch.randn(4, 15)
-        targets = torch.zeros(4, 15)
-        weights = torch.ones(15) * 2.0
+        logits = torch.randn(4, 19)
+        targets = torch.zeros(4, 19)
+        weights = torch.ones(19) * 2.0
         loss_weighted = compute_structural_loss(logits, targets, class_weights=weights)
         loss_unweighted = compute_structural_loss(logits, targets)
         # Weighted loss should differ from unweighted
@@ -117,8 +126,8 @@ class TestStructuralLoss:
 
     def test_perfect_prediction_low_loss(self) -> None:
         """Loss should be very low for confident correct predictions."""
-        targets = torch.zeros(4, 15)
-        logits = torch.full((4, 15), -10.0)
+        targets = torch.zeros(4, 19)
+        logits = torch.full((4, 19), -10.0)
         loss = compute_structural_loss(logits, targets)
         assert loss.item() < 0.01
 
@@ -126,7 +135,7 @@ class TestStructuralLoss:
         head = StructuralHead(feature_dim=256, dropout=0.0)
         x = torch.randn(4, 256, requires_grad=True)
         logits = head.forward_logits(x)
-        targets = torch.zeros(4, 15)
+        targets = torch.zeros(4, 19)
         loss = compute_structural_loss(logits, targets)
         loss.backward()
         assert x.grad is not None
@@ -142,8 +151,8 @@ class TestStructuralFocalLoss:
     """Focal loss tests for rare class handling."""
 
     def test_focal_loss_scalar(self) -> None:
-        logits = torch.randn(4, 15)
-        targets = torch.zeros(4, 15)
+        logits = torch.randn(4, 19)
+        targets = torch.zeros(4, 19)
         targets[:, 0] = 1.0
         loss = compute_structural_loss(logits, targets, focal=True)
         assert loss.shape == ()
@@ -151,19 +160,19 @@ class TestStructuralFocalLoss:
 
     def test_focal_loss_less_than_bce_for_easy(self) -> None:
         """Focal loss should be smaller than BCE for easy (confident) examples."""
-        targets = torch.zeros(4, 15)
+        targets = torch.zeros(4, 19)
         # Strongly correct predictions
-        logits = torch.full((4, 15), -5.0)
+        logits = torch.full((4, 19), -5.0)
         bce = compute_structural_loss(logits, targets, focal=False)
         focal = compute_structural_loss(logits, targets, focal=True, focal_gamma=2.0)
         # Focal should down-weight these easy examples
         assert focal.item() < bce.item()
 
     def test_focal_loss_with_alpha(self) -> None:
-        logits = torch.randn(4, 15)
-        targets = torch.zeros(4, 15)
+        logits = torch.randn(4, 19)
+        targets = torch.zeros(4, 19)
         targets[:, 0] = 1.0
-        alpha = torch.full((15,), 0.25)
+        alpha = torch.full((19,), 0.25)
         loss = compute_structural_loss(
             logits, targets, focal=True, focal_alpha=alpha,
         )
@@ -173,8 +182,8 @@ class TestStructuralFocalLoss:
     def test_focal_loss_gamma_zero_equals_bce(self) -> None:
         """With gamma=0, focal loss should equal BCE."""
         torch.manual_seed(99)
-        logits = torch.randn(4, 15)
-        targets = torch.zeros(4, 15)
+        logits = torch.randn(4, 19)
+        targets = torch.zeros(4, 19)
         targets[:, 0] = 1.0
         bce = compute_structural_loss(logits, targets, focal=False)
         focal_g0 = compute_structural_loss(
@@ -186,7 +195,7 @@ class TestStructuralFocalLoss:
         head = StructuralHead(feature_dim=256, dropout=0.0)
         x = torch.randn(4, 256, requires_grad=True)
         logits = head.forward_logits(x)
-        targets = torch.zeros(4, 15)
+        targets = torch.zeros(4, 19)
         loss = compute_structural_loss(logits, targets, focal=True)
         loss.backward()
         assert x.grad is not None
@@ -210,7 +219,7 @@ class TestStructuralHeadIntegration:
         x = torch.randn(2, 12, 2500)  # 5s @ 500 Hz
         features = backbone(x)
         probs = head(features)
-        assert probs.shape == (2, 15)
+        assert probs.shape == (2, 19)
 
     def test_backbone_attention_to_head(self) -> None:
         from aortica.models.attention import CrossLeadAttention
@@ -224,7 +233,7 @@ class TestStructuralHeadIntegration:
         features = backbone(x)
         enriched = attention(features)
         probs = head(enriched)
-        assert probs.shape == (2, 15)
+        assert probs.shape == (2, 19)
 
     def test_end_to_end_gradient(self) -> None:
         from aortica.models.attention import CrossLeadAttention
@@ -239,7 +248,7 @@ class TestStructuralHeadIntegration:
         enriched = attention(features)
         logits = head.forward_logits(enriched)
 
-        targets = torch.zeros(2, 15)
+        targets = torch.zeros(2, 19)
         loss = compute_structural_loss(logits, targets)
         loss.backward()
 
@@ -268,7 +277,7 @@ class TestStructuralHeadTF:
 
         x = np.random.randn(4, 256).astype(np.float32)
         out = model(x, training=False).numpy()
-        assert out.shape == (4, 15)
+        assert out.shape == (4, 19)
 
     @pytest.mark.usefixtures("_skip_if_no_tf")
     def test_tf_output_range(self) -> None:
@@ -290,7 +299,7 @@ class TestStructuralHeadTF:
 
         x = np.random.randn(2, 512).astype(np.float32)
         out = model(x, training=False).numpy()
-        assert out.shape == (2, 15)
+        assert out.shape == (2, 19)
 
     @pytest.mark.usefixtures("_skip_if_no_tf")
     def test_tf_model_summary(self) -> None:
