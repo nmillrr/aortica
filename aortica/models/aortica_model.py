@@ -59,7 +59,7 @@ class MultiTaskOutput:
     Attributes:
         rhythm: Rhythm head output ``[batch, 28]`` or ``None``.
         structural: Structural head output ``[batch, 19]`` or ``None``.
-        ischaemia: Ischaemia head output ``[batch, 15]`` or ``None``.
+        ischaemia: Ischaemia head output ``[batch, 19]`` or ``None``.
         risk: Risk head output ``[batch, 3]`` or ``None``.
     """
 

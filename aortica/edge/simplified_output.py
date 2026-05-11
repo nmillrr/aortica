@@ -70,6 +70,9 @@ _ISCHAEMIA_CLASSES: list[str] = [
     # Phase 3 STEMI mimics & subtle ischaemia subtypes (US-073)
     "early_repol_vs_STEMI", "de_Winter_T_wave", "Wellens_syndrome",
     "aVR_ST_elevation", "Sgarbossa_criteria",
+    # Phase 3 metabolic & drug effect detectors (US-075)
+    "hyperkalaemia_severity_grade", "hypothermia_osborn_waves",
+    "TCA_toxicity", "digoxin_effect_vs_toxicity",
 ]
 
 _RISK_OUTPUTS: list[str] = [
@@ -97,6 +100,8 @@ _URGENT_CONDITIONS: dict[str, float] = {
     # Phase 3 STEMI mimics — high urgency (US-073)
     "de_Winter_T_wave": 0.40,
     "aVR_ST_elevation": 0.40,
+    # Phase 3 metabolic & drug effect — life-threatening at severe levels (US-075)
+    "hyperkalaemia_severity_grade": 0.40,
 }
 
 #: Conditions that trigger **refer** when above their threshold.
@@ -155,6 +160,10 @@ _REFER_CONDITIONS: dict[str, float] = {
     "RV_strain_PE": 0.40,
     "Takotsubo_pattern": 0.40,
     "infiltrative_cardiomyopathy_strain": 0.50,
+    # Phase 3 metabolic & drug effect detectors — need specialist evaluation (US-075)
+    "hypothermia_osborn_waves": 0.50,
+    "TCA_toxicity": 0.40,
+    "digoxin_effect_vs_toxicity": 0.50,
 }
 
 #: Risk score thresholds for tier escalation.

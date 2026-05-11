@@ -1216,13 +1216,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want AI detection of metabolic emergencies and drug effects so that hyperkalaemia severity, hypothermia, and drug toxicity are flagged.
 
 **Acceptance Criteria:**
-- [ ] Extend `ISCHAEMIA_CLASSES` list with 4 additional classes: hyperkalaemia severity grading (mild/moderate/severe as ordinal), hypothermia (Osborn waves), tricyclic antidepressant toxicity, digoxin effect vs toxicity
-- [ ] Update `IschaemiaHead` output dimension from 15 to 19 (both PyTorch and TF/Keras)
-- [ ] Hyperkalaemia grading uses ordinal encoding similar to strain grade
-- [ ] Update `compute_ischaemia_loss` to handle 19-class output
-- [ ] Update all downstream code referencing ISCHAEMIA_CLASSES count
-- [ ] Unit tests verifying new output shape and ordinal encoding
-- [ ] Typecheck passes
+- [x] Extend `ISCHAEMIA_CLASSES` list with 4 additional classes: hyperkalaemia severity grading (mild/moderate/severe as ordinal), hypothermia (Osborn waves), tricyclic antidepressant toxicity, digoxin effect vs toxicity
+- [x] Update `IschaemiaHead` output dimension from 15 to 19 (both PyTorch and TF/Keras)
+- [x] Hyperkalaemia grading uses ordinal encoding similar to strain grade
+- [x] Update `compute_ischaemia_loss` to handle 19-class output
+- [x] Update all downstream code referencing ISCHAEMIA_CLASSES count
+- [x] Unit tests verifying new output shape and ordinal encoding
+- [x] Typecheck passes
 
 ---
 

@@ -1,4 +1,4 @@
-"""Tests for Ischaemia & Metabolic Task Head (US-019).
+"""Tests for Ischaemia & Metabolic Task Head (US-019, US-073, US-075).
 
 Covers both PyTorch and TensorFlow/Keras implementations:
 - Constants and class list
@@ -31,13 +31,13 @@ class TestIschaemiaConstants:
     """Verify canonical class list and count."""
 
     def test_num_classes(self) -> None:
-        assert NUM_ISCHAEMIA_CLASSES == 15
+        assert NUM_ISCHAEMIA_CLASSES == 19
 
     def test_class_list_length(self) -> None:
-        assert len(ISCHAEMIA_CLASSES) == 15
+        assert len(ISCHAEMIA_CLASSES) == 19
 
     def test_class_list_unique(self) -> None:
-        assert len(set(ISCHAEMIA_CLASSES)) == 15
+        assert len(set(ISCHAEMIA_CLASSES)) == 19
 
     def test_expected_classes_present(self) -> None:
         expected = {
@@ -51,6 +51,14 @@ class TestIschaemiaConstants:
         expected = {
             "early_repol_vs_STEMI", "de_Winter_T_wave", "Wellens_syndrome",
             "aVR_ST_elevation", "Sgarbossa_criteria",
+        }
+        assert expected.issubset(set(ISCHAEMIA_CLASSES))
+
+    def test_metabolic_drug_effect_classes_present(self) -> None:
+        """US-075: Verify all 4 metabolic & drug effect detector classes."""
+        expected = {
+            "hyperkalaemia_severity_grade", "hypothermia_osborn_waves",
+            "TCA_toxicity", "digoxin_effect_vs_toxicity",
         }
         assert expected.issubset(set(ISCHAEMIA_CLASSES))
 
@@ -70,7 +78,7 @@ class TestIschaemiaHeadShape:
     def test_output_shape(self, head: IschaemiaHead) -> None:
         x = torch.randn(4, 256)
         out = head(x)
-        assert out.shape == (4, 15)
+        assert out.shape == (4, 19)
 
     def test_output_range(self, head: IschaemiaHead) -> None:
         x = torch.randn(8, 256)
@@ -80,7 +88,7 @@ class TestIschaemiaHeadShape:
     def test_logits_shape(self, head: IschaemiaHead) -> None:
         x = torch.randn(4, 256)
         logits = head.forward_logits(x)
-        assert logits.shape == (4, 15)
+        assert logits.shape == (4, 19)
 
     def test_logits_unbounded(self, head: IschaemiaHead) -> None:
         """Logits can be negative or greater than 1."""
@@ -92,12 +100,12 @@ class TestIschaemiaHeadShape:
     def test_single_sample(self, head: IschaemiaHead) -> None:
         x = torch.randn(1, 256)
         out = head(x)
-        assert out.shape == (1, 15)
+        assert out.shape == (1, 19)
 
     def test_custom_feature_dim(self) -> None:
         head = IschaemiaHead(feature_dim=512, hidden_dim=64)
         x = torch.randn(2, 512)
-        assert head(x).shape == (2, 15)
+        assert head(x).shape == (2, 19)
 
 
 # ---------------------------------------------------------------------------
@@ -109,17 +117,17 @@ class TestIschaemiaLoss:
     """Loss function tests (standard BCE)."""
 
     def test_loss_scalar(self) -> None:
-        logits = torch.randn(4, 15)
-        targets = torch.zeros(4, 15)
+        logits = torch.randn(4, 19)
+        targets = torch.zeros(4, 19)
         targets[:, 0] = 1.0  # STEMI positive
         loss = compute_ischaemia_loss(logits, targets)
         assert loss.shape == ()
         assert loss.item() > 0.0
 
     def test_loss_with_class_weights(self) -> None:
-        logits = torch.randn(4, 15)
-        targets = torch.zeros(4, 15)
-        weights = torch.ones(15) * 2.0
+        logits = torch.randn(4, 19)
+        targets = torch.zeros(4, 19)
+        weights = torch.ones(19) * 2.0
         loss_weighted = compute_ischaemia_loss(logits, targets, class_weights=weights)
         loss_unweighted = compute_ischaemia_loss(logits, targets)
         # Weighted loss should differ from unweighted
@@ -127,8 +135,8 @@ class TestIschaemiaLoss:
 
     def test_perfect_prediction_low_loss(self) -> None:
         """Loss should be very low for confident correct predictions."""
-        targets = torch.zeros(4, 15)
-        logits = torch.full((4, 15), -10.0)
+        targets = torch.zeros(4, 19)
+        logits = torch.full((4, 19), -10.0)
         loss = compute_ischaemia_loss(logits, targets)
         assert loss.item() < 0.01
 
@@ -136,11 +144,22 @@ class TestIschaemiaLoss:
         head = IschaemiaHead(feature_dim=256, dropout=0.0)
         x = torch.randn(4, 256, requires_grad=True)
         logits = head.forward_logits(x)
-        targets = torch.zeros(4, 15)
+        targets = torch.zeros(4, 19)
         loss = compute_ischaemia_loss(logits, targets)
         loss.backward()
         assert x.grad is not None
         assert (x.grad != 0).any()
+
+    def test_ordinal_encoding_hyperkalaemia(self) -> None:
+        """US-075: Hyperkalaemia severity uses ordinal encoding via sigmoid."""
+        head = IschaemiaHead(feature_dim=256, dropout=0.0)
+        x = torch.randn(4, 256)
+        probs = head(x)
+        # hyperkalaemia_severity_grade is at index 15
+        idx = ISCHAEMIA_CLASSES.index("hyperkalaemia_severity_grade")
+        assert idx == 15
+        # Values should be in (0, 1) — sigmoid for ordinal grading
+        assert (probs[:, idx] >= 0.0).all() and (probs[:, idx] <= 1.0).all()
 
 
 # ---------------------------------------------------------------------------
@@ -160,7 +179,7 @@ class TestIschaemiaHeadIntegration:
         x = torch.randn(2, 12, 2500)  # 5s @ 500 Hz
         features = backbone(x)
         probs = head(features)
-        assert probs.shape == (2, 15)
+        assert probs.shape == (2, 19)
 
     def test_backbone_attention_to_head(self) -> None:
         from aortica.models.attention import CrossLeadAttention
@@ -174,7 +193,7 @@ class TestIschaemiaHeadIntegration:
         features = backbone(x)
         enriched = attention(features)
         probs = head(enriched)
-        assert probs.shape == (2, 15)
+        assert probs.shape == (2, 19)
 
     def test_end_to_end_gradient(self) -> None:
         from aortica.models.attention import CrossLeadAttention
@@ -189,7 +208,7 @@ class TestIschaemiaHeadIntegration:
         enriched = attention(features)
         logits = head.forward_logits(enriched)
 
-        targets = torch.zeros(2, 15)
+        targets = torch.zeros(2, 19)
         loss = compute_ischaemia_loss(logits, targets)
         loss.backward()
 
@@ -218,7 +237,7 @@ class TestIschaemiaHeadTF:
 
         x = np.random.randn(4, 256).astype(np.float32)
         out = model(x, training=False).numpy()
-        assert out.shape == (4, 15)
+        assert out.shape == (4, 19)
 
     @pytest.mark.usefixtures("_skip_if_no_tf")
     def test_tf_output_range(self) -> None:
@@ -240,7 +259,7 @@ class TestIschaemiaHeadTF:
 
         x = np.random.randn(2, 512).astype(np.float32)
         out = model(x, training=False).numpy()
-        assert out.shape == (2, 15)
+        assert out.shape == (2, 19)
 
     @pytest.mark.usefixtures("_skip_if_no_tf")
     def test_tf_model_summary(self) -> None:

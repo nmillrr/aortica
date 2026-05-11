@@ -314,6 +314,26 @@
       "prompt": "Cardiac MRI and specialist referral for infiltrative disease",
       "urgency": "prompt",
       "rationale": "Infiltrative cardiomyopathy strain patterns (low voltage with strain) suggest amyloidosis, sarcoidosis, or storage disease requiring tissue characterisation via cardiac MRI."
+    },
+    "hyperkalaemia_severity_grade": {
+      "prompt": "Urgent electrolytes — grade-appropriate K+ management",
+      "urgency": "emergent",
+      "rationale": "Hyperkalaemia severity grading (mild/moderate/severe) guides urgency of treatment; severe hyperkalaemia with ECG changes requires immediate IV calcium gluconate and insulin-glucose."
+    },
+    "hypothermia_osborn_waves": {
+      "prompt": "Core temperature measurement — assess for hypothermia",
+      "urgency": "prompt",
+      "rationale": "Osborn (J) waves are pathognomonic of hypothermia; core temperature measurement and active rewarming protocol should be initiated based on severity."
+    },
+    "TCA_toxicity": {
+      "prompt": "Urgent toxicology — sodium bicarbonate if QRS widening",
+      "urgency": "emergent",
+      "rationale": "Tricyclic antidepressant toxicity causes sodium channel blockade with QRS widening, seizures, and arrhythmias; IV sodium bicarbonate is first-line treatment for QRS >100ms."
+    },
+    "digoxin_effect_vs_toxicity": {
+      "prompt": "Check digoxin level — differentiate effect from toxicity",
+      "urgency": "urgent",
+      "rationale": "Digoxin effect (reverse tick ST) is expected at therapeutic levels; toxicity (bidirectional VT, regularised AF, various bradyarrhythmias) requires level measurement and consideration of digoxin-specific antibody fragments."
     }
   }
 }

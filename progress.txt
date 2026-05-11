@@ -1187,3 +1187,83 @@ early_repol_vs_STEMI, de_Winter_T_wave, Wellens_syndrome, aVR_ST_elevation, Sgar
 - predict.py and compare.py use lazy imports from ISCHAEMIA_CLASSES -> they cascade automatically
 - data/clinical_suggestions.json is gitignored by data/ pattern but already tracked -> need git add -f
 ---
+
+## Iteration US-074 - Strain Pattern Sub-Classifiers: Expanded Structural Head
+### Goal
+Expand the StructuralHead output from 15 to 19 classes by adding 4 strain pattern sub-classifiers:
+LV_strain_grade, RV_strain_PE, Takotsubo_pattern, infiltrative_cardiomyopathy_strain
+
+### Files Modified
+- aortica/models/structural_head.py - Added 4 classes to STRUCTURAL_CLASSES, updated docstrings (15->19)
+- aortica/models/structural_head_tf.py - Updated NUM_STRUCTURAL_CLASSES to 19, updated docstrings
+- aortica/models/train_multitask.py - Updated _TASK_NUM_OUTPUTS structural entry from 15 to 19
+- aortica/models/aortica_model.py - Updated MultiTaskOutput docstrings (structural 15->19, ischaemia 10->15)
+- aortica/edge/simplified_output.py - Added 4 new classes to _STRUCTURAL_CLASSES, all to _REFER_CONDITIONS
+- aortica/api/compare.py - Added clinical importance scores and alias mappings for 4 new classes
+- data/clinical_suggestions.json - Added clinical suggestion entries for all 4 new classes
+- tests/models/test_structural_head.py - Updated all shape assertions (15->19), added test_strain_pattern_classes_present
+- tests/edge/test_simplified_output.py - Updated all structural array sizes (15->19)
+
+### Implementation Details
+- LV_strain_grade: ordinal encoding via single sigmoid output, refer threshold 0.50, importance 6
+- RV_strain_PE: S1Q3T3 pattern for PE, refer threshold 0.40, importance 8 (high urgency for PE)
+- Takotsubo_pattern: stress cardiomyopathy mimicking ACS, refer threshold 0.40, importance 8
+- infiltrative_cardiomyopathy_strain: amyloid/sarcoid/storage patterns, refer threshold 0.50, importance 7
+- All 4 new classes classified as refer (need specialist evaluation, not immediately life-threatening)
+- Clinical suggestions: RV_strain_PE and Takotsubo urgent urgency, LV_strain_grade and infiltrative prompt urgency
+- Alias mappings: s1q3t3->RV_strain_PE, takotsubo/stress cardiomyopathy/apical ballooning->Takotsubo_pattern
+
+### Test Results
+- 23/23 passed, 4 skipped (TF) in test_structural_head.py (27 total including new test)
+- 51/51 passed in test_simplified_output.py
+- 94/94 passed in test_compare.py + test_clinical_suggestions.py
+- mypy: 0 new errors (pre-existing errors in other modules unchanged)
+
+### Learnings
+- Same pattern as US-072 (rhythm) and US-073 (ischaemia) head expansions
+- Extend class list, update TF/Keras hardcoded count, update train pipeline _TASK_NUM_OUTPUTS
+- Update simplified output _STRUCTURAL_CLASSES + conditions, compare.py aliases + importance
+- AorticaModel dynamically instantiates StructuralHead so it auto-picks up NUM_STRUCTURAL_CLASSES changes
+- predict.py and compare.py use lazy imports from STRUCTURAL_CLASSES -> they cascade automatically
+---
+
+## Iteration US-075 - Metabolic & Drug Effect Detectors: Expanded Ischaemia Head
+### Goal
+Expand the IschaemiaHead output from 15 to 19 classes by adding 4 metabolic & drug effect detectors:
+hyperkalaemia_severity_grade, hypothermia_osborn_waves, TCA_toxicity, digoxin_effect_vs_toxicity
+
+### Files Modified
+- aortica/models/ischaemia_head.py - Added 4 classes to ISCHAEMIA_CLASSES, updated docstrings (15->19)
+- aortica/models/ischaemia_head_tf.py - Updated NUM_ISCHAEMIA_CLASSES to 19, updated docstrings
+- aortica/models/train_multitask.py - Updated _TASK_NUM_OUTPUTS ischaemia entry from 15 to 19
+- aortica/models/aortica_model.py - Updated MultiTaskOutput docstrings (ischaemia 15->19)
+- aortica/edge/simplified_output.py - Added 4 new classes to _ISCHAEMIA_CLASSES, hyperkalaemia_severity_grade to _URGENT_CONDITIONS, 3 others to _REFER_CONDITIONS
+- aortica/api/compare.py - Added clinical importance scores and alias mappings for 4 new classes
+- data/clinical_suggestions.json - Added clinical suggestion entries for all 4 new classes
+- tests/models/test_ischaemia_head.py - Updated all shape assertions (15->19), added test_metabolic_drug_effect_classes_present and test_ordinal_encoding_hyperkalaemia
+- tests/edge/test_simplified_output.py - Updated all ischaemia array sizes (15->19)
+
+### Implementation Details
+- hyperkalaemia_severity_grade: ordinal encoding via single sigmoid output, urgent threshold 0.40, importance 8
+- hypothermia_osborn_waves: pathognomonic of hypothermia, refer threshold 0.50, importance 6
+- TCA_toxicity: life-threatening sodium channel blockade, refer threshold 0.40, importance 9
+- digoxin_effect_vs_toxicity: distinguishes therapeutic effect from toxicity, refer threshold 0.50, importance 7
+- hyperkalaemia_severity_grade classified as urgent (severe hyperkalaemia is life-threatening)
+- hypothermia, TCA_toxicity, digoxin classified as refer (need specialist evaluation)
+- Clinical suggestions: hyperkalaemia_severity_grade and TCA_toxicity emergent, digoxin urgent, hypothermia prompt
+
+### Test Results
+- 20/20 passed, 4 skipped (TF) in test_ischaemia_head.py (24 total including 2 new tests)
+- 51/51 passed in test_simplified_output.py
+- 94/94 passed in test_compare.py + test_clinical_suggestions.py
+- 165 total passed, 4 skipped across all affected test files
+- mypy: 0 new errors (pre-existing errors in other modules unchanged)
+
+### Learnings
+- Same pattern as US-072 (rhythm), US-073 (ischaemia), and US-074 (structural) head expansions
+- Extend class list, update TF/Keras hardcoded count, update train pipeline _TASK_NUM_OUTPUTS
+- Update simplified output _ISCHAEMIA_CLASSES + conditions, compare.py aliases + importance
+- AorticaModel dynamically instantiates IschaemiaHead so it auto-picks up NUM_ISCHAEMIA_CLASSES changes
+- predict.py and compare.py use lazy imports from ISCHAEMIA_CLASSES -> they cascade automatically
+- test_simplified_output.py has hard-coded array sizes that need manual updating (not dynamic)
+---

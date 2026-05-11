@@ -111,6 +111,11 @@ _CLINICAL_IMPORTANCE: Dict[str, int] = {
     "Wellens_syndrome": 8,
     "aVR_ST_elevation": 9,
     "Sgarbossa_criteria": 8,
+    # Phase 3 metabolic & drug effect detectors (US-075)
+    "hyperkalaemia_severity_grade": 8,
+    "hypothermia_osborn_waves": 6,
+    "TCA_toxicity": 9,
+    "digoxin_effect_vs_toxicity": 7,
 }
 
 DEFAULT_IMPORTANCE = 3
@@ -253,6 +258,23 @@ _ALIASES: Dict[str, str] = {
     "infiltrative cardiomyopathy": "infiltrative_cardiomyopathy_strain",
     "infiltrative cardiomyopathy strain": "infiltrative_cardiomyopathy_strain",
     "infiltrative strain": "infiltrative_cardiomyopathy_strain",
+    # Phase 3 metabolic & drug effect detectors (US-075)
+    "hyperkalaemia severity": "hyperkalaemia_severity_grade",
+    "hyperkalaemia severity grade": "hyperkalaemia_severity_grade",
+    "hyperkalemia severity": "hyperkalaemia_severity_grade",
+    "severe hyperkalaemia": "hyperkalaemia_severity_grade",
+    "hypothermia": "hypothermia_osborn_waves",
+    "osborn waves": "hypothermia_osborn_waves",
+    "osborn wave": "hypothermia_osborn_waves",
+    "j waves": "hypothermia_osborn_waves",
+    "tca toxicity": "TCA_toxicity",
+    "tricyclic toxicity": "TCA_toxicity",
+    "tricyclic antidepressant toxicity": "TCA_toxicity",
+    "tricyclic overdose": "TCA_toxicity",
+    "digoxin toxicity": "digoxin_effect_vs_toxicity",
+    "digoxin effect vs toxicity": "digoxin_effect_vs_toxicity",
+    "digitalis toxicity": "digoxin_effect_vs_toxicity",
+    "dig toxicity": "digoxin_effect_vs_toxicity",
 }
 
 
