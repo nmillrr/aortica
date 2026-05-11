@@ -1,12 +1,14 @@
 """Rhythm & Conduction Task Head for multi-task ECG analysis.
 
-Provides :class:`RhythmHead`, a multi-label classification head producing 22
+Provides :class:`RhythmHead`, a multi-label classification head producing 28
 sigmoid outputs corresponding to rhythm and conduction abnormalities.
 
-The 22 classes are:
+The 28 classes are:
     AF, AFL, SVT, AVNRT, AVRT, VT, VF, idioventricular, sinus_brady,
     sinus_tachy, PAC, PVC, av_block_1st, av_block_2nd, av_block_3rd,
-    LBBB, RBBB, LAFB, LPFB, WPW, pacemaker_rhythm, normal_sinus_rhythm
+    LBBB, RBBB, LAFB, LPFB, WPW, pacemaker_rhythm, normal_sinus_rhythm,
+    brugada_pattern, short_QT_syndrome, CPVT, fascicular_VT,
+    atypical_atrial_flutter, inappropriate_sinus_tachy
 
 The head connects to the backbone + attention output and uses binary
 cross-entropy with optional class-weight balancing.
@@ -44,7 +46,7 @@ def _check_torch() -> None:
         )
 
 
-# Canonical class ordering (22 rhythm & conduction classes).
+# Canonical class ordering (28 rhythm & conduction classes).
 RHYTHM_CLASSES: list[str] = [
     "AF",
     "AFL",
@@ -68,18 +70,25 @@ RHYTHM_CLASSES: list[str] = [
     "WPW",
     "pacemaker_rhythm",
     "normal_sinus_rhythm",
+    # Phase 3 rare arrhythmia subtypes (US-072)
+    "brugada_pattern",
+    "short_QT_syndrome",
+    "CPVT",
+    "fascicular_VT",
+    "atypical_atrial_flutter",
+    "inappropriate_sinus_tachy",
 ]
 
 NUM_RHYTHM_CLASSES: int = len(RHYTHM_CLASSES)
 
 
 class RhythmHead(nn.Module):
-    """Multi-label rhythm & conduction classification head (22 classes).
+    """Multi-label rhythm & conduction classification head (28 classes).
 
     Architecture:
 
     * Linear(feature_dim, hidden_dim) + ReLU + Dropout
-    * Linear(hidden_dim, 22)
+    * Linear(hidden_dim, 28)
     * Sigmoid activation (applied in :meth:`forward`)
 
     The head outputs raw logits via :meth:`forward_logits` (for use with
@@ -95,8 +104,8 @@ class RhythmHead(nn.Module):
 
         head = RhythmHead(feature_dim=256)
         features = torch.randn(4, 256)
-        probs = head(features)       # [4, 22], values in (0, 1)
-        logits = head.forward_logits(features)  # [4, 22], raw logits
+        probs = head(features)       # [4, 28], values in (0, 1)
+        logits = head.forward_logits(features)  # [4, 28], raw logits
     """
 
     def __init__(
@@ -126,7 +135,7 @@ class RhythmHead(nn.Module):
             x: Feature tensor of shape ``[batch, feature_dim]``.
 
         Returns:
-            Logit tensor of shape ``[batch, 22]``.
+            Logit tensor of shape ``[batch, 28]``.
         """
         logits: torch.Tensor = self.classifier(x)
         return logits
@@ -138,7 +147,7 @@ class RhythmHead(nn.Module):
             x: Feature tensor of shape ``[batch, feature_dim]``.
 
         Returns:
-            Probability tensor of shape ``[batch, 22]``, values in ``(0, 1)``.
+            Probability tensor of shape ``[batch, 28]``, values in ``(0, 1)``.
         """
         logits = self.forward_logits(x)
         probs: torch.Tensor = torch.sigmoid(logits)
@@ -153,9 +162,9 @@ def compute_rhythm_loss(
     """Compute BCE loss with optional per-class weight balancing.
 
     Args:
-        logits: Raw logits of shape ``[batch, 22]``.
-        targets: Binary targets of shape ``[batch, 22]``.
-        class_weights: Optional weight tensor of shape ``[22]`` for class
+        logits: Raw logits of shape ``[batch, 28]``.
+        targets: Binary targets of shape ``[batch, 28]``.
+        class_weights: Optional weight tensor of shape ``[28]`` for class
             balancing.  If ``None``, uniform weighting is used.
 
     Returns:

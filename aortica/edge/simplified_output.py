@@ -49,6 +49,9 @@ _RHYTHM_CLASSES: list[str] = [
     "sinus_brady", "sinus_tachy", "PAC", "PVC", "av_block_1st", "av_block_2nd",
     "av_block_3rd", "LBBB", "RBBB", "LAFB", "LPFB", "WPW",
     "pacemaker_rhythm", "normal_sinus_rhythm",
+    # Phase 3 rare arrhythmia subtypes (US-072)
+    "brugada_pattern", "short_QT_syndrome", "CPVT", "fascicular_VT",
+    "atypical_atrial_flutter", "inappropriate_sinus_tachy",
 ]
 
 _STRUCTURAL_CLASSES: list[str] = [
@@ -77,6 +80,8 @@ _URGENT_CONDITIONS: dict[str, float] = {
     "VT": 0.40,
     "VF": 0.30,
     "av_block_3rd": 0.50,
+    # Phase 3 rare arrhythmias — high urgency
+    "CPVT": 0.40,
     # Ischaemia — acute coronary syndromes
     "STEMI": 0.40,
     "posterior_MI": 0.50,
@@ -126,6 +131,12 @@ _REFER_CONDITIONS: dict[str, float] = {
     "LAFB": 0.60,
     "LPFB": 0.60,
     "hypothyroidism_pattern": 0.60,
+    # Phase 3 rare arrhythmias — need specialist evaluation
+    "brugada_pattern": 0.40,
+    "short_QT_syndrome": 0.40,
+    "fascicular_VT": 0.40,
+    "atypical_atrial_flutter": 0.50,
+    "inappropriate_sinus_tachy": 0.60,
 }
 
 #: Risk score thresholds for tier escalation.

@@ -1176,12 +1176,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want AI detection of rare but dangerous arrhythmia subtypes so that conditions like Brugada and CPVT are not missed.
 
 **Acceptance Criteria:**
-- [ ] Extend `RHYTHM_CLASSES` list with 6 new classes: Brugada pattern (types 1–3 combined), short QT syndrome, catecholaminergic polymorphic VT (CPVT), fascicular VT, atypical atrial flutter, inappropriate sinus tachycardia
-- [ ] Update `RhythmHead` output dimension from 22 to 28 (both PyTorch and TF/Keras)
-- [ ] Update `compute_rhythm_loss` to handle 28-class output with class weights for new rare classes
-- [ ] Update all downstream code referencing RHYTHM_CLASSES count (training pipeline, evaluation, API responses)
-- [ ] Unit tests verifying new output shape, loss computation, and backward compatibility
-- [ ] Typecheck passes
+- [x] Extend `RHYTHM_CLASSES` list with 6 new classes: Brugada pattern (types 1–3 combined), short QT syndrome, catecholaminergic polymorphic VT (CPVT), fascicular VT, atypical atrial flutter, inappropriate sinus tachycardia
+- [x] Update `RhythmHead` output dimension from 22 to 28 (both PyTorch and TF/Keras)
+- [x] Update `compute_rhythm_loss` to handle 28-class output with class weights for new rare classes
+- [x] Update all downstream code referencing RHYTHM_CLASSES count (training pipeline, evaluation, API responses)
+- [x] Unit tests verifying new output shape, loss computation, and backward compatibility
+- [x] Typecheck passes
 
 ---
 

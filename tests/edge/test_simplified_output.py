@@ -43,7 +43,7 @@ class TestConstants:
         assert VALID_TIERS == ["low", "refer", "urgent"]
 
     def test_rhythm_classes_count(self) -> None:
-        assert len(_RHYTHM_CLASSES) == 22
+        assert len(_RHYTHM_CLASSES) == 28
 
     def test_structural_classes_count(self) -> None:
         assert len(_STRUCTURAL_CLASSES) == 15
@@ -169,13 +169,13 @@ class TestLocale:
 class TestExtractPredictions:
     def test_dict_with_lists(self) -> None:
         output = {
-            "rhythm": [0.1] * 22,
+            "rhythm": [0.1] * 28,
             "structural": [0.2] * 15,
             "ischaemia": [0.3] * 10,
             "risk": [0.4] * 3,
         }
         preds = _extract_predictions(output)
-        assert len(preds["rhythm"]) == 22
+        assert len(preds["rhythm"]) == 28
         assert preds["ischaemia"]["STEMI"] == pytest.approx(0.3)
         assert preds["risk"]["mortality_1y"] == pytest.approx(0.4)
 
@@ -213,7 +213,7 @@ class TestSimplifyOutput:
         risk: list[float] | None = None,
     ) -> dict[str, list[float] | None]:
         return {
-            "rhythm": rhythm or [0.0] * 22,
+            "rhythm": rhythm or [0.0] * 28,
             "structural": structural or [0.0] * 15,
             "ischaemia": ischaemia or [0.0] * 10,
             "risk": risk or [0.0] * 3,
@@ -242,7 +242,7 @@ class TestSimplifyOutput:
         assert len(report.actions) > 0
 
     def test_urgent_from_vt(self) -> None:
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         vt_idx = _RHYTHM_CLASSES.index("VT")
         rhythm[vt_idx] = 0.95
         report = simplify_output(self._make_output(rhythm=rhythm))
@@ -257,14 +257,14 @@ class TestSimplifyOutput:
         assert report.tier == TIER_URGENT
 
     def test_urgent_from_vf(self) -> None:
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         vf_idx = _RHYTHM_CLASSES.index("VF")
         rhythm[vf_idx] = 0.50
         report = simplify_output(self._make_output(rhythm=rhythm))
         assert report.tier == TIER_URGENT
 
     def test_refer_from_af(self) -> None:
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         af_idx = _RHYTHM_CLASSES.index("AF")
         rhythm[af_idx] = 0.70
         report = simplify_output(self._make_output(rhythm=rhythm))
@@ -279,7 +279,7 @@ class TestSimplifyOutput:
         assert report.tier == TIER_REFER
 
     def test_urgent_overrides_refer(self) -> None:
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         af_idx = _RHYTHM_CLASSES.index("AF")
         vf_idx = _RHYTHM_CLASSES.index("VF")
         rhythm[af_idx] = 0.80  # refer
@@ -292,7 +292,7 @@ class TestSimplifyOutput:
         assert "VF" in names
 
     def test_below_threshold_stays_low(self) -> None:
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         vt_idx = _RHYTHM_CLASSES.index("VT")
         rhythm[vt_idx] = 0.30  # below 0.40 urgent threshold
         report = simplify_output(self._make_output(rhythm=rhythm))
@@ -312,7 +312,7 @@ class TestSimplifyOutput:
         assert report.tier == TIER_REFER
 
     def test_findings_sorted_urgent_first(self) -> None:
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         af_idx = _RHYTHM_CLASSES.index("AF")
         vt_idx = _RHYTHM_CLASSES.index("VT")
         rhythm[af_idx] = 0.80  # refer
@@ -327,7 +327,7 @@ class TestSimplifyOutput:
             refer_conditions={},
             risk_thresholds={},
         )
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         nsr_idx = _RHYTHM_CLASSES.index("normal_sinus_rhythm")
         rhythm[nsr_idx] = 0.90
         report = simplify_output(
@@ -354,12 +354,12 @@ class TestSimplifyOutput:
         assert report.tier == TIER_LOW
 
     def test_partial_tasks(self) -> None:
-        output = {"rhythm": [0.0] * 22}
+        output = {"rhythm": [0.0] * 28}
         report = simplify_output(output)
         assert report.tier == TIER_LOW
 
     def test_multiple_urgent_findings(self) -> None:
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         vt_idx = _RHYTHM_CLASSES.index("VT")
         vf_idx = _RHYTHM_CLASSES.index("VF")
         rhythm[vt_idx] = 0.90
@@ -377,7 +377,7 @@ class TestSimplifyOutput:
         assert report.tier == TIER_URGENT
 
     def test_av_block_3rd_urgent(self) -> None:
-        rhythm = [0.0] * 22
+        rhythm = [0.0] * 28
         idx = _RHYTHM_CLASSES.index("av_block_3rd")
         rhythm[idx] = 0.70
         report = simplify_output(self._make_output(rhythm=rhythm))

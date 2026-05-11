@@ -1,10 +1,10 @@
 """TensorFlow/Keras implementation of the Rhythm & Conduction Task Head.
 
 Provides :func:`build_rhythm_head_tf`, a Keras functional-API model producing
-22 sigmoid outputs for rhythm and conduction classification.
+28 sigmoid outputs for rhythm and conduction classification.
 
 Input shape:  ``(batch, feature_dim)``
-Output shape: ``(batch, 22)``
+Output shape: ``(batch, 28)``
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ def _check_tf() -> None:
         )
 
 
-NUM_RHYTHM_CLASSES: int = 22
+NUM_RHYTHM_CLASSES: int = 28
 
 
 def build_rhythm_head_tf(
@@ -39,7 +39,7 @@ def build_rhythm_head_tf(
     Architecture:
 
     * Dense(hidden_dim) + ReLU + Dropout
-    * Dense(22) + Sigmoid
+    * Dense(28) + Sigmoid
 
     Args:
         feature_dim: Input feature vector dimension.  Default ``256``.
@@ -47,7 +47,7 @@ def build_rhythm_head_tf(
         dropout: Dropout probability.  Default ``0.3``.
 
     Returns:
-        A ``keras.Model`` with sigmoid output of shape ``(batch, 22)``.
+        A ``keras.Model`` with sigmoid output of shape ``(batch, 28)``.
     """
     _check_tf()
 

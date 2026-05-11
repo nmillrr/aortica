@@ -66,6 +66,13 @@ _CLINICAL_IMPORTANCE: Dict[str, int] = {
     "pacemaker_rhythm": 2,
     "idioventricular": 6,
     "normal_sinus_rhythm": 1,
+    # Phase 3 rare arrhythmia subtypes (US-072)
+    "brugada_pattern": 8,
+    "short_QT_syndrome": 8,
+    "CPVT": 9,
+    "fascicular_VT": 7,
+    "atypical_atrial_flutter": 6,
+    "inappropriate_sinus_tachy": 3,
     # Structural — high urgency
     "LVSD": 8,
     "HCM": 7,
@@ -185,6 +192,21 @@ _ALIASES: Dict[str, str] = {
     "qt prolongation": "QTc_prolongation",
     "qtc prolongation": "QTc_prolongation",
     "long qt": "QTc_prolongation",
+    # Phase 3 rare arrhythmia subtypes (US-072)
+    "brugada": "brugada_pattern",
+    "brugada pattern": "brugada_pattern",
+    "brugada syndrome": "brugada_pattern",
+    "short qt": "short_QT_syndrome",
+    "short qt syndrome": "short_QT_syndrome",
+    "cpvt": "CPVT",
+    "catecholaminergic polymorphic vt": "CPVT",
+    "catecholaminergic polymorphic ventricular tachycardia": "CPVT",
+    "fascicular vt": "fascicular_VT",
+    "fascicular ventricular tachycardia": "fascicular_VT",
+    "atypical flutter": "atypical_atrial_flutter",
+    "atypical atrial flutter": "atypical_atrial_flutter",
+    "inappropriate sinus tachycardia": "inappropriate_sinus_tachy",
+    "ist": "inappropriate_sinus_tachy",
 }
 
 

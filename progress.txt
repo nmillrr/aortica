@@ -1084,3 +1084,70 @@
 - BenchmarkReport.as_dict() uses dataclasses.asdict() which produces plain dicts — need manual reconstruction for round-trip
 - CLI group import fails without torch due to train_multitask.py @torch.no_grad() at module level — wrap in try/except for tests
 ---
+
+## Iteration 63 - US-071: Non-Western Site Validation Tracker (COMPLETE)
+### Files Created
+- aortica/evaluation/site_validation.py - SiteValidationRegistry, SiteValidation, ReleaseReadiness, classify_region
+- tests/evaluation/test_site_validation.py - 42 comprehensive tests
+
+### Files Modified
+- aortica/evaluation/__init__.py - Added SiteValidationRegistry, SiteValidation, ReleaseReadiness, classify_region exports
+- PRD.md - Marked US-071 acceptance criteria as complete
+
+### Implementation Details
+- SiteValidationRegistry class with JSON file persistence for tracking multi-site validation results
+- register_validation() accepts BenchmarkReport objects or plain dicts, auto-resolves dataset_size and timestamps
+- check_release_readiness() enforces configurable minimum non-Western site validations (default 2)
+- classify_region() normalises free-text region strings to western/non-western using WESTERN_REGIONS frozenset
+- Western: North America, Western Europe, Australia/NZ (comprehensive country list)
+- Non-Western: everything else (conservative default)
+- SiteValidation and ReleaseReadiness dataclasses with summary() method
+- Duplicate site_id registrations replace the previous entry (latest wins)
+- Graceful handling of missing, corrupted, or wrong-structure JSON files
+
+### Test Results
+- 42/42 tests passed (test_site_validation.py)
+- 178/179 tests passed across full evaluation suite (1 pre-existing failure in test_performance_card.py)
+- mypy: 0 errors in new code (3 pre-existing errors in benchmark.py)
+
+### Learnings for future iterations
+- Follow the dataclass + functional pattern from equity_gate.py for consistency
+- JSON persistence with Path.write_text/read_text is simpler than sqlite for simple registries
+- frozenset for constant sets prevents accidental mutation
+- Region classification should be case-insensitive and strip whitespace
+---
+
+## Iteration US-072 - Rare Arrhythmia Subtypes: Expanded Rhythm Head
+### Goal
+Expand the RhythmHead output from 22 to 28 classes by adding 6 rare arrhythmia subtypes:
+brugada_pattern, short_QT_syndrome, CPVT, fascicular_VT, atypical_atrial_flutter, inappropriate_sinus_tachy
+
+### Files Modified
+- aortica/models/rhythm_head.py - Added 6 classes to RHYTHM_CLASSES, updated docstrings (22→28)
+- aortica/models/rhythm_head_tf.py - Updated NUM_RHYTHM_CLASSES to 28, updated docstrings
+- aortica/models/train_multitask.py - Updated _TASK_NUM_OUTPUTS rhythm entry from 22 to 28
+- aortica/models/aortica_model.py - Updated MultiTaskOutput and AorticaModel docstrings (22→28)
+- aortica/edge/simplified_output.py - Added 6 new classes to _RHYTHM_CLASSES, CPVT to _URGENT_CONDITIONS, 5 others to _REFER_CONDITIONS
+- aortica/api/compare.py - Added clinical importance scores and alias mappings for 6 new classes
+- data/clinical_suggestions.json - Added clinical suggestion entries for all 6 new classes
+- tests/models/test_rhythm_head.py - Updated all shape assertions (22→28), added test_rare_arrhythmia_classes_present
+- tests/edge/test_simplified_output.py - Updated all rhythm array sizes (22→28)
+
+### Implementation Details
+- CPVT classified as urgent (life-threatening exercise-triggered VT, threshold 0.40)
+- Brugada, short QT, fascicular VT classified as refer with low thresholds (0.40) due to SCD risk
+- Atypical atrial flutter as refer (0.50), inappropriate sinus tachy as refer (0.60)
+- Clinical importance: CPVT=9, brugada/short_QT=8, fascicular_VT=7, atypical_flutter=6, IST=3
+- All downstream consumers (predict.py, compare.py) use lazy imports from RHYTHM_CLASSES — auto-compatible
+
+### Test Results
+- 18/18 passed, 4 skipped (TF) in test_rhythm_head.py
+- 51/51 passed in test_simplified_output.py
+- 94/94 passed in test_compare.py + test_clinical_suggestions.py
+- mypy: 0 new errors (50 pre-existing in other modules)
+
+### Learnings
+- _extract_predictions rejects list inputs with wrong length — test arrays must match class count exactly
+- AorticaModel dynamically instantiates RhythmHead so it auto-picks up NUM_RHYTHM_CLASSES changes
+- predict.py and compare.py use lazy imports from RHYTHM_CLASSES — they cascade automatically
+---

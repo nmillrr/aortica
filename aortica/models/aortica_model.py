@@ -57,7 +57,7 @@ class MultiTaskOutput:
     Each field is ``None`` when the corresponding task head is disabled.
 
     Attributes:
-        rhythm: Rhythm head output ``[batch, 22]`` or ``None``.
+        rhythm: Rhythm head output ``[batch, 28]`` or ``None``.
         structural: Structural head output ``[batch, 15]`` or ``None``.
         ischaemia: Ischaemia head output ``[batch, 10]`` or ``None``.
         risk: Risk head output ``[batch, 3]`` or ``None``.
@@ -102,13 +102,13 @@ class AorticaModel(nn.Module):
         model = AorticaModel(in_channels=12)
         x = torch.randn(4, 12, 5000)
         output = model(x)
-        output.rhythm    # [4, 22]
+        output.rhythm    # [4, 28]
         output.risk      # [4, 3]
 
         # Rhythm-only model
         model = AorticaModel(enabled_tasks=['rhythm'])
         output = model(x)
-        output.rhythm    # [4, 22]
+        output.rhythm    # [4, 28]
         output.structural  # None
     """
 

@@ -239,6 +239,36 @@
       "prompt": "Review QT-prolonging medications; electrolytes check",
       "urgency": "urgent",
       "rationale": "QTc prolongation increases risk of torsades de pointes; medication review and electrolyte correction (Mg²⁺, K⁺) are priority interventions."
+    },
+    "brugada_pattern": {
+      "prompt": "Electrophysiology referral — SCD risk stratification",
+      "urgency": "urgent",
+      "rationale": "Brugada pattern carries risk of ventricular fibrillation and sudden cardiac death; risk stratification and ICD consideration are essential."
+    },
+    "short_QT_syndrome": {
+      "prompt": "Electrophysiology referral — assess arrhythmia risk",
+      "urgency": "urgent",
+      "rationale": "Short QT syndrome is a rare channelopathy associated with atrial and ventricular fibrillation; specialist evaluation is needed."
+    },
+    "CPVT": {
+      "prompt": "Urgent cardiology — exercise restriction and beta-blocker",
+      "urgency": "emergent",
+      "rationale": "Catecholaminergic polymorphic VT can cause sudden death during exercise or emotional stress; beta-blockade and activity restriction are critical."
+    },
+    "fascicular_VT": {
+      "prompt": "Cardiology referral — verapamil-sensitive VT evaluation",
+      "urgency": "urgent",
+      "rationale": "Fascicular VT (idiopathic left ventricular tachycardia) is typically verapamil-responsive and has high ablation success rates."
+    },
+    "atypical_atrial_flutter": {
+      "prompt": "Electrophysiology mapping and ablation consideration",
+      "urgency": "prompt",
+      "rationale": "Atypical atrial flutter involves non-CTI-dependent circuits requiring detailed electrophysiology mapping for effective ablation."
+    },
+    "inappropriate_sinus_tachy": {
+      "prompt": "Evaluate for secondary causes; consider ivabradine",
+      "urgency": "routine",
+      "rationale": "Inappropriate sinus tachycardia is a diagnosis of exclusion; secondary causes must be ruled out before considering ivabradine or beta-blockers."
     }
   }
 }
