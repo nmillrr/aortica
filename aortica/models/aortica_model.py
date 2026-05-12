@@ -60,7 +60,7 @@ class MultiTaskOutput:
         rhythm: Rhythm head output ``[batch, 28]`` or ``None``.
         structural: Structural head output ``[batch, 19]`` or ``None``.
         ischaemia: Ischaemia head output ``[batch, 19]`` or ``None``.
-        risk: Risk head output ``[batch, 3]`` or ``None``.
+        risk: Risk head output ``[batch, 6]`` or ``None``.
     """
 
     rhythm: Optional[torch.Tensor] = field(default=None)
@@ -103,7 +103,7 @@ class AorticaModel(nn.Module):
         x = torch.randn(4, 12, 5000)
         output = model(x)
         output.rhythm    # [4, 28]
-        output.risk      # [4, 3]
+        output.risk      # [4, 6]
 
         # Rhythm-only model
         model = AorticaModel(enabled_tasks=['rhythm'])

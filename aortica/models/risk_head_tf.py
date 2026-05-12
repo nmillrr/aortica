@@ -1,10 +1,10 @@
 """TensorFlow/Keras implementation of the Risk Prediction Task Head.
 
 Provides :func:`build_risk_head_tf`, a Keras functional-API model producing
-3 sigmoid outputs for clinical risk score prediction.
+6 sigmoid outputs for clinical risk score prediction.
 
 Input shape:  ``(batch, feature_dim)``
-Output shape: ``(batch, 3)``
+Output shape: ``(batch, 6)``
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ def _check_tf() -> None:
         )
 
 
-NUM_RISK_OUTPUTS: int = 3
+NUM_RISK_OUTPUTS: int = 6
 
 
 def build_risk_head_tf(
@@ -39,7 +39,7 @@ def build_risk_head_tf(
     Architecture:
 
     * Dense(hidden_dim) + ReLU + Dropout
-    * Dense(3) + Sigmoid
+    * Dense(6) + Sigmoid
 
     Args:
         feature_dim: Input feature vector dimension.  Default ``256``.
@@ -47,7 +47,7 @@ def build_risk_head_tf(
         dropout: Dropout probability.  Default ``0.3``.
 
     Returns:
-        A ``keras.Model`` with sigmoid output of shape ``(batch, 3)``.
+        A ``keras.Model`` with sigmoid output of shape ``(batch, 6)``.
     """
     _check_tf()
 

@@ -1,12 +1,15 @@
 """Risk Prediction Task Head for multi-task ECG analysis.
 
-Provides :class:`RiskHead`, a regression head producing 3 continuous outputs
+Provides :class:`RiskHead`, a regression head producing 6 continuous outputs
 (sigmoid-scaled to 0–1) corresponding to clinical risk predictions.
 
-The 3 outputs are:
-    mortality_1y   — 1-year all-cause mortality score
-    hf_hosp_12m    — 12-month heart failure hospitalisation probability
-    af_onset_12m   — 12-month atrial fibrillation onset risk
+The 6 outputs are:
+    mortality_1y           — 1-year all-cause mortality score
+    hf_hosp_12m            — 12-month heart failure hospitalisation probability
+    af_onset_12m           — 12-month atrial fibrillation onset risk
+    ecg_predicted_ef       — ECG-predicted ejection fraction (continuous 0–1 scaled)
+    conduction_disease_trajectory — Progressive conduction disease trajectory score
+    sudden_cardiac_death_risk     — Sudden cardiac death risk score
 
 The head connects to the backbone + attention output and uses a combined
 MSE + ranking (concordance index proxy) loss.
@@ -44,23 +47,27 @@ def _check_torch() -> None:
         )
 
 
-# Canonical output ordering (3 risk prediction targets).
+# Canonical output ordering (6 risk prediction targets).
 RISK_OUTPUTS: list[str] = [
     "mortality_1y",
     "hf_hosp_12m",
     "af_onset_12m",
+    # Phase 3 risk refinement (US-076)
+    "ecg_predicted_ef",
+    "conduction_disease_trajectory",
+    "sudden_cardiac_death_risk",
 ]
 
 NUM_RISK_OUTPUTS: int = len(RISK_OUTPUTS)
 
 
 class RiskHead(nn.Module):
-    """Regression head producing 3 sigmoid-scaled risk scores.
+    """Regression head producing 6 sigmoid-scaled risk scores.
 
     Architecture:
 
     * Linear(feature_dim, hidden_dim) + ReLU + Dropout
-    * Linear(hidden_dim, 3)
+    * Linear(hidden_dim, 6)
     * Sigmoid activation (applied in :meth:`forward`)
 
     The head outputs raw logits via :meth:`forward_logits` or
@@ -76,8 +83,8 @@ class RiskHead(nn.Module):
 
         head = RiskHead(feature_dim=256)
         features = torch.randn(4, 256)
-        scores = head(features)             # [4, 3], values in (0, 1)
-        logits = head.forward_logits(features)  # [4, 3], raw logits
+        scores = head(features)             # [4, 6], values in (0, 1)
+        logits = head.forward_logits(features)  # [4, 6], raw logits
     """
 
     def __init__(
@@ -107,7 +114,7 @@ class RiskHead(nn.Module):
             x: Feature tensor of shape ``[batch, feature_dim]``.
 
         Returns:
-            Logit tensor of shape ``[batch, 3]``.
+            Logit tensor of shape ``[batch, 6]``.
         """
         logits: torch.Tensor = self.regressor(x)
         return logits
@@ -119,7 +126,7 @@ class RiskHead(nn.Module):
             x: Feature tensor of shape ``[batch, feature_dim]``.
 
         Returns:
-            Score tensor of shape ``[batch, 3]``, values in ``(0, 1)``.
+            Score tensor of shape ``[batch, 6]``, values in ``(0, 1)``.
         """
         logits = self.forward_logits(x)
         scores: torch.Tensor = torch.sigmoid(logits)
@@ -181,10 +188,10 @@ def compute_risk_loss(
     encourages correct ordering of predictions with respect to targets.
 
     Args:
-        predictions: Sigmoid-scaled predicted scores of shape ``[batch, 3]``.
-        targets: Ground-truth risk values of shape ``[batch, 3]``, in ``[0, 1]``.
+        predictions: Sigmoid-scaled predicted scores of shape ``[batch, 6]``.
+        targets: Ground-truth risk values of shape ``[batch, 6]``, in ``[0, 1]``.
         ranking_weight: Weight for the ranking loss component.  Default ``0.1``.
-        task_weights: Optional per-task weight tensor of shape ``[3]``.
+        task_weights: Optional per-task weight tensor of shape ``[6]``.
             Applied to the MSE component.  If ``None``, uniform weighting.
 
     Returns:
@@ -199,7 +206,7 @@ def compute_risk_loss(
     else:
         mse = nn.functional.mse_loss(predictions, targets)
 
-    # Ranking component — average ranking loss across the 3 tasks
+    # Ranking component — average ranking loss across all risk outputs
     rank_losses = []
     num_tasks = predictions.shape[1]
     for t in range(num_tasks):

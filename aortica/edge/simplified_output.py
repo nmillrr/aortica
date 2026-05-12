@@ -77,6 +77,8 @@ _ISCHAEMIA_CLASSES: list[str] = [
 
 _RISK_OUTPUTS: list[str] = [
     "mortality_1y", "hf_hosp_12m", "af_onset_12m",
+    # Phase 3 risk refinement (US-076)
+    "ecg_predicted_ef", "conduction_disease_trajectory", "sudden_cardiac_death_risk",
 ]
 
 # ---------------------------------------------------------------------------
@@ -171,6 +173,12 @@ _RISK_THRESHOLDS: dict[str, dict[str, float]] = {
     "mortality_1y": {"urgent": 0.70, "refer": 0.40},
     "hf_hosp_12m": {"urgent": 0.70, "refer": 0.40},
     "af_onset_12m": {"urgent": 0.80, "refer": 0.50},
+    # Phase 3 risk refinement (US-076)
+    # ecg_predicted_ef: low EF is dangerous — inverted (low value = high risk)
+    # using direct score mapping: high score → urgent referral
+    "ecg_predicted_ef": {"urgent": 0.70, "refer": 0.40},
+    "conduction_disease_trajectory": {"urgent": 0.70, "refer": 0.40},
+    "sudden_cardiac_death_risk": {"urgent": 0.60, "refer": 0.30},
 }
 
 

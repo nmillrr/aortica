@@ -288,7 +288,7 @@ _TASK_NUM_OUTPUTS: dict[str, int] = {
     "rhythm": 28,
     "structural": 19,
     "ischaemia": 19,
-    "risk": 3,
+    "risk": 6,
 }
 
 

@@ -1230,12 +1230,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want refined risk scores for subclinical LV dysfunction and sudden cardiac death so that high-risk patients are identified earlier.
 
 **Acceptance Criteria:**
-- [ ] Extend `RISK_OUTPUTS` list with 3 new outputs: ECG-predicted ejection fraction (continuous 0–1 scaled), progressive conduction disease trajectory score, sudden cardiac death risk score
-- [ ] Update `RiskHead` output dimension from 3 to 6 (both PyTorch and TF/Keras)
-- [ ] Update `compute_risk_loss` to handle 6-output regression with per-output ranking loss
-- [ ] Update all downstream code referencing RISK_OUTPUTS count
-- [ ] Unit tests verifying new output shape, loss computation, and ranking loss
-- [ ] Typecheck passes
+- [x] Extend `RISK_OUTPUTS` list with 3 new outputs: ECG-predicted ejection fraction (continuous 0–1 scaled), progressive conduction disease trajectory score, sudden cardiac death risk score
+- [x] Update `RiskHead` output dimension from 3 to 6 (both PyTorch and TF/Keras)
+- [x] Update `compute_risk_loss` to handle 6-output regression with per-output ranking loss
+- [x] Update all downstream code referencing RISK_OUTPUTS count
+- [x] Unit tests verifying new output shape, loss computation, and ranking loss
+- [x] Typecheck passes
 
 ---
 

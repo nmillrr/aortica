@@ -52,7 +52,7 @@ class TestConstants:
         assert len(_ISCHAEMIA_CLASSES) == 19
 
     def test_risk_outputs_count(self) -> None:
-        assert len(_RISK_OUTPUTS) == 3
+        assert len(_RISK_OUTPUTS) == 6
 
     def test_urgent_conditions_nonempty(self) -> None:
         assert len(_URGENT_CONDITIONS) > 0
@@ -77,7 +77,7 @@ class TestTierThresholds:
         t = TierThresholds()
         assert len(t.urgent_conditions) > 0
         assert len(t.refer_conditions) > 0
-        assert len(t.risk_thresholds) == 3
+        assert len(t.risk_thresholds) == 6
 
     def test_custom(self) -> None:
         t = TierThresholds(
@@ -172,7 +172,7 @@ class TestExtractPredictions:
             "rhythm": [0.1] * 28,
             "structural": [0.2] * 19,
             "ischaemia": [0.3] * 19,
-            "risk": [0.4] * 3,
+            "risk": [0.4] * 6,
         }
         preds = _extract_predictions(output)
         assert len(preds["rhythm"]) == 28
@@ -187,7 +187,7 @@ class TestExtractPredictions:
         assert preds["rhythm"]["AF"] == pytest.approx(0.9)
 
     def test_dict_with_none_task(self) -> None:
-        output = {"rhythm": None, "risk": [0.1, 0.2, 0.3]}
+        output = {"rhythm": None, "risk": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]}
         preds = _extract_predictions(output)
         assert "rhythm" not in preds
         assert "risk" in preds
@@ -216,7 +216,7 @@ class TestSimplifyOutput:
             "rhythm": rhythm or [0.0] * 28,
             "structural": structural or [0.0] * 19,
             "ischaemia": ischaemia or [0.0] * 19,
-            "risk": risk or [0.0] * 3,
+            "risk": risk or [0.0] * 6,
         }
 
     def test_all_low(self) -> None:
@@ -299,14 +299,14 @@ class TestSimplifyOutput:
         assert report.tier == TIER_LOW
 
     def test_risk_urgent(self) -> None:
-        risk = [0.0, 0.0, 0.0]
+        risk = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         risk[0] = 0.85  # mortality_1y > 0.70 urgent
         report = simplify_output(self._make_output(risk=risk))
         assert report.tier == TIER_URGENT
         assert any(f.class_name == "mortality_1y" for f in report.key_findings)
 
     def test_risk_refer(self) -> None:
-        risk = [0.0, 0.0, 0.0]
+        risk = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         risk[1] = 0.50  # hf_hosp_12m >= 0.40 refer
         report = simplify_output(self._make_output(risk=risk))
         assert report.tier == TIER_REFER
