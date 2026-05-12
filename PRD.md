@@ -1257,13 +1257,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want the multi-task training pipeline to support the expanded head dimensions so that models can be trained with the new classes.
 
 **Acceptance Criteria:**
-- [ ] `_TASK_NUM_OUTPUTS` mapping updated to reflect new dimensions (rhythm=28, structural=19, ischaemia=19, risk=6)
-- [ ] `_split_labels` correctly splits label tensors for new dimensions
-- [ ] Training config YAML supports per-class weights for new rare classes (higher weights for edge-case conditions)
-- [ ] Evaluation metrics computed for all new classes
-- [ ] ONNX export and edge model pipeline compatible with expanded heads
-- [ ] Unit tests for label splitting, loss computation, and metric evaluation with expanded dimensions
-- [ ] Typecheck passes
+- [x] `_TASK_NUM_OUTPUTS` mapping updated to reflect new dimensions (rhythm=28, structural=19, ischaemia=19, risk=6)
+- [x] `_split_labels` correctly splits label tensors for new dimensions
+- [x] Training config YAML supports per-class weights for new rare classes (higher weights for edge-case conditions)
+- [x] Evaluation metrics computed for all new classes
+- [x] ONNX export and edge model pipeline compatible with expanded heads
+- [x] Unit tests for label splitting, loss computation, and metric evaluation with expanded dimensions
+- [x] Typecheck passes
 
 ---
 

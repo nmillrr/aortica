@@ -67,6 +67,13 @@ class MultiTaskTrainConfig:
         max_grad_norm: Max gradient norm for clipping.
         warmup_epochs: Epochs of linear warm-up before cosine decay.
         loss_weights: Per-task loss coefficients (keyed by task name).
+        per_class_weights: Per-class weight lists keyed by task name.
+            Each value is a list of floats with length matching the task's
+            output dimension (rhythm=28, structural=19, ischaemia=19,
+            risk=6).  Higher weights for rare edge-case conditions
+            (e.g. Brugada, CPVT, de Winter) improve their contribution
+            to the loss.  If ``None`` or a task is absent, uniform
+            weighting is used for that task.
         enabled_tasks: Which task heads to train.
         feature_dim: Backbone feature dimension.
         head_hidden_dim: Task-head hidden dimension.
@@ -98,6 +105,7 @@ class MultiTaskTrainConfig:
             "risk": 1.0,
         }
     )
+    per_class_weights: Optional[dict[str, list[float]]] = None
     enabled_tasks: list[str] = field(
         default_factory=lambda: ["rhythm", "structural", "ischaemia", "risk"]
     )
@@ -327,6 +335,7 @@ def _compute_multitask_loss(
     task_labels: dict[str, "torch.Tensor"],
     loss_weights: dict[str, float],
     structural_focal: bool = False,
+    per_class_weights: Optional[dict[str, list[float]]] = None,
 ) -> tuple["torch.Tensor", dict[str, float]]:
     """Compute weighted sum of per-task losses.
 
@@ -339,6 +348,10 @@ def _compute_multitask_loss(
         task_labels: Dict of per-task label tensors.
         loss_weights: Per-task scalar loss coefficients.
         structural_focal: Use focal loss for structural head.
+        per_class_weights: Optional dict mapping task name to a list of
+            per-class weight floats.  Used to up-weight rare edge-case
+            conditions (e.g. Brugada, CPVT, de Winter).  If ``None`` or
+            a task is absent, uniform weighting is used.
 
     Returns:
         Tuple of (total_loss, per_task_loss_dict_as_floats).
@@ -350,30 +363,44 @@ def _compute_multitask_loss(
 
     total_loss = torch.tensor(0.0, device=features.device, dtype=features.dtype)
     per_task_losses: dict[str, float] = {}
+    pcw = per_class_weights or {}
+
+    def _to_weight_tensor(
+        task: str, device: "torch.device",
+    ) -> Optional["torch.Tensor"]:
+        """Convert per-class weight list to a tensor, or return None."""
+        if task not in pcw:
+            return None
+        return torch.tensor(pcw[task], device=device, dtype=features.dtype)
 
     if "rhythm" in task_labels and model.rhythm_head is not None:
         logits = model.rhythm_head.forward_logits(features)
-        loss = compute_rhythm_loss(logits, task_labels["rhythm"])
+        cw = _to_weight_tensor("rhythm", features.device)
+        loss = compute_rhythm_loss(logits, task_labels["rhythm"], class_weights=cw)
         total_loss = total_loss + loss_weights.get("rhythm", 1.0) * loss
         per_task_losses["rhythm"] = loss.item()
 
     if "structural" in task_labels and model.structural_head is not None:
         logits = model.structural_head.forward_logits(features)
+        cw = _to_weight_tensor("structural", features.device)
         loss = compute_structural_loss(
             logits, task_labels["structural"], focal=structural_focal,
+            class_weights=cw,
         )
         total_loss = total_loss + loss_weights.get("structural", 1.0) * loss
         per_task_losses["structural"] = loss.item()
 
     if "ischaemia" in task_labels and model.ischaemia_head is not None:
         logits = model.ischaemia_head.forward_logits(features)
-        loss = compute_ischaemia_loss(logits, task_labels["ischaemia"])
+        cw = _to_weight_tensor("ischaemia", features.device)
+        loss = compute_ischaemia_loss(logits, task_labels["ischaemia"], class_weights=cw)
         total_loss = total_loss + loss_weights.get("ischaemia", 1.0) * loss
         per_task_losses["ischaemia"] = loss.item()
 
     if "risk" in task_labels and model.risk_head is not None:
         preds = model.risk_head(features)
-        loss = compute_risk_loss(preds, task_labels["risk"])
+        tw = _to_weight_tensor("risk", features.device)
+        loss = compute_risk_loss(preds, task_labels["risk"], task_weights=tw)
         total_loss = total_loss + loss_weights.get("risk", 1.0) * loss
         per_task_losses["risk"] = loss.item()
 
@@ -415,6 +442,7 @@ def train_one_epoch(
         total_loss, per_task = _compute_multitask_loss(
             model, features, task_labels, config.loss_weights,
             structural_focal=config.structural_focal,
+            per_class_weights=config.per_class_weights,
         )
 
         total_loss.backward()
@@ -466,6 +494,7 @@ def evaluate(
         total_loss, per_task = _compute_multitask_loss(
             model, features, task_labels, config.loss_weights,
             structural_focal=config.structural_focal,
+            per_class_weights=config.per_class_weights,
         )
 
         running_loss += total_loss.item()
