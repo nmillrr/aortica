@@ -5,6 +5,9 @@ over a dataset and returns a :class:`BenchmarkReport` containing per-task
 metrics, per-class breakdowns, and optional demographic subgroup
 stratification.
 
+Supports expanded task heads (rhythm=28, structural=19, ischaemia=19,
+risk=6 → 72 total outputs) introduced in Phase 3.
+
 Classification metrics (rhythm, structural, ischaemia):
     - Macro-F1 and per-class F1
     - Per-class AUC (one-vs-rest)
@@ -12,7 +15,7 @@ Classification metrics (rhythm, structural, ischaemia):
     - Expected Calibration Error (ECE)
 
 Risk metrics:
-    - Mean C-index across the three risk outputs
+    - Mean C-index across the six risk outputs
     - Brier score (mean squared error of predicted probabilities)
 
 All metric computations are deterministic for a given
@@ -49,12 +52,14 @@ def _check_torch() -> None:
         )
 
 
-# Task output sizes (same as train_multitask._TASK_NUM_OUTPUTS)
+# Task output sizes — updated for expanded heads (Phase 3).
+# Matches train_multitask._TASK_NUM_OUTPUTS and the canonical head
+# class lists in rhythm_head, structural_head, ischaemia_head, risk_head.
 TASK_NUM_OUTPUTS: dict[str, int] = {
-    "rhythm": 22,
-    "structural": 15,
-    "ischaemia": 10,
-    "risk": 3,
+    "rhythm": 28,
+    "structural": 19,
+    "ischaemia": 19,
+    "risk": 6,
 }
 
 CLASSIFICATION_TASKS: list[str] = ["rhythm", "structural", "ischaemia"]
@@ -130,12 +135,15 @@ class BenchmarkReport:
         subgroups: Per-task metrics stratified by demographic subgroup.
         n_samples: Total number of samples evaluated.
         tasks_evaluated: List of tasks that were evaluated.
+        equity_gate_result: Optional equity gate result integrated after
+            benchmark when subgroup data is available.
     """
 
     overall: dict[str, TaskReport] = field(default_factory=dict)
     subgroups: list[SubgroupReport] = field(default_factory=list)
     n_samples: int = 0
     tasks_evaluated: list[str] = field(default_factory=list)
+    equity_gate_result: Optional[Any] = None
 
     def as_dict(self) -> dict[str, Any]:
         """Return the report as a plain nested dictionary."""
@@ -531,28 +539,61 @@ def _build_subgroup_masks(
 # Class name lookups
 # ---------------------------------------------------------------------------
 
-_CLASS_NAMES: dict[str, list[str]] = {
-    "rhythm": [
-        "AF", "AFL", "SVT", "AVNRT", "AVRT", "VT", "VF",
-        "idioventricular", "sinus_brady", "sinus_tachy", "PAC", "PVC",
-        "1st_AV_block", "2nd_AV_block", "3rd_AV_block", "LBBB", "RBBB",
-        "LAFB", "LPFB", "WPW", "pacemaker_rhythm", "NSR",
-    ],
-    "structural": [
-        "LVH", "RVH", "LVSD", "HFpEF_risk", "DCM", "HCM", "ARVC",
-        "amyloidosis", "aortic_stenosis", "mitral_regurgitation",
-        "pulmonary_HTN", "LA_enlargement", "RA_enlargement",
-        "pericarditis", "myocarditis",
-    ],
-    "ischaemia": [
-        "STEMI", "posterior_MI", "occlusive_NSTEMI", "old_MI",
-        "hyperkalaemia", "hypokalaemia", "hypercalcaemia",
-        "hypothyroidism", "digitalis_effect", "QTc_prolongation",
-    ],
-    "risk": [
-        "mortality_1yr", "hf_hosp_12mo", "af_onset_12mo",
-    ],
-}
+def _load_class_names() -> dict[str, list[str]]:
+    """Load canonical class names from the task head modules.
+
+    Falls back to hardcoded lists if the model subpackage is not
+    importable (e.g. torch not installed).
+    """
+    try:
+        from aortica.models.rhythm_head import RHYTHM_CLASSES
+        from aortica.models.structural_head import STRUCTURAL_CLASSES
+        from aortica.models.ischaemia_head import ISCHAEMIA_CLASSES
+        from aortica.models.risk_head import RISK_OUTPUTS
+        return {
+            "rhythm": list(RHYTHM_CLASSES),
+            "structural": list(STRUCTURAL_CLASSES),
+            "ischaemia": list(ISCHAEMIA_CLASSES),
+            "risk": list(RISK_OUTPUTS),
+        }
+    except ImportError:
+        # Fallback for environments without torch — keep in sync with
+        # head modules manually.
+        return {
+            "rhythm": [
+                "AF", "AFL", "SVT", "AVNRT", "AVRT", "VT", "VF",
+                "idioventricular", "sinus_brady", "sinus_tachy", "PAC", "PVC",
+                "av_block_1st", "av_block_2nd", "av_block_3rd", "LBBB", "RBBB",
+                "LAFB", "LPFB", "WPW", "pacemaker_rhythm", "normal_sinus_rhythm",
+                "brugada_pattern", "short_QT_syndrome", "CPVT", "fascicular_VT",
+                "atypical_atrial_flutter", "inappropriate_sinus_tachy",
+            ],
+            "structural": [
+                "LVH", "RVH", "LVSD", "HFpEF_risk", "DCM", "HCM", "ARVC",
+                "amyloidosis", "aortic_stenosis", "mitral_regurgitation",
+                "pulmonary_HTN", "LA_enlargement", "RA_enlargement",
+                "pericarditis", "myocarditis",
+                "LV_strain_grade", "RV_strain_PE", "Takotsubo_pattern",
+                "infiltrative_cardiomyopathy_strain",
+            ],
+            "ischaemia": [
+                "STEMI", "posterior_MI", "occlusive_NSTEMI", "old_MI",
+                "hyperkalaemia", "hypokalaemia", "hypercalcaemia",
+                "hypothyroidism_pattern", "digitalis_effect", "QTc_prolongation",
+                "early_repol_vs_STEMI", "de_Winter_T_wave", "Wellens_syndrome",
+                "aVR_ST_elevation", "Sgarbossa_criteria",
+                "hyperkalaemia_severity_grade", "hypothermia_osborn_waves",
+                "TCA_toxicity", "digoxin_effect_vs_toxicity",
+            ],
+            "risk": [
+                "mortality_1y", "hf_hosp_12m", "af_onset_12m",
+                "ecg_predicted_ef", "conduction_disease_trajectory",
+                "sudden_cardiac_death_risk",
+            ],
+        }
+
+
+_CLASS_NAMES: dict[str, list[str]] = _load_class_names()
 
 
 # ---------------------------------------------------------------------------
