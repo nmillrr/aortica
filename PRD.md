@@ -1271,13 +1271,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a researcher, I want the benchmark harness to evaluate all expanded classes and produce equity-gated reports so that model releases are comprehensive and fair.
 
 **Acceptance Criteria:**
-- [ ] `benchmark()` handles expanded output dimensions (28+19+19+6 = 72 total outputs)
-- [ ] Per-class metrics computed for all new classes including rare arrhythmia subtypes
-- [ ] Benchmark report integrates equity gate results (pass/fail per subgroup comparison)
-- [ ] Performance card generation triggered automatically after benchmark
-- [ ] Summary table includes new classes with clear labeling
-- [ ] Unit tests verifying metric computation for expanded class counts
-- [ ] Typecheck passes
+- [x] `benchmark()` handles expanded output dimensions (28+19+19+6 = 72 total outputs)
+- [x] Per-class metrics computed for all new classes including rare arrhythmia subtypes
+- [x] Benchmark report integrates equity gate results (pass/fail per subgroup comparison)
+- [x] Performance card generation triggered automatically after benchmark
+- [x] Summary table includes new classes with clear labeling
+- [x] Unit tests verifying metric computation for expanded class counts
+- [x] Typecheck passes
 
 ---
 
