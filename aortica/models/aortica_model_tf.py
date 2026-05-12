@@ -28,10 +28,10 @@ def _check_tf() -> None:
 
 # Number of classes/outputs per task head.
 _TASK_OUTPUTS: dict[str, int] = {
-    "rhythm": 22,
-    "structural": 15,
-    "ischaemia": 10,
-    "risk": 3,
+    "rhythm": 28,
+    "structural": 19,
+    "ischaemia": 19,
+    "risk": 6,
 }
 
 

@@ -1243,13 +1243,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want AorticaModel to seamlessly support the expanded task heads so that the unified model handles all new classes.
 
 **Acceptance Criteria:**
-- [ ] `AorticaModel` auto-detects updated head dimensions from the head class constants
-- [ ] `MultiTaskOutput` dataclass updated to reflect new output dimensions
-- [ ] Forward pass works correctly with expanded heads (rhythm=28, structural=19, ischaemia=19, risk=6)
-- [ ] TF/Keras model builder (`build_aortica_model_tf`) updated for new dimensions
-- [ ] Framework parity validation updated for new output sizes
-- [ ] Unit tests verifying full forward pass with expanded heads, selective head disabling, and gradient flow
-- [ ] Typecheck passes
+- [x] `AorticaModel` auto-detects updated head dimensions from the head class constants
+- [x] `MultiTaskOutput` dataclass updated to reflect new output dimensions
+- [x] Forward pass works correctly with expanded heads (rhythm=28, structural=19, ischaemia=19, risk=6)
+- [x] TF/Keras model builder (`build_aortica_model_tf`) updated for new dimensions
+- [x] Framework parity validation updated for new output sizes
+- [x] Unit tests verifying full forward pass with expanded heads, selective head disabling, and gradient flow
+- [x] Typecheck passes
 
 ---
 

@@ -119,13 +119,13 @@ class TestForwardPass:
         output = model(sample_input)
         assert isinstance(output, MultiTaskOutput)
         assert output.rhythm is not None
-        assert output.rhythm.shape == (BATCH, 22)
+        assert output.rhythm.shape == (BATCH, 28)
         assert output.structural is not None
-        assert output.structural.shape == (BATCH, 15)
+        assert output.structural.shape == (BATCH, 19)
         assert output.ischaemia is not None
-        assert output.ischaemia.shape == (BATCH, 10)
+        assert output.ischaemia.shape == (BATCH, 19)
         assert output.risk is not None
-        assert output.risk.shape == (BATCH, 3)
+        assert output.risk.shape == (BATCH, 6)
 
     def test_output_ranges(
         self, model: AorticaModel, sample_input: torch.Tensor,
@@ -167,7 +167,7 @@ class TestForwardPass:
         assert isinstance(d, dict)
         assert "rhythm" in d
         assert d["rhythm"] is not None
-        assert d["rhythm"].shape == (BATCH, 22)
+        assert d["rhythm"].shape == (BATCH, 28)
 
     def test_rhythm_only_model(self, sample_input: torch.Tensor) -> None:
         model = AorticaModel(
@@ -303,7 +303,7 @@ class TestVariableInput:
         x = torch.randn(2, LEADS, samples)
         output = model(x)
         assert output.rhythm is not None
-        assert output.rhythm.shape == (2, 22)
+        assert output.rhythm.shape == (2, 28)
 
 
 # ---------------------------------------------------------------------------
@@ -331,10 +331,10 @@ class TestAorticaModelTF:
         x = np.random.randn(2, SAMPLES, LEADS).astype(np.float32)
         outputs = model.predict(x, verbose=0)
         assert isinstance(outputs, dict)
-        assert outputs["rhythm"].shape == (2, 22)
-        assert outputs["structural"].shape == (2, 15)
-        assert outputs["ischaemia"].shape == (2, 10)
-        assert outputs["risk"].shape == (2, 3)
+        assert outputs["rhythm"].shape == (2, 28)
+        assert outputs["structural"].shape == (2, 19)
+        assert outputs["ischaemia"].shape == (2, 19)
+        assert outputs["risk"].shape == (2, 6)
 
     def test_subset_tasks(self) -> None:
         import numpy as np
@@ -364,3 +364,77 @@ class TestAorticaModelTF:
         )
         # Should not raise
         model.summary()
+
+
+# ---------------------------------------------------------------------------
+# Expanded head dimension verification (US-077)
+# ---------------------------------------------------------------------------
+
+
+class TestExpandedHeadDimensions:
+    """Verify that AorticaModel produces correct output shapes for all
+    expanded task heads (rhythm=28, structural=19, ischaemia=19, risk=6).
+    """
+
+    def test_expanded_output_dimensions_match_constants(self) -> None:
+        """Output dims auto-detected from head class constants."""
+        from aortica.models.ischaemia_head import NUM_ISCHAEMIA_CLASSES
+        from aortica.models.rhythm_head import NUM_RHYTHM_CLASSES
+        from aortica.models.risk_head import NUM_RISK_OUTPUTS
+        from aortica.models.structural_head import NUM_STRUCTURAL_CLASSES
+
+        model = AorticaModel(in_channels=LEADS, feature_dim=FEATURE_DIM)
+        x = torch.randn(2, LEADS, SAMPLES)
+        output = model(x)
+
+        assert output.rhythm is not None
+        assert output.rhythm.shape[1] == NUM_RHYTHM_CLASSES == 28
+        assert output.structural is not None
+        assert output.structural.shape[1] == NUM_STRUCTURAL_CLASSES == 19
+        assert output.ischaemia is not None
+        assert output.ischaemia.shape[1] == NUM_ISCHAEMIA_CLASSES == 19
+        assert output.risk is not None
+        assert output.risk.shape[1] == NUM_RISK_OUTPUTS == 6
+
+    def test_total_output_count(self) -> None:
+        """Combined output count across all heads equals 72."""
+        model = AorticaModel(in_channels=LEADS, feature_dim=FEATURE_DIM)
+        x = torch.randn(1, LEADS, SAMPLES)
+        output = model(x)
+        total = 0
+        for t in [output.rhythm, output.structural, output.ischaemia, output.risk]:
+            assert t is not None
+            total += t.shape[1]
+        assert total == 72, f"Expected 72 total outputs, got {total}"
+
+    def test_gradient_flow_expanded_heads(self) -> None:
+        """Gradient flows correctly through all expanded heads."""
+        model = AorticaModel(in_channels=LEADS, feature_dim=FEATURE_DIM)
+        x = torch.randn(2, LEADS, SAMPLES)
+        output = model(x)
+
+        loss = torch.tensor(0.0)
+        for t in [output.rhythm, output.structural, output.ischaemia, output.risk]:
+            assert t is not None
+            loss = loss + t.sum()
+        loss.backward()
+
+        for name, param in model.named_parameters():
+            assert param.grad is not None, f"No gradient for {name}"
+
+    def test_selective_head_disabling_expanded(self) -> None:
+        """Disabling individual heads still works with expanded dims."""
+        for task in TASK_NAMES:
+            model = AorticaModel(
+                in_channels=LEADS,
+                feature_dim=FEATURE_DIM,
+                enabled_tasks=[task],
+            )
+            x = torch.randn(1, LEADS, SAMPLES)
+            output = model(x)
+            active = getattr(output, task)
+            assert active is not None
+            disabled = [t for t in TASK_NAMES if t != task]
+            for d in disabled:
+                assert getattr(output, d) is None
+
