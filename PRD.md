@@ -1309,13 +1309,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a hospital integrator, I want Aortica to generate HL7 v2.x ORU^R01 messages so that AI results can be sent to legacy EHR systems via MLLP.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.hl7v2.to_oru_r01(multi_task_output, patient_id, order_id)` returns a valid HL7 v2.x ORU^R01 message string
-- [ ] OBX segments encode each active finding with local code, description, and confidence
-- [ ] Maps risk scores to numeric OBX segments with units
-- [ ] Handles special characters and segment delimiters per HL7 v2.x spec
-- [ ] Uses `hl7apy` library for message construction and validation
-- [ ] Unit tests verifying valid HL7 v2.x message structure and parsability
-- [ ] Typecheck passes
+- [x] `aortica.integration.hl7v2.to_oru_r01(multi_task_output, patient_id, order_id)` returns a valid HL7 v2.x ORU^R01 message string
+- [x] OBX segments encode each active finding with local code, description, and confidence
+- [x] Maps risk scores to numeric OBX segments with units
+- [x] Handles special characters and segment delimiters per HL7 v2.x spec
+- [x] Uses `hl7apy` library for message construction and validation
+- [x] Unit tests verifying valid HL7 v2.x message structure and parsability
+- [x] Typecheck passes
 
 ---
 
