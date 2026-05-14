@@ -81,6 +81,9 @@ auth = [
 federated = [
     "flwr>=1.5",
 ]
+fhir = [
+    "fhir.resources>=7.0",
+]
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",
