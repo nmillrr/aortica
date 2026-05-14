@@ -1293,15 +1293,15 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a hospital integrator, I want Aortica to output FHIR R4 DiagnosticReport and Observation resources so that AI results can be ingested by any FHIR-compliant EHR.
 
 **Acceptance Criteria:**
-- [ ] `aortica/integration/` subpackage with `__init__.py`
-- [ ] `aortica.integration.fhir.to_diagnostic_report(multi_task_output, patient_ref, ecg_metadata)` returns a FHIR R4 `DiagnosticReport` resource (JSON)
-- [ ] Generates child `Observation` resources for each positive finding with LOINC/SNOMED codes where available
-- [ ] Maps confidence scores to Observation `interpretation` (high/low/normal)
-- [ ] Risk scores encoded as FHIR `RiskAssessment` resources with probability values
-- [ ] Uses `fhir.resources` library for model validation
-- [ ] Output validates against FHIR R4 resource schemas
-- [ ] Unit tests with synthetic multi-task output producing valid FHIR JSON
-- [ ] Typecheck passes
+- [x] `aortica/integration/` subpackage with `__init__.py`
+- [x] `aortica.integration.fhir.to_diagnostic_report(multi_task_output, patient_ref, ecg_metadata)` returns a FHIR R4 `DiagnosticReport` resource (JSON)
+- [x] Generates child `Observation` resources for each positive finding with LOINC/SNOMED codes where available
+- [x] Maps confidence scores to Observation `interpretation` (high/low/normal)
+- [x] Risk scores encoded as FHIR `RiskAssessment` resources with probability values
+- [x] Uses `fhir.resources` library for model validation
+- [x] Output validates against FHIR R4 resource schemas
+- [x] Unit tests with synthetic multi-task output producing valid FHIR JSON
+- [x] Typecheck passes
 
 ---
 

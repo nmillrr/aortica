@@ -1267,3 +1267,91 @@ hyperkalaemia_severity_grade, hypothermia_osborn_waves, TCA_toxicity, digoxin_ef
 - predict.py and compare.py use lazy imports from ISCHAEMIA_CLASSES -> they cascade automatically
 - test_simplified_output.py has hard-coded array sizes that need manual updating (not dynamic)
 ---
+
+## Iteration US-078 - Training Pipeline Update for Expanded Tasks
+### Goal
+Update multi-task training pipeline to fully support expanded head dimensions (rhythm=28, structural=19, ischaemia=19, risk=6 → 72 total outputs).
+
+### Files Modified
+- aortica/models/train_multitask.py - Added per_class_weights field to MultiTaskTrainConfig, wired class weights through _compute_multitask_loss to each head's loss function
+- tests/models/test_train_multitask.py - Rewrote all tests with expanded dimensions (28,19,19,6), added tests for per_class_weights config, label splitting verification, ONNX export compatibility
+
+### Implementation Details
+- _TASK_NUM_OUTPUTS already had correct values (28,19,19,6) from US-072/073/074/075/076 iterations
+- Added per_class_weights: Optional[dict[str, list[float]]] to MultiTaskTrainConfig for YAML-configurable rare class up-weighting
+- _compute_multitask_loss now accepts per_class_weights and converts them to tensors, passing to each head's loss function (compute_rhythm_loss class_weights, compute_structural_loss class_weights, compute_ischaemia_loss class_weights, compute_risk_loss task_weights)
+- Both train_one_epoch and evaluate pass config.per_class_weights through
+
+### Test Results
+- 40/40 passed, 2 skipped (pyyaml not installed) in test_train_multitask.py
+- New tests: per_class_weights_config, per_class_weights_affect_loss, f1_expanded_classes, c_index_expanded_risk, all_tasks_expanded label split, split_content_correct, task_num_outputs_matches_heads, evaluate_all_expanded_metrics, onnx_export_expanded
+- mypy: 0 new errors (pre-existing torch shim errors unchanged)
+
+### Learnings
+- compute_structural_loss, compute_rhythm_loss, compute_ischaemia_loss already accept class_weights parameter — just needed wiring
+- compute_risk_loss uses task_weights parameter name (not class_weights)
+- ONNX export is fully dynamic and picks up expanded heads automatically via enabled_tasks
+- Tests using .venv/bin/python3 (system python3 lacks torch)
+---
+
+## Iteration US-079 - Evaluation Harness Update for Expanded Tasks and Equity
+### Goal
+Update benchmark harness to handle expanded output dimensions (rhythm=28, structural=19, ischaemia=19, risk=6 → 72 total outputs) and integrate equity gate results.
+
+### Files Modified
+- aortica/evaluation/benchmark.py - Updated TASK_NUM_OUTPUTS (22/15/10/3 → 28/19/19/6), replaced hardcoded _CLASS_NAMES with dynamic _load_class_names() that imports from head modules, added equity_gate_result field to BenchmarkReport, updated docstrings
+- tests/evaluation/test_benchmark.py - Rewrote all tests for expanded dimensions, added TestExpandedDimensions class with 11 tests, updated synthetic_dataset fixture (50→72 cols), updated all label split/shape assertions
+
+### Implementation Details
+- _CLASS_NAMES now dynamically loaded from RHYTHM_CLASSES, STRUCTURAL_CLASSES, ISCHAEMIA_CLASSES, RISK_OUTPUTS with hardcoded fallback when torch unavailable
+- Fixed old class name mismatches (NSR→normal_sinus_rhythm, 1st_AV_block→av_block_1st, hypothyroidism→hypothyroidism_pattern, mortality_1yr→mortality_1y)
+- BenchmarkReport.equity_gate_result: Optional[Any] for integrated equity reporting
+- Per-class metrics computed for all 72 outputs including rare arrhythmias, STEMI mimics, strain patterns, metabolic/drug effects
+
+### Test Results
+- 58/58 passed in test_benchmark.py
+- 180/180 passed across all evaluation tests (benchmark + equity_gate + performance_card + site_validation)
+- mypy: 0 new errors in benchmark.py (pre-existing torch shim errors in other modules unchanged)
+
+### Learnings
+- Class names were out of sync between benchmark.py and head modules — dynamic import pattern prevents future drift
+- The equity_gate and performance_card modules already work with arbitrary class counts (they read from BenchmarkReport.per_class), so no changes needed there
+- test_benchmark.py synthetic_dataset must match TOTAL_OUTPUTS = sum(TASK_NUM_OUTPUTS.values()) = 72
+---
+
+## Iteration US-080 - FHIR R4 DiagnosticReport Output
+### Goal
+Create aortica/integration/ subpackage and implement to_diagnostic_report() for generating FHIR R4 resources from multi-task ECG predictions.
+
+### Files Created
+- aortica/integration/__init__.py - New integration subpackage for Phase 4 EHR integration
+- aortica/integration/fhir.py - FHIR R4 DiagnosticReport generator with SNOMED CT/LOINC mappings
+- tests/integration/__init__.py - Test package init
+- tests/integration/test_fhir.py - 37 tests covering all FHIR output functionality
+
+### Files Modified
+- pyproject.toml - Added fhir optional dependency group (fhir.resources>=7.0)
+
+### Implementation Details
+- to_diagnostic_report(multi_task_output, patient_ref, ecg_metadata) generates FHIR R4 Bundle containing:
+  - DiagnosticReport (top-level container with LOINC ECG study code)
+  - Observation resources for each positive classification finding (>= confidence_threshold)
+  - RiskAssessment resources for each risk prediction output
+- SNOMED CT codes mapped for all 66 classification classes (28 rhythm + 19 structural + 19 ischaemia)
+- LOINC codes for risk outputs where available (mortality, AF onset, ejection fraction)
+- Confidence-based interpretation: H (>=0.80), A (>=0.50), L (<0.50)
+- RiskAssessment requires subject in fhir.resources schema — uses Patient/anonymous as fallback
+- FHIROutput dataclass contains diagnostic_report, observations, risk_assessments, bundle_json
+- Bundle type is "collection" for grouping related resources
+- Uses fhir.resources R4B module (Pydantic v2 compatible)
+
+### Test Results
+- 37/37 passed in test_fhir.py
+- mypy: 0 new errors in aortica/integration/fhir.py (27 pre-existing in other modules unchanged)
+
+### Learnings
+- fhir.resources R4B requires subject field for RiskAssessment (not optional)
+- Use model_dump() / model_dump_json() instead of deprecated dict() / json() for fhir.resources Pydantic v2
+- probabilityDecimal field expects Decimal type, not float
+- Iterable[Tuple[str, Any]] type annotation needed for dict.items() / zip() union variables
+---
