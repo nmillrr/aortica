@@ -1323,13 +1323,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a PACS administrator, I want Aortica to write DICOM Structured Reports so that AI findings are stored alongside the original ECG in the imaging archive.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.dicom_sr.to_structured_report(multi_task_output, original_dicom_ref)` returns a `pydicom.Dataset` containing a DICOM SR object
-- [ ] SR content tree uses TID 2000 (Basic Diagnostic Imaging Report) structure
-- [ ] Each finding encoded as a CONTENT ITEM with concept name (coded entry), value (coded/text/numeric), and confidence
-- [ ] References original DICOM ECG instance via Referenced SOP Instance UID
-- [ ] SR validates against DICOM conformance (correct IOD modules present)
-- [ ] Unit tests with synthetic input producing valid DICOM SR dataset
-- [ ] Typecheck passes
+- [x] `aortica.integration.dicom_sr.to_structured_report(multi_task_output, original_dicom_ref)` returns a `pydicom.Dataset` containing a DICOM SR object
+- [x] SR content tree uses TID 2000 (Basic Diagnostic Imaging Report) structure
+- [x] Each finding encoded as a CONTENT ITEM with concept name (coded entry), value (coded/text/numeric), and confidence
+- [x] References original DICOM ECG instance via Referenced SOP Instance UID
+- [x] SR validates against DICOM conformance (correct IOD modules present)
+- [x] Unit tests with synthetic input producing valid DICOM SR dataset
+- [x] Typecheck passes
 
 ---
 

@@ -1355,3 +1355,41 @@ Create aortica/integration/ subpackage and implement to_diagnostic_report() for 
 - probabilityDecimal field expects Decimal type, not float
 - Iterable[Tuple[str, Any]] type annotation needed for dict.items() / zip() union variables
 ---
+
+## Iteration US-081 - HL7 v2.x ORU^R01 Message Generation
+### Goal
+Create aortica/integration/hl7v2.py module to generate valid HL7 v2.x ORU^R01 messages from multi-task ECG predictions for legacy EHR integration.
+
+### Files Created
+- aortica/integration/hl7v2.py - HL7 v2.x ORU^R01 message generator with SNOMED CT/LOINC mappings
+- tests/integration/test_hl7v2.py - 42 tests covering all HL7 v2.x output functionality
+
+### Files Modified
+- pyproject.toml - Added hl7 optional dependency group (hl7apy>=1.3)
+- PRD.md - Marked US-081 complete
+
+### Implementation Details
+- to_oru_r01(multi_task_output, patient_id, order_id) generates a complete HL7 v2.x ORU^R01 message
+- Uses hl7apy library with TOLERANT validation for message construction
+- Message structure: MSH (header) → PID (patient) → OBR (order/ECG study) → OBX[] (observations)
+- Classification findings above confidence_threshold encoded as NM-type OBX segments with SNOMED CT codes
+- Risk scores encoded as NM-type OBX segments with LOINC codes where available, LOCAL codes otherwise
+- Abnormal flags: AA (>=0.90 critical), A (>=0.50 abnormal), N (<0.50 normal)
+- Special characters escaped automatically by hl7apy (pipe → \F\, etc.)
+- parse_oru_r01() utility function for round-trip validation
+- Configurable MSH fields: sending/receiving application and facility
+- _FINDING_CODES dict covers all 66 classification classes (28 rhythm + 19 structural + 19 ischaemia)
+- _RISK_DISPLAY dict covers all 6 risk outputs
+
+### Test Results
+- 42/42 passed in test_hl7v2.py
+- mypy: 0 new errors (27 pre-existing torch shim errors in other modules unchanged)
+
+### Learnings
+- hl7apy uses TOLERANT validation mode for flexible message construction
+- hl7apy automatically handles HL7 special character escaping (\F\ for pipe, etc.)
+- hl7apy Message.to_er7() returns Any type — need str() cast for mypy
+- ORU_R01 message structure requires nested groups: PATIENT_RESULT → PATIENT + ORDER_OBSERVATION → OBSERVATION
+- OBX segment fields: 1=set_id, 2=value_type, 3=identifier, 5=value, 6=units, 8=abnormal_flags, 11=status
+- Same pattern as fhir.py: lazy imports for class names, confidence threshold filtering, dict or list input support
+---
