@@ -1351,14 +1351,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a field deployment engineer, I want SCP-ECG serial port capture so that Aortica can ingest ECGs directly from legacy carts that output via serial/USB.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.serial_capture.SCPSerialCapture` class wrapping `pyserial`
-- [ ] `listen(port, baud_rate=115200, timeout=30)` blocks until a complete SCP-ECG frame is received
-- [ ] Parses received bytes into an `ECGRecord` using the existing `read_scp()` reader
-- [ ] Handles framing, CRC validation, and incomplete transmission retries
-- [ ] Configurable serial port, baud rate, and timeout
-- [ ] Returns captured `ECGRecord` or raises `CaptureTimeoutError`
-- [ ] Unit tests with mock serial port and synthetic SCP-ECG data
-- [ ] Typecheck passes
+- [x] `aortica.integration.serial_capture.SCPSerialCapture` class wrapping `pyserial`
+- [x] `listen(port, baud_rate=115200, timeout=30)` blocks until a complete SCP-ECG frame is received
+- [x] Parses received bytes into an `ECGRecord` using the existing `read_scp()` reader
+- [x] Handles framing, CRC validation, and incomplete transmission retries
+- [x] Configurable serial port, baud rate, and timeout
+- [x] Returns captured `ECGRecord` or raises `CaptureTimeoutError`
+- [x] Unit tests with mock serial port and synthetic SCP-ECG data
+- [x] Typecheck passes
 
 ---
 

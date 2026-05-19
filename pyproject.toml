@@ -90,6 +90,9 @@ hl7 = [
 dimse = [
     "pynetdicom>=2.0",
 ]
+serial = [
+    "pyserial>=3.5",
+]
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",
