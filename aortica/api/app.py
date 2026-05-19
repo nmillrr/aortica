@@ -174,6 +174,12 @@ def create_app(
     feedback_router = create_feedback_router(feedback_store)
     app.include_router(feedback_router)
 
+    # Mount SMART on FHIR router
+    from aortica.api.smart_on_fhir import create_smart_router
+
+    smart_router = create_smart_router()
+    app.include_router(smart_router)
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:

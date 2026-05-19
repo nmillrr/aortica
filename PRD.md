@@ -1366,14 +1366,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a hospital integrator, I want SMART on FHIR launch support so that Aortica's web UI can be launched from within an EHR with patient context pre-populated.
 
 **Acceptance Criteria:**
-- [ ] `aortica/api/smart_on_fhir.py` with SMART on FHIR launch handler
-- [ ] Implements SMART App Launch Framework (OAuth 2.0 with EHR launch sequence)
-- [ ] Extracts `patient`, `encounter`, and `fhirServer` from launch context
-- [ ] Pre-populates patient reference in API calls when launched from EHR
-- [ ] FastAPI endpoint `GET /api/v1/smart/launch` handles the SMART redirect
-- [ ] Configuration via environment variables (client_id, redirect_uri, fhir_server_url)
-- [ ] Unit tests for launch sequence parsing and OAuth token exchange
-- [ ] Typecheck passes
+- [x] `aortica/api/smart_on_fhir.py` with SMART on FHIR launch handler
+- [x] Implements SMART App Launch Framework (OAuth 2.0 with EHR launch sequence)
+- [x] Extracts `patient`, `encounter`, and `fhirServer` from launch context
+- [x] Pre-populates patient reference in API calls when launched from EHR
+- [x] FastAPI endpoint `GET /api/v1/smart/launch` handles the SMART redirect
+- [x] Configuration via environment variables (client_id, redirect_uri, fhir_server_url)
+- [x] Unit tests for launch sequence parsing and OAuth token exchange
+- [x] Typecheck passes
 
 ---
 
