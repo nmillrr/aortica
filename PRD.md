@@ -1337,13 +1337,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a device integrator, I want DICOM DIMSE support so that Aortica can send and query ECG management systems like GE MUSE.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.dimse.DicomClient` class wrapping `pynetdicom` for DIMSE operations
-- [ ] `c_store(dataset, remote_ae, remote_host, remote_port)` sends a DICOM dataset (ECG waveform or SR) to a remote AE
-- [ ] `c_find(query, remote_ae, remote_host, remote_port)` queries for ECG studies matching patient/date/modality criteria
-- [ ] Handles association negotiation, presentation context selection, and timeouts
-- [ ] Configurable local AE title and port
-- [ ] Unit tests with mock DICOM SCP verifying association and data exchange
-- [ ] Typecheck passes
+- [x] `aortica.integration.dimse.DicomClient` class wrapping `pynetdicom` for DIMSE operations
+- [x] `c_store(dataset, remote_ae, remote_host, remote_port)` sends a DICOM dataset (ECG waveform or SR) to a remote AE
+- [x] `c_find(query, remote_ae, remote_host, remote_port)` queries for ECG studies matching patient/date/modality criteria
+- [x] Handles association negotiation, presentation context selection, and timeouts
+- [x] Configurable local AE title and port
+- [x] Unit tests with mock DICOM SCP verifying association and data exchange
+- [x] Typecheck passes
 
 ---
 

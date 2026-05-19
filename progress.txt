@@ -1393,3 +1393,34 @@ Create aortica/integration/hl7v2.py module to generate valid HL7 v2.x ORU^R01 me
 - OBX segment fields: 1=set_id, 2=value_type, 3=identifier, 5=value, 6=units, 8=abnormal_flags, 11=status
 - Same pattern as fhir.py: lazy imports for class names, confidence threshold filtering, dict or list input support
 ---
+
+## Iteration US-082 - DICOM SR Structured Report Write-Back
+### Goal
+Implement DICOM SR structured report write-back for AI ECG findings per TID 2000 template.
+
+### Status
+Module and tests were already implemented in a previous session but PRD was not marked complete. Verified all 52 tests pass, mypy shows 0 new errors (27 pre-existing torch shim errors unchanged).
+
+### Files Present
+- aortica/integration/dicom_sr.py - DICOM SR generator with TID 2000 structure, SNOMED CT codes, confidence values, referenced SOP Instance UID
+- tests/integration/test_dicom_sr.py - 52 tests covering conformance, findings, risk items, round-trip serialization
+
+### Implementation Details
+- to_structured_report() generates Comprehensive SR (SOP Class 1.2.840.10008.5.1.4.1.1.88.33) with TID 2000 root
+- Content tree: Language → Procedure Reported → Referenced ECG → Findings Section → Impression Section → Conclusion
+- Each finding: CONTAINER with CODE (SNOMED CT coded entry) + NUM (confidence) + TEXT (task label)
+- Risk items: CONTAINER with NUM (probability) + TEXT (display name)
+- to_structured_report_output() wrapper returns DICOMSROutput with counts
+- All 66 classification classes + 6 risk outputs mapped to SNOMED CT codes
+- IOD modules: Patient, Study, Series, Equipment, SOP Common, SR Document General, SR Document Content
+
+### Test Results
+- 52/52 passed in test_dicom_sr.py
+- mypy: 0 new errors (27 pre-existing torch shim errors unchanged)
+
+### Learnings
+- pydicom 3.0.1 has deprecated `write_like_original` → use `enforce_file_format` in future
+- pydicom.valuerep.DSfloat used for NumericValue (not plain float)
+- _make_code_sequence returns DicomSequence directly (single-item list wrapped)
+- Same lazy-import pattern for class names as fhir.py and hl7v2.py
+---
