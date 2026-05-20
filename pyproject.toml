@@ -100,6 +100,9 @@ reports = [
     "weasyprint>=60.0",
     "matplotlib>=3.7",
 ]
+jsonld = [
+    "PyLD>=2.0",
+]
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",

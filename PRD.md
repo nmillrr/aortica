@@ -1415,13 +1415,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a data engineer, I want JSON-LD reports so that AI findings are machine-readable and linked to standard medical ontologies for downstream analytics.
 
 **Acceptance Criteria:**
-- [ ] `aortica.reports.generate_jsonld(multi_task_output, ecg_metadata)` returns a JSON-LD document
-- [ ] Uses Schema.org `MedicalTest` and `MedicalObservation` types where applicable
-- [ ] Findings linked to SNOMED CT and LOINC codes via `@context` with standard ontology IRIs
-- [ ] Includes provenance metadata: model version, inference timestamp, input file hash, confidence intervals
-- [ ] JSON-LD validates against JSON-LD 1.1 spec (compaction/expansion round-trips)
-- [ ] Unit tests with synthetic output verifying valid JSON-LD structure and code mappings
-- [ ] Typecheck passes
+- [x] `aortica.reports.generate_jsonld(multi_task_output, ecg_metadata)` returns a JSON-LD document
+- [x] Uses Schema.org `MedicalTest` and `MedicalObservation` types where applicable
+- [x] Findings linked to SNOMED CT and LOINC codes via `@context` with standard ontology IRIs
+- [x] Includes provenance metadata: model version, inference timestamp, input file hash, confidence intervals
+- [x] JSON-LD validates against JSON-LD 1.1 spec (compaction/expansion round-trips)
+- [x] Unit tests with synthetic output verifying valid JSON-LD structure and code mappings
+- [x] Typecheck passes
 
 ---
 

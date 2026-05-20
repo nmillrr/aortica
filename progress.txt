@@ -1424,3 +1424,180 @@ Module and tests were already implemented in a previous session but PRD was not 
 - _make_code_sequence returns DicomSequence directly (single-item list wrapped)
 - Same lazy-import pattern for class names as fhir.py and hl7v2.py
 ---
+
+## Iteration US-083 - DICOM DIMSE C-STORE/C-FIND Client
+### Goal
+Implement DicomClient wrapping pynetdicom for DIMSE C-STORE, C-FIND, and C-ECHO operations against ECG management systems (GE MUSE-style).
+
+### Files Created
+- aortica/integration/dimse.py - DicomClient with c_store(), c_store_batch(), c_find(), verify() methods
+- tests/integration/test_dimse.py - 47 tests covering all DIMSE operations with mock SCP
+
+### Files Modified
+- pyproject.toml - Added dimse optional dependency group (pynetdicom>=2.0)
+- PRD.md - Marked US-083 complete
+
+### Implementation Details
+- DicomClient class with configurable local_ae_title, local_port, timeout, additional_sop_classes
+- c_store(): single dataset send with full association lifecycle (negotiate, send, release)
+- c_store_batch(): multi-dataset send over single association
+- c_find(): study-root and patient-root Q/R with _build_find_dataset() helper
+- verify(): C-ECHO connectivity test
+- Result dataclasses: CStoreResult, CStoreMultiResult, CFindResult
+- Presentation context negotiation for ECG waveform + SR SOP classes
+- _status_category() maps DICOM status codes to human-readable categories
+- Lazy pynetdicom import (from pynetdicom import AE inside methods)
+
+### Test Results
+- 47/47 passed in test_dimse.py
+- mypy: 0 errors in dimse.py
+
+### Learnings
+- pynetdicom AE is imported lazily — mock with @patch("pynetdicom.AE") not the local module path
+- Use _make_mock_ae() helper factory to reduce mock boilerplate across test classes
+- Association lifecycle must always call release() — use try/finally
+- C-FIND responses are iterators yielding (status, identifier) tuples; status=0xFF00 means pending match
+---
+
+## Iteration US-084 - SCP-ECG Serial Port Capture
+### Goal
+Implement SCPSerialCapture class wrapping pyserial for ingesting ECGs from legacy carts that output via RS-232/USB-serial.
+
+### Files Created
+- aortica/integration/serial_capture.py - SCPSerialCapture class with listen(), listen_with_result(), CRC-16/CCITT validation, retry logic
+- tests/integration/test_serial_capture.py - 30 tests covering CRC, capture, failures, retries, exceptions, parsing
+
+### Files Modified
+- pyproject.toml - Added serial optional dependency group (pyserial>=3.5)
+- PRD.md - Marked US-084 complete
+
+### Implementation Details
+- SCPSerialCapture(port, baud_rate, timeout, max_retries, read_chunk_size) constructor
+- listen(timeout) blocks until complete SCP-ECG frame received, raises CaptureTimeoutError/CRCError/FramingError
+- listen_with_result(timeout) returns CaptureResult dataclass (no exceptions)
+- _capture_with_retries() handles retry logic — retries on CRC/framing errors, NOT on timeout
+- _capture_once() opens serial port, reads bytes, detects record size from 6-byte global header, assembles complete frame
+- _validate_crc() checks CRC-16/CCITT (polynomial 0x1021, init 0xFFFF) per EN 1064; accepts zero CRC from legacy devices
+- _parse_scp_bytes() writes frame to temp file and delegates to existing read_scp() reader
+- Source format tagged as "scp-ecg-serial" to distinguish from file-read records
+- Custom exceptions: CaptureTimeoutError, CRCError, FramingError
+- CaptureResult dataclass with success, ecg_record, raw_bytes, bytes_received, capture_duration_seconds, crc_valid, retries
+- Lazy pyserial import via _get_serial_module() staticmethod — enables testing without pyserial installed
+
+### Test Results
+- 30/30 passed in test_serial_capture.py
+- mypy: 0 errors in serial_capture.py
+
+### Learnings
+- pyserial imports as `serial` not `pyserial` — use `import serial`
+- Lazy import via _get_serial_module() enables tests to mock without the package installed
+- Mock SerialException must be a real Exception subclass (not MagicMock) for except clauses to work
+- SCP-ECG section 0 pointer entries are 10 bytes: uint16 (sec_id) + uint32 (length) + uint32 (1-based offset)
+- getattr(module, "SerialException", Exception) with default avoids AttributeError on mocked modules
+---
+
+## Iteration US-085 - SMART on FHIR Launch Context Support
+### Goal
+Implement SMART on FHIR launch handler so Aortica web UI can be embedded in EHR with patient context pre-populated.
+
+### Files Created
+- aortica/api/smart_on_fhir.py - SMART App Launch Framework handler with metadata discovery, token exchange, session store, and FastAPI router
+- tests/api/test_smart_on_fhir.py - 34 tests covering config, models, session store, parsing, all endpoints, and app integration
+
+### Files Modified
+- aortica/api/app.py - Mounted SMART router in create_app()
+- pyproject.toml - Added smart optional dependency group (httpx>=0.24)
+- PRD.md - Marked US-085 complete
+
+### Implementation Details
+- SMARTConfig dataclass with from_env() for environment variable configuration (SMART_CLIENT_ID, SMART_REDIRECT_URI, etc.)
+- discover_smart_metadata() fetches OAuth endpoints from .well-known/smart-configuration or /metadata CapabilityStatement
+- exchange_code_for_token() performs authorization_code grant and extracts patient/encounter/fhirServer context
+- SMARTSessionStore: in-memory store tracking pending launches (keyed by state param) and active context
+- Router endpoints: GET /launch (redirect to EHR auth), GET /callback (token exchange), GET /status, GET /context
+- CSRF protection via state parameter in OAuth flow
+- Graceful fallback: populates fhir_server from launch state if not in token response
+
+### Test Results
+- 34/34 passed in test_smart_on_fhir.py
+- mypy: 0 new errors (1 pre-existing error in predict.py unchanged)
+
+### Learnings
+- SMART on FHIR uses standard OAuth 2.0 authorization_code flow with additional context params (launch, iss)
+- Token response includes patient/encounter/fhirServer as top-level fields (not nested)
+- Two discovery methods: .well-known/smart-configuration (preferred) and CapabilityStatement /metadata (fallback)
+- httpx is better than requests for async-compatible HTTP in FastAPI context
+- Same lazy-import pattern as other modules for optional dependencies
+---
+
+## Iteration US-086 - Worklist Prioritization Module
+### Goal
+Implement WorklistPrioritizer class for AI-driven worklist sorting by clinical urgency.
+
+### Files Created
+- aortica/integration/worklist.py - WorklistPrioritizer with urgency scoring, tier assignment, YAML config loading
+- tests/integration/test_worklist.py - 40 tests covering all tiers, scoring, YAML, API, serialization
+- data/urgency_rules.yaml - Default urgency rules YAML for site customization
+
+### Files Modified
+- aortica/api/app.py - Added POST /api/v1/worklist/prioritize endpoint
+- PRD.md - Marked US-086 complete
+
+### Implementation Details
+- WorklistPrioritizer class with configurable UrgencyRules (critical/high/moderate conditions + risk thresholds)
+- prioritize() accepts list of MultiTaskOutput-like objects, returns PrioritizedWorklist sorted by urgency
+- Urgency score 0–100 mapped to tiers: critical (80–100), high (60–79), moderate (40–59), low (0–39)
+- Score computed from tier level + confidence boost (70% max confidence, 30% finding count)
+- _extract_predictions() handles dict, dataclass, tensor, and list inputs (same pattern as simplified_output.py)
+- load_urgency_rules() loads from YAML with partial override support (missing keys use defaults)
+- WorklistItem dataclass: ecg_id, urgency_score, urgency_tier, top_finding, recommended_action, active_findings
+- PrioritizedWorklist dataclass with tier counts and to_dict() serialization
+- API endpoint accepts JSON body with results[], ecg_ids[], optional rules_yaml
+
+### Test Results
+- 40/40 passed in test_worklist.py
+- mypy: 0 errors in worklist.py
+
+### Learnings
+- data/ directory is in .gitignore — need `git add -f` for YAML config files stored there
+- Same _extract_predictions pattern reused from simplified_output.py — consider extracting to shared utility
+- PyYAML type stubs (types-PyYAML) needed for mypy — install if not present
+- Urgency scoring uses band-based approach: tier determines band, confidence/count boost within band
+---
+
+## Iteration US-087 - PDF Clinical Report Generator
+### Goal
+Implement generate_pdf() to produce professional PDF clinical reports with ECG waveform, AI findings, XAI attributions, risk scores, and uncertainty flags.
+
+### Files Created
+- aortica/reports/__init__.py - Reports subpackage init with generate_pdf export
+- aortica/reports/pdf_report.py - Full PDF report generator using WeasyPrint (HTML-to-PDF) and matplotlib for ECG waveform rendering
+- tests/reports/test_pdf_report.py - 38 tests covering all report sections, prediction extraction, HTML template, and PDF generation
+
+### Files Modified
+- pyproject.toml - Added reports optional dependency group (weasyprint>=60.0, matplotlib>=3.7)
+- PRD.md - Marked US-087 complete
+
+### Implementation Details
+- generate_pdf() accepts MultiTaskOutput (dataclass, dict, or tensor), ECGRecord, optional XAI/quality/uncertainty reports
+- HTML-to-PDF via WeasyPrint with professional clinical template (A4 format)
+- ECG waveform rendered as base64-encoded PNG via matplotlib (12-lead standard layout with grid)
+- Report sections: patient demographics, signal quality table, ECG waveform, AI findings with confidence bars, risk score gauges, XAI feature attributions, uncertainty/OOD indicators
+- "AI Decision Support — Requires Clinical Review" watermark in every report
+- _extract_predictions() handles dict, dataclass, tensor, numpy array, and batch dimension
+- Adapts both XAIReport and FeatureAttribution objects for XAI section
+- Color-coded severity: red (≥80%), amber (50-79%), green (<50%)
+- Risk gauges with color: red (≥0.7), amber (0.4-0.69), green (<0.4)
+- Lazy imports for weasyprint and matplotlib (optional dependencies)
+
+### Test Results
+- 38/38 passed in test_pdf_report.py
+- mypy: 0 errors in reports/
+
+### Learnings
+- WeasyPrint requires careful CSS — use page-break-inside: avoid for sections
+- matplotlib Agg backend must be set before creating figures for headless rendering
+- numpy division changes dtype from float64 to floating — explicit .astype(np.float64) needed for mypy
+- getattr() return types need explicit annotation for mypy (e.g. flags: set[str] = getattr(...))
+- Base64-encoded PNG is simpler and more reliable in WeasyPrint than inline SVG
+---
