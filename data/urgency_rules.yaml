@@ -1,0 +1,126 @@
+# Aortica Worklist Prioritization — Urgency Rules
+#
+# This file configures how multi-task ECG findings map to urgency tiers
+# for the AI-driven worklist prioritization module.
+#
+# Each condition has a confidence threshold (0.0–1.0). When the AI
+# confidence for a condition exceeds its threshold, that ECG is escalated
+# to the corresponding urgency tier.
+#
+# Urgency tiers and score bands:
+#   critical: 80–100 — life-threatening, immediate review
+#   high:     60–79  — dangerous, priority review
+#   moderate: 40–59  — significant, timely follow-up
+#   low:       0–39  — routine, no urgent findings
+
+critical_conditions:
+  # Life-threatening arrhythmias
+  VT: 0.40
+  VF: 0.30
+  av_block_3rd: 0.50
+  CPVT: 0.40
+  # Acute coronary syndromes
+  STEMI: 0.40
+  posterior_MI: 0.50
+  occlusive_NSTEMI: 0.50
+  # Metabolic emergencies
+  hyperkalaemia: 0.40
+  hyperkalaemia_severity_grade: 0.40
+  # STEMI mimics — high urgency
+  de_Winter_T_wave: 0.40
+  aVR_ST_elevation: 0.40
+  # Drug toxicity
+  TCA_toxicity: 0.40
+
+high_conditions:
+  # Dangerous arrhythmias / conduction
+  AF: 0.50
+  AFL: 0.50
+  WPW: 0.40
+  brugada_pattern: 0.40
+  short_QT_syndrome: 0.40
+  fascicular_VT: 0.40
+  av_block_2nd: 0.50
+  # STEMI mimics — high concern
+  Wellens_syndrome: 0.40
+  Sgarbossa_criteria: 0.40
+  # Structural — acute
+  Takotsubo_pattern: 0.40
+  RV_strain_PE: 0.40
+  LVSD: 0.40
+  myocarditis: 0.50
+  pericarditis: 0.50
+
+moderate_conditions:
+  # Arrhythmias — moderate concern
+  SVT: 0.50
+  AVNRT: 0.50
+  AVRT: 0.50
+  idioventricular: 0.50
+  sinus_brady: 0.60
+  sinus_tachy: 0.60
+  atypical_atrial_flutter: 0.50
+  inappropriate_sinus_tachy: 0.60
+  # Structural — moderate
+  LVH: 0.60
+  RVH: 0.60
+  HCM: 0.50
+  ARVC: 0.50
+  DCM: 0.50
+  amyloidosis: 0.50
+  aortic_stenosis: 0.50
+  pulmonary_HTN: 0.50
+  HFpEF_risk: 0.60
+  mitral_regurgitation: 0.60
+  LA_enlargement: 0.60
+  RA_enlargement: 0.60
+  LV_strain_grade: 0.50
+  infiltrative_cardiomyopathy_strain: 0.50
+  # Ischaemia — non-acute
+  old_MI: 0.50
+  early_repol_vs_STEMI: 0.50
+  QTc_prolongation: 0.50
+  hypokalaemia: 0.50
+  hypercalcaemia: 0.50
+  digitalis_effect: 0.50
+  hypothyroidism_pattern: 0.60
+  hypothermia_osborn_waves: 0.50
+  digoxin_effect_vs_toxicity: 0.50
+  # Conduction
+  av_block_1st: 0.60
+  LBBB: 0.60
+  RBBB: 0.60
+  LAFB: 0.60
+  LPFB: 0.60
+
+risk_thresholds:
+  mortality_1y:
+    critical: 0.70
+    high: 0.50
+    moderate: 0.30
+  hf_hosp_12m:
+    critical: 0.70
+    high: 0.50
+    moderate: 0.30
+  af_onset_12m:
+    critical: 0.80
+    high: 0.60
+    moderate: 0.40
+  ecg_predicted_ef:
+    critical: 0.70
+    high: 0.50
+    moderate: 0.30
+  conduction_disease_trajectory:
+    critical: 0.70
+    high: 0.50
+    moderate: 0.30
+  sudden_cardiac_death_risk:
+    critical: 0.60
+    high: 0.40
+    moderate: 0.20
+
+actions:
+  critical: "Immediate review required — potential life-threatening finding"
+  high: "Priority review recommended — urgent clinical attention needed"
+  moderate: "Timely review recommended — schedule follow-up"
+  low: "Routine review — no urgent findings detected"

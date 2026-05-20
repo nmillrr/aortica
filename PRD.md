@@ -1381,14 +1381,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a cardiologist, I want AI-sorted worklists so that the most urgent ECGs are reviewed first, reducing time-to-interpretation for critical findings.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.worklist.WorklistPrioritizer` class
-- [ ] `prioritize(results: list[MultiTaskOutput])` returns sorted list with urgency score (0–100) per ECG
-- [ ] Urgency scoring based on configurable rules: critical findings (STEMI, VT, VF, severe hyperkalaemia) = highest priority; moderate findings (new AF, Brugada, Wellens) = medium; routine = low
-- [ ] Returns `PrioritizedWorklist` with items sorted by urgency, each showing: ECG ID, urgency score, top finding, recommended action
-- [ ] `POST /api/v1/worklist/prioritize` API endpoint accepting batch results and returning prioritized list
-- [ ] Configurable urgency rules via YAML file
-- [ ] Unit tests with synthetic results spanning all priority tiers
-- [ ] Typecheck passes
+- [x] `aortica.integration.worklist.WorklistPrioritizer` class
+- [x] `prioritize(results: list[MultiTaskOutput])` returns sorted list with urgency score (0–100) per ECG
+- [x] Urgency scoring based on configurable rules: critical findings (STEMI, VT, VF, severe hyperkalaemia) = highest priority; moderate findings (new AF, Brugada, Wellens) = medium; routine = low
+- [x] Returns `PrioritizedWorklist` with items sorted by urgency, each showing: ECG ID, urgency score, top finding, recommended action
+- [x] `POST /api/v1/worklist/prioritize` API endpoint accepting batch results and returning prioritized list
+- [x] Configurable urgency rules via YAML file
+- [x] Unit tests with synthetic results spanning all priority tiers
+- [x] Typecheck passes
 
 ---
 

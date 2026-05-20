@@ -390,4 +390,56 @@ def create_app(
 
         return result
 
+    # ---- POST /api/v1/worklist/prioritize --------------------------------
+
+    @app.post(
+        "/api/v1/worklist/prioritize",
+        tags=["worklist"],
+        summary="Prioritize ECGs by urgency",
+    )
+    async def worklist_prioritize(
+        request: Request,  # type: ignore[arg-type]
+        _user: Any = Depends(_auth_dependency),
+    ) -> Any:
+        """Prioritize a batch of multi-task ECG results by clinical urgency.
+
+        Accepts a JSON body with ``results`` (list of per-ECG prediction
+        dicts) and optional ``ecg_ids`` (list of string identifiers).
+        Returns a prioritized worklist sorted by urgency score (descending).
+
+        Each result dict should contain task-level prediction dicts:
+        ``rhythm``, ``structural``, ``ischaemia``, ``risk``.
+
+        Optional ``rules_yaml`` field specifies a custom urgency rules file.
+        """
+        from aortica.integration.worklist import (
+            PrioritizedWorklist,
+            WorklistPrioritizer,
+        )
+
+        body = await request.json()
+
+        results = body.get("results", [])
+        ecg_ids = body.get("ecg_ids", None)
+        rules_yaml = body.get("rules_yaml", None)
+
+        if not results:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "No results provided for prioritization"},
+            )
+
+        try:
+            prioritizer = WorklistPrioritizer(rules_yaml=rules_yaml)
+            worklist: PrioritizedWorklist = prioritizer.prioritize(
+                results, ecg_ids=ecg_ids,
+            )
+        except (ValueError, FileNotFoundError) as exc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": str(exc)},
+            )
+
+        return worklist.to_dict()
+
     return app
