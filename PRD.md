@@ -1429,13 +1429,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a researcher, I want CSV export of batch results so that I can perform statistical analysis on AI findings across large cohorts.
 
 **Acceptance Criteria:**
-- [ ] `aortica.reports.export_csv(results: list[MultiTaskOutput], output_path)` generates a CSV file
-- [ ] One row per ECG with columns: filename, quality_score, each rhythm class confidence, each structural class confidence, each ischaemia class confidence, each risk score, urgency_score, OOD_flag
-- [ ] Header row with human-readable column names
-- [ ] Handles batch sizes up to 10,000 without excessive memory usage (streaming write)
-- [ ] `POST /api/v1/export/csv` API endpoint for batch export from stored results
-- [ ] Unit tests with synthetic batch results producing valid CSV with correct column count
-- [ ] Typecheck passes
+- [x] `aortica.reports.export_csv(results: list[MultiTaskOutput], output_path)` generates a CSV file
+- [x] One row per ECG with columns: filename, quality_score, each rhythm class confidence, each structural class confidence, each ischaemia class confidence, each risk score, urgency_score, OOD_flag
+- [x] Header row with human-readable column names
+- [x] Handles batch sizes up to 10,000 without excessive memory usage (streaming write)
+- [x] `POST /api/v1/export/csv` API endpoint for batch export from stored results
+- [x] Unit tests with synthetic batch results producing valid CSV with correct column count
+- [x] Typecheck passes
 
 ---
 

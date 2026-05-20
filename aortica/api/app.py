@@ -442,4 +442,63 @@ def create_app(
 
         return worklist.to_dict()
 
+    # ---- POST /api/v1/export/csv -----------------------------------------
+
+    @app.post(
+        "/api/v1/export/csv",
+        tags=["export"],
+        summary="Batch CSV analytics export",
+    )
+    async def export_csv_endpoint(
+        request: Request,  # type: ignore[arg-type]
+        _user: Any = Depends(_auth_dependency),
+    ) -> Any:
+        """Export batch multi-task ECG results as a CSV download.
+
+        Accepts a JSON body with ``results`` (list of per-ECG prediction
+        dicts), optional ``filenames``, ``quality_scores``, ``urgency_scores``,
+        and ``ood_flags`` lists.
+
+        Returns the CSV content as a downloadable file response.
+        """
+        from fastapi.responses import Response
+
+        from aortica.reports.csv_export import export_csv_string
+
+        body = await request.json()
+
+        results = body.get("results", [])
+        if not results:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "No results provided for CSV export"},
+            )
+
+        filenames_list = body.get("filenames", None)
+        quality_scores_list = body.get("quality_scores", None)
+        urgency_scores_list = body.get("urgency_scores", None)
+        ood_flags_list = body.get("ood_flags", None)
+
+        try:
+            csv_content = export_csv_string(
+                results,
+                filenames=filenames_list,
+                quality_scores=quality_scores_list,
+                urgency_scores=urgency_scores_list,
+                ood_flags=ood_flags_list,
+            )
+        except ValueError as exc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": str(exc)},
+            )
+
+        return Response(
+            content=csv_content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": "attachment; filename=batch_results.csv",
+            },
+        )
+
     return app
