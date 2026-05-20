@@ -1400,14 +1400,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want a PDF clinical report with the ECG waveform, AI findings, and XAI annotations so that I have a printable, shareable document for the patient record.
 
 **Acceptance Criteria:**
-- [ ] `aortica/reports/` subpackage with `__init__.py`
-- [ ] `aortica.reports.generate_pdf(multi_task_output, ecg_record, xai_report, output_path)` generates a PDF report
-- [ ] Report sections: patient demographics (if available), ECG waveform plot (12-lead standard layout), signal quality summary, per-task findings with confidence bars, XAI feature attributions (top-3 per finding), risk scores with clinical labels, uncertainty/OOD flags
-- [ ] Uses WeasyPrint (HTML-to-PDF) with a professional clinical report template
-- [ ] ECG waveform rendered as SVG via matplotlib with standard grid
-- [ ] Header includes model version, timestamp, and "AI Decision Support — Requires Clinical Review" watermark
-- [ ] Unit tests with synthetic data producing valid PDF (non-zero file size, parseable)
-- [ ] Typecheck passes
+- [x] `aortica/reports/` subpackage with `__init__.py`
+- [x] `aortica.reports.generate_pdf(multi_task_output, ecg_record, xai_report, output_path)` generates a PDF report
+- [x] Report sections: patient demographics (if available), ECG waveform plot (12-lead standard layout), signal quality summary, per-task findings with confidence bars, XAI feature attributions (top-3 per finding), risk scores with clinical labels, uncertainty/OOD flags
+- [x] Uses WeasyPrint (HTML-to-PDF) with a professional clinical report template
+- [x] ECG waveform rendered as SVG via matplotlib with standard grid
+- [x] Header includes model version, timestamp, and "AI Decision Support — Requires Clinical Review" watermark
+- [x] Unit tests with synthetic data producing valid PDF (non-zero file size, parseable)
+- [x] Typecheck passes
 
 ---
 

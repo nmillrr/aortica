@@ -96,6 +96,10 @@ serial = [
 smart = [
     "httpx>=0.24",
 ]
+reports = [
+    "weasyprint>=60.0",
+    "matplotlib>=3.7",
+]
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",
