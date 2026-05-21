@@ -180,6 +180,12 @@ def create_app(
     smart_router = create_smart_router()
     app.include_router(smart_router)
 
+    # Mount report generation router
+    from aortica.api.report_endpoints import create_report_router
+
+    report_router = create_report_router()
+    app.include_router(report_router)
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:

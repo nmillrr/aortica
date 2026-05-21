@@ -1443,14 +1443,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a developer, I want API endpoints for report generation so that reports can be triggered programmatically from the web UI or external systems.
 
 **Acceptance Criteria:**
-- [ ] `POST /api/v1/report/pdf/{result_id}` generates and returns a PDF report for a stored result
-- [ ] `POST /api/v1/report/jsonld/{result_id}` returns a JSON-LD report
-- [ ] `POST /api/v1/report/fhir/{result_id}` returns a FHIR R4 DiagnosticReport bundle
-- [ ] `POST /api/v1/report/hl7/{result_id}` returns an HL7 v2.x ORU^R01 message
-- [ ] All endpoints require authentication (existing auth system)
-- [ ] Returns `404` for unknown result IDs, `422` for invalid parameters
-- [ ] Unit tests for each endpoint with stored synthetic results
-- [ ] Typecheck passes
+- [x] `POST /api/v1/report/pdf/{result_id}` generates and returns a PDF report for a stored result
+- [x] `POST /api/v1/report/jsonld/{result_id}` returns a JSON-LD report
+- [x] `POST /api/v1/report/fhir/{result_id}` returns a FHIR R4 DiagnosticReport bundle
+- [x] `POST /api/v1/report/hl7/{result_id}` returns an HL7 v2.x ORU^R01 message
+- [x] All endpoints require authentication (existing auth system)
+- [x] Returns `404` for unknown result IDs, `422` for invalid parameters
+- [x] Unit tests for each endpoint with stored synthetic results
+- [x] Typecheck passes
 
 ---
 
