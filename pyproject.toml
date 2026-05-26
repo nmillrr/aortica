@@ -103,6 +103,9 @@ reports = [
 jsonld = [
     "PyLD>=2.0",
 ]
+retrieval = [
+    "annoy>=1.17",
+]
 docs = [
     "mkdocs-material>=9.5",
     "mkdocstrings[python]>=0.24",
