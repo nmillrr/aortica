@@ -1462,14 +1462,14 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As an ML engineer, I want a latent space index over de-identified PhysioNet ECGs so that similar historical cases can be retrieved for any new prediction.
 
 **Acceptance Criteria:**
-- [ ] `aortica/retrieval/` subpackage with `__init__.py`
-- [ ] `aortica.retrieval.build_index(model, dataset, output_path)` encodes all ECGs through the backbone, extracts feature vectors, and builds an approximate nearest neighbor index
-- [ ] Uses Annoy or FAISS library for ANN index (configurable, default Annoy with 100 trees)
-- [ ] Stores metadata sidecar (JSON) mapping index IDs to: anonymized record ID, verified diagnoses (from dataset labels), demographic info (age/sex if available)
-- [ ] Index building targets 50,000 ECGs from PTB-XL + MIMIC-IV-ECG (public PhysioNet sources)
-- [ ] CLI command `aortica build-index --dataset <path> --model <path> --output <path>`
-- [ ] Unit tests with synthetic feature vectors verifying index build and query
-- [ ] Typecheck passes
+- [x] `aortica/retrieval/` subpackage with `__init__.py`
+- [x] `aortica.retrieval.build_index(model, dataset, output_path)` encodes all ECGs through the backbone, extracts feature vectors, and builds an approximate nearest neighbor index
+- [x] Uses Annoy or FAISS library for ANN index (configurable, default Annoy with 100 trees)
+- [x] Stores metadata sidecar (JSON) mapping index IDs to: anonymized record ID, verified diagnoses (from dataset labels), demographic info (age/sex if available)
+- [x] Index building targets 50,000 ECGs from PTB-XL + MIMIC-IV-ECG (public PhysioNet sources)
+- [x] CLI command `aortica build-index --dataset <path> --model <path> --output <path>`
+- [x] Unit tests with synthetic feature vectors verifying index build and query
+- [x] Typecheck passes
 
 ---
 

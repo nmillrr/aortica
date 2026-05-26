@@ -1601,3 +1601,140 @@ Implement generate_pdf() to produce professional PDF clinical reports with ECG w
 - getattr() return types need explicit annotation for mypy (e.g. flags: set[str] = getattr(...))
 - Base64-encoded PNG is simpler and more reliable in WeasyPrint than inline SVG
 ---
+
+## Iteration US-088 - JSON-LD Machine-Readable Report
+### Goal
+Implement generate_jsonld() to produce JSON-LD 1.1 documents from multi-task ECG predictions, linked to SNOMED CT and LOINC ontologies.
+
+### Files Created
+- aortica/reports/jsonld_report.py - JSON-LD report generator with Schema.org types, SNOMED/LOINC mappings, pyld validation
+- tests/reports/test_jsonld_report.py - 32 tests covering observations, risk, extraction, generation, context, code mappings
+
+### Files Modified
+- aortica/reports/__init__.py - Added generate_jsonld export
+- pyproject.toml - Added jsonld optional dependency group (PyLD>=2.0)
+- PRD.md - Marked US-088 complete
+
+### Implementation Details
+- generate_jsonld() accepts MultiTaskOutput (dataclass, dict, tensor), ecg_metadata, model_version, input_file_hash
+- JSON-LD @context maps snomed: → http://snomed.info/id/, loinc: → http://loinc.org/rdf/, aortica: → http://aortica.io/vocab/
+- Top-level @type: MedicalTest, findings as MedicalObservation, risk as MedicalRiskEstimator
+- All 66 classification classes have SNOMED CT mappings; all 6 risk outputs have LOINC codes
+- Provenance: modelVersion, inferenceTimestamp, inputFileHash (SHA-256 computed from file_path)
+- Validation via pyld compaction/expansion round-trip
+- Lazy pyld import for optional dependency
+- Same _extract_predictions pattern as pdf_report.py
+
+### Test Results
+- 32/32 passed in test_jsonld_report.py
+- mypy: 0 errors in jsonld_report.py
+
+### Learnings
+- PyLD uses pyld.jsonld.expand() and pyld.jsonld.compact() for round-trip validation
+- Schema.org types MedicalTest, MedicalObservation, MedicalRiskEstimator map well to ECG analysis
+- @context with namespace prefixes (snomed:, loinc:) enables compact IRIs in the document
+- Mock pyld.jsonld for tests since pyld may not be installed in CI
+---
+
+## Iteration US-089 - CSV Batch Analytics Export
+### Goal
+Implement export_csv() to generate CSV files from batch multi-task predictions for research and QA workflows.
+
+### Files Created
+- aortica/reports/csv_export.py - CSV export module with export_csv(), export_csv_string(), streaming write, _extract_predictions helper
+- tests/reports/test_csv_export.py - 49 tests covering columns, extraction, row building, file/string export, validation, 10K streaming, API endpoint
+
+### Files Modified
+- aortica/reports/__init__.py - Added export_csv, export_csv_string exports
+- aortica/api/app.py - Added POST /api/v1/export/csv endpoint
+- PRD.md - Marked US-089 complete
+
+### Implementation Details
+- One row per ECG with columns: filename, quality_score, 28 rhythm classes, 19 structural classes, 19 ischaemia classes, 6 risk outputs, urgency_score, OOD_flag (76 total columns)
+- Streaming csv.writer for memory-efficient large batch handling (tested up to 10,000 rows)
+- Same _extract_predictions pattern as pdf_report.py and jsonld_report.py (handles dict, dataclass, tensor, batch dimension)
+- export_csv() writes to file and returns absolute Path; export_csv_string() returns in-memory string for API response
+- API endpoint returns text/csv with Content-Disposition attachment header
+- Optional auxiliary metadata: filenames, quality_scores, urgency_scores, ood_flags with length validation
+
+### Test Results
+- 49/49 passed in test_csv_export.py
+- mypy: 0 errors in csv_export.py
+
+### Learnings
+- csv.writer with streaming row-by-row write keeps memory constant regardless of batch size
+- Same _extract_predictions pattern is duplicated across pdf_report, jsonld_report, csv_export — potential for DRY refactor into shared utility
+- StringIO-based export_csv_string avoids temp files for API responses
+- Column naming convention: {task}_{class_name} avoids collisions across task heads
+---
+
+## Iteration US-090 - Report API Endpoints
+### Goal
+Implement POST endpoints for PDF, JSON-LD, FHIR, and HL7 report generation from stored ECG analysis results.
+
+### Files Created
+- aortica/api/report_endpoints.py - Report generation router with 4 POST endpoints, auth integration, ResultStore lookup
+- tests/api/test_report_endpoints.py - 36 tests covering 404/422 errors, success paths, query params, auth, routing, imports
+
+### Files Modified
+- aortica/api/app.py - Mounted report_router in create_app() factory
+- PRD.md - Marked US-090 complete
+
+### Implementation Details
+- POST /api/v1/report/pdf/{result_id} — generates PDF via WeasyPrint, returns application/pdf with Content-Disposition
+- POST /api/v1/report/jsonld/{result_id} — generates JSON-LD report, returns application/json
+- POST /api/v1/report/fhir/{result_id} — generates FHIR R4 Bundle via to_diagnostic_report(), returns JSON
+- POST /api/v1/report/hl7/{result_id} — generates HL7 v2.x ORU^R01 via to_oru_r01(), returns text/plain
+- Auth: manually calls app.state.auth_dependency with x_api_key header (matching existing pattern)
+- PDF endpoint reconstructs a stub ECGRecord from stored metadata for WeasyPrint rendering
+- All endpoints use lazy imports for optional deps (weasyprint, fhir.resources, hl7apy) with 422 fallback
+- create_report_router() factory pattern consistent with existing auth/smart routers
+
+### Test Results
+- 36/36 passed in test_report_endpoints.py
+- 64/64 passed across test_app.py + test_report_endpoints.py (no regressions)
+- mypy: 0 new errors (1 pre-existing error in predict.py unrelated to this change)
+
+### Learnings
+- Patching lazy-imported functions: patch at the real module path (e.g. aortica.reports.pdf_report.generate_pdf), not at the import alias in the endpoint
+- Auth dependency needs x_api_key passed explicitly since it's not injected by FastAPI Depends — Header(default=None) in endpoint params
+- TestClient(raise_server_exceptions=False) needed for auth tests so HTTPException surfaces as 401 response
+- _get_result_store and _get_stored_result helpers keep endpoint code DRY
+---
+
+## Iteration US-091 - Latent Space Index Construction
+### Goal
+Build an ANN index over ECG backbone features for case-based retrieval of similar historical ECGs.
+
+### Files Created
+- aortica/retrieval/__init__.py - Retrieval subpackage init with build_index export
+- aortica/retrieval/index_builder.py - Index builder: feature extraction, Annoy/FAISS index construction, JSON metadata sidecar
+- aortica/cli/build_index_cmd.py - CLI command: aortica build-index --dataset --output --backend --num-trees --batch-size --max-records
+- tests/retrieval/__init__.py - Test package init
+- tests/retrieval/test_index_builder.py - 30 tests covering metadata, features, Annoy/FAISS build/query, edge cases, CLI
+
+### Files Modified
+- aortica/cli/__init__.py - Registered build_index_cmd in CLI group
+- pyproject.toml - Added retrieval optional dependency group (annoy>=1.17)
+- PRD.md - Marked US-091 complete
+
+### Implementation Details
+- build_index(model, dataset, output_path, ...) extracts features via model.backbone() + model.attention() in batches
+- Supports Annoy (default, angular metric, 100 trees) and FAISS (IVFFlat for >1000 vectors, IndexFlatL2 for smaller)
+- JSON metadata sidecar maps each index entry to: anonymized record_id, verified diagnoses list, age, sex
+- IndexBuildReport dataclass returned with index_path, metadata_path, num_vectors, feature_dim, backend, num_trees, build_time_seconds
+- IndexMetadataEntry dataclass for structured metadata per ECG
+- CLI loads PTB-XL via load_ptbxl(), combines all splits, pads/truncates to 5000 samples, runs build_index()
+- Feature extraction uses torch.no_grad() and batched forward passes
+
+### Test Results
+- 27/30 passed (3 FAISS tests skipped — faiss not installed, expected)
+- mypy: 0 errors in new files
+
+### Learnings
+- load_ptbxl() returns tuple of 3 tuples ((records, labels), ...), not a dict — always check return type signatures
+- Annoy requires calling .build(n_trees) before .save() — the add_item/build/save order matters
+- FAISS IVFFlat requires training before adding vectors; for small datasets use IndexFlatL2 instead
+- pytest.importorskip("faiss") is the cleanest way to handle optional dependency tests
+- mypy checks files transitively — errors in imported modules appear even when checking only your files
+---
