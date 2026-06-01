@@ -507,4 +507,103 @@ def create_app(
             },
         )
 
+    # ---- POST /api/v1/retrieve/similar ----------------------------------
+
+    @app.post(
+        "/api/v1/retrieve/similar",
+        tags=["retrieval"],
+        summary="Retrieve similar historical ECGs",
+    )
+    async def retrieve_similar_endpoint(
+        file: UploadFile = File(..., description="ECG file to find similar cases for"),
+        k: int = Query(
+            default=3,
+            description="Number of similar cases to retrieve",
+            ge=1,
+            le=20,
+        ),
+        format: Optional[str] = Query(  # noqa: A002
+            default=None,
+            description="Explicit format override (e.g. wfdb, dicom, csv)",
+        ),
+        _user: Any = Depends(_auth_dependency),
+    ) -> Any:
+        """Retrieve the top-K most similar historical ECGs for a query ECG.
+
+        Encodes the uploaded ECG through the model backbone and queries
+        the pre-built latent-space index for phenotypically similar cases
+        with verified diagnoses.
+
+        Returns similar cases with similarity scores, diagnoses, and
+        demographic information.  Returns ``422`` if no index is loaded
+        or the ECG file cannot be parsed.
+        """
+        from dataclasses import asdict
+
+        from aortica.io.dispatcher import UnsupportedFormatError
+
+        # Check index is loaded
+        index_path = getattr(app.state, "retrieval_index_path", None)
+        if index_path is None:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "No retrieval index loaded. Build one with aortica build-index."},
+            )
+
+        # Check model is loaded
+        model = app.state.model  # type: ignore[attr-defined]
+        if model is None:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "No model loaded for feature extraction."},
+            )
+
+        # Read and parse ECG
+        file_bytes = await file.read()
+        filename = file.filename or "upload.dat"
+
+        try:
+            from aortica.io.dispatcher import read_ecg
+            import tempfile
+            import os
+
+            # Write to temp file for read_ecg
+            suffix = os.path.splitext(filename)[1] or ".dat"
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+                tmp.write(file_bytes)
+                tmp_path = tmp.name
+
+            try:
+                ecg_record = read_ecg(tmp_path, format=format)
+            finally:
+                os.unlink(tmp_path)
+
+        except (UnsupportedFormatError, ValueError, OSError) as exc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": str(exc)},
+            )
+
+        # Retrieve similar cases
+        try:
+            from aortica.retrieval import retrieve_similar
+
+            results = retrieve_similar(
+                model=model,
+                ecg_record=ecg_record,
+                index_path=index_path,
+                k=k,
+            )
+        except (FileNotFoundError, ImportError) as exc:
+            return JSONResponse(
+                status_code=422,
+                content={"detail": str(exc)},
+            )
+
+        return {
+            "similar_cases": [asdict(r) for r in results],
+            "k": k,
+            "query_file": filename,
+        }
+
     return app

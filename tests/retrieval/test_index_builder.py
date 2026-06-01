@@ -41,7 +41,7 @@ def _make_mock_model(feature_dim: int = 256) -> MagicMock:
 
     # Mock parameters() so next(model.parameters()).device works
     dummy_param = torch.zeros(1)
-    model.parameters = MagicMock(return_value=iter([dummy_param]))
+    model.parameters = MagicMock(side_effect=lambda: iter([dummy_param]))
 
     def backbone_fn(x: torch.Tensor) -> torch.Tensor:
         batch = x.shape[0]

@@ -11,6 +11,13 @@ Functions:
 
 from __future__ import annotations
 
-from aortica.retrieval.index_builder import build_index
+from aortica.retrieval.index_builder import IndexBuildReport, IndexMetadataEntry, build_index
+from aortica.retrieval.retriever import SimilarCaseResult, retrieve_similar
 
-__all__ = ["build_index"]
+__all__ = [
+    "IndexBuildReport",
+    "IndexMetadataEntry",
+    "SimilarCaseResult",
+    "build_index",
+    "retrieve_similar",
+]

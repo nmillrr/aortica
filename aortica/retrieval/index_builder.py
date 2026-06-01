@@ -28,7 +28,7 @@ import logging
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Optional, Sequence
+from typing import Any, Literal, Optional, Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -135,7 +135,7 @@ def _build_annoy_index(
     vectors: NDArray[np.float64],
     output_path: Path,
     num_trees: int,
-    metric: str,
+    metric: Literal["angular", "euclidean", "manhattan", "hamming", "dot"],
 ) -> str:
     """Build an Annoy index and save to disk.
 
@@ -242,7 +242,7 @@ def build_index(
     demographics: Optional[Sequence[dict[str, Any]]] = None,
     backend: str = "annoy",
     num_trees: int = 100,
-    metric: str = "angular",
+    metric: Literal["angular", "euclidean", "manhattan", "hamming", "dot"] = "angular",
     batch_size: int = 64,
 ) -> IndexBuildReport:
     """Encode ECGs through the model backbone and build an ANN index.

@@ -1477,13 +1477,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want to see the 3 most similar historical ECGs for any AI finding so that I can compare my patient's tracing against phenotypically similar cases with known outcomes.
 
 **Acceptance Criteria:**
-- [ ] `aortica.retrieval.retrieve_similar(model, ecg_record, index_path, k=3)` returns top-K similar ECGs
-- [ ] Returns `SimilarCaseResult` list with: similarity score (cosine distance), record ID, verified diagnoses, patient demographics (anonymized), outcome summary
-- [ ] Filters results to only return cases with verified diagnoses (no unlabeled matches)
-- [ ] API endpoint `POST /api/v1/retrieve/similar` accepts ECG reference and returns similar cases
-- [ ] Query latency < 50ms for K=3 on an index of 50,000 vectors
-- [ ] Unit tests with synthetic index and query vectors
-- [ ] Typecheck passes
+- [x] `aortica.retrieval.retrieve_similar(model, ecg_record, index_path, k=3)` returns top-K similar ECGs
+- [x] Returns `SimilarCaseResult` list with: similarity score (cosine distance), record ID, verified diagnoses, patient demographics (anonymized), outcome summary
+- [x] Filters results to only return cases with verified diagnoses (no unlabeled matches)
+- [x] API endpoint `POST /api/v1/retrieve/similar` accepts ECG reference and returns similar cases
+- [x] Query latency < 50ms for K=3 on an index of 50,000 vectors
+- [x] Unit tests with synthetic index and query vectors
+- [x] Typecheck passes
 
 ---
 
