@@ -1491,13 +1491,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want similar case references embedded in the XAI explanation cards so that historical comparisons appear alongside feature attributions.
 
 **Acceptance Criteria:**
-- [ ] `ExplanationCard` React component updated with "Similar Historical Cases" section (replacing Phase 2 placeholder)
-- [ ] Each similar case displayed with: similarity percentage, diagnosis summary, key demographic info, outcome if available
-- [ ] Clicking a similar case opens a side-by-side waveform comparison (current ECG vs. historical)
-- [ ] API response for `include_xai=true` now includes `similar_cases` field
-- [ ] Graceful fallback if no index is loaded (shows "Case retrieval unavailable" message)
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `ExplanationCard` React component updated with "Similar Historical Cases" section (replacing Phase 2 placeholder)
+- [x] Each similar case displayed with: similarity percentage, diagnosis summary, key demographic info, outcome if available
+- [x] Clicking a similar case opens a side-by-side waveform comparison (current ECG vs. historical)
+- [x] API response for `include_xai=true` now includes `similar_cases` field
+- [x] Graceful fallback if no index is loaded (shows "Case retrieval unavailable" message)
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

@@ -1738,3 +1738,31 @@ Build an ANN index over ECG backbone features for case-based retrieval of simila
 - pytest.importorskip("faiss") is the cleanest way to handle optional dependency tests
 - mypy checks files transitively — errors in imported modules appear even when checking only your files
 ---
+
+## Iteration US-092 - Top-K Similar ECG Retrieval
+### Goal
+Implement retrieve_similar() for querying ANN index and returning top-K similar historical ECGs with verified diagnoses.
+
+### Files Modified
+- aortica/retrieval/retriever.py - Fixed mypy errors: Literal type for metric param, explicit NDArray type annotation for return
+- aortica/retrieval/index_builder.py - Fixed mypy errors: Literal type for metric param in _build_annoy_index and build_index
+- PRD.md - Marked US-092 complete
+
+### Implementation Details
+- retrieve_similar(model, ecg_record, index_path, k=3) already fully implemented from prior iteration
+- SimilarCaseResult dataclass with similarity_score, record_id, diagnoses, age, sex, outcome_summary
+- Supports Annoy (angular/euclidean) and FAISS (L2) backends
+- Filters unlabeled matches by default (filter_unlabeled=True), fetches 3x candidates to compensate
+- Angular distance → cosine similarity conversion: cos(u,v) = 1 - distance²/2
+- API endpoint POST /api/v1/retrieve/similar already wired in app.py
+- 24 tests in test_retriever.py covering retrieval, filtering, edge cases, API
+
+### Test Results
+- 51/51 passed across tests/retrieval/ (3 FAISS tests skipped — expected)
+- mypy: 0 errors in aortica/retrieval/
+
+### Learnings
+- Annoy's AnnoyIndex metric param requires Literal type, not str — mypy catches this with annoy's type stubs
+- numpy squeeze() returns Any — explicit type annotation needed for mypy strict mode
+- This user story was already implemented in a prior iteration but not tracked — always check existing code before implementing
+---

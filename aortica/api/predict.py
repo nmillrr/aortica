@@ -131,6 +131,18 @@ class SuggestionEntry(BaseModel):
     rationale: str = Field(..., description="Clinical justification")
 
 
+class SimilarCaseEntry(BaseModel):
+    """A single similar historical ECG case from retrieval."""
+
+    similarity_score: float = Field(..., description="Cosine similarity (0–1)")
+    record_id: str = Field(..., description="Anonymised record identifier")
+    diagnoses: List[str] = Field(default_factory=list, description="Verified diagnosis labels")
+    age: Optional[int] = Field(default=None, description="Patient age")
+    sex: Optional[str] = Field(default=None, description="Patient sex")
+    outcome_summary: Optional[str] = Field(default=None, description="Brief outcome text")
+    index_id: int = Field(default=0, description="Index position")
+
+
 class PredictResponse(BaseModel):
     """Full response from the single ECG inference endpoint."""
 
@@ -151,6 +163,10 @@ class PredictResponse(BaseModel):
     suggestions: Optional[List[SuggestionEntry]] = Field(
         default=None,
         description="Clinical suggestions for active findings (when include_suggestions=true)",
+    )
+    similar_cases: Optional[List[SimilarCaseEntry]] = Field(
+        default=None,
+        description="Similar historical ECGs from retrieval index (when include_xai=true)",
     )
 
 
@@ -214,6 +230,7 @@ def run_inference_pipeline(
     enabled_tasks: Optional[List[str]] = None,
     include_xai: bool = False,
     include_suggestions: bool = False,
+    retrieval_index_path: Optional[str] = None,
 ) -> PredictResponse:
     """Execute the full ECG inference pipeline on uploaded file bytes.
 
@@ -419,12 +436,43 @@ def run_inference_pipeline(
             if not suggestion_entries:
                 suggestion_entries = None
 
+        # ── 8. Similar case retrieval (when include_xai=true) ────────
+        similar_case_entries: Optional[List[SimilarCaseEntry]] = None
+
+        if include_xai and model is not None and retrieval_index_path is not None:
+            try:
+                from aortica.retrieval import retrieve_similar as _retrieve_similar
+
+                cases = _retrieve_similar(
+                    model=model,
+                    ecg_record=ecg_record,
+                    index_path=retrieval_index_path,
+                    k=3,
+                )
+                similar_case_entries = [
+                    SimilarCaseEntry(
+                        similarity_score=c.similarity_score,
+                        record_id=c.record_id,
+                        diagnoses=c.diagnoses,
+                        age=c.age,
+                        sex=c.sex,
+                        outcome_summary=c.outcome_summary,
+                        index_id=c.index_id,
+                    )
+                    for c in cases
+                ]
+                if not similar_case_entries:
+                    similar_case_entries = None
+            except Exception:
+                pass  # Retrieval is best-effort
+
         return PredictResponse(
             quality_report=quality_resp,
             predictions=predictions,
             uncertainty=uncertainty_resp,
             xai=xai_results if xai_results else None,
             suggestions=suggestion_entries,
+            similar_cases=similar_case_entries,
         )
     finally:
         # Clean up temp file

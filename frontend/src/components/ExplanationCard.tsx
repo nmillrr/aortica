@@ -22,6 +22,16 @@ export interface ClinicalSuggestionInfo {
   rationale?: string;
 }
 
+export interface SimilarCase {
+  similarity_score: number;
+  record_id: string;
+  diagnoses: string[];
+  age?: number | null;
+  sex?: string | null;
+  outcome_summary?: string | null;
+  index_id?: number;
+}
+
 export interface ExplanationCardProps {
   /** Finding name (condition) */
   findingName: string;
@@ -37,6 +47,10 @@ export interface ExplanationCardProps {
   clinicalReference?: string;
   /** Clinical suggestion with urgency */
   suggestion?: ClinicalSuggestionInfo;
+  /** Similar historical ECG cases from retrieval */
+  similarCases?: SimilarCase[];
+  /** Callback when a similar case is clicked (for side-by-side view) */
+  onCaseClick?: (recordId: string) => void;
   /** Whether this card starts expanded */
   defaultExpanded?: boolean;
   /** Unique id for testing */
@@ -238,6 +252,8 @@ export function ExplanationCard({
   confidenceInterval,
   clinicalReference,
   suggestion,
+  similarCases,
+  onCaseClick,
   defaultExpanded = false,
   id,
 }: ExplanationCardProps) {
@@ -339,20 +355,70 @@ export function ExplanationCard({
             <ConfidenceIntervalBar ci={confidenceInterval} confidence={confidence} />
           )}
 
-          {/* Similar Historical Cases — Placeholder */}
-          <div className="explanation-section explanation-section--placeholder">
-            <h4 className="explanation-section-heading">
-              <span className="explanation-section-icon">🔍</span>
-              Similar Historical Cases
-            </h4>
-            <div className="explanation-placeholder-content">
-              <span className="explanation-placeholder-badge">Phase 4</span>
-              <p className="explanation-placeholder-text">
-                Case-based retrieval from de-identified ECG databases will be available in a future release.
-                Top-3 similar historical ECGs with verified diagnoses and outcomes will be displayed here.
+          {/* Similar Historical Cases */}
+          {similarCases && similarCases.length > 0 ? (
+            <div className="explanation-section" id={`${cardId}-similar-cases`}>
+              <h4 className="explanation-section-heading">
+                <span className="explanation-section-icon">🔍</span>
+                Similar Historical Cases
+              </h4>
+              <p className="explanation-section-subtitle">
+                Top matches from de-identified ECG databases with verified diagnoses
               </p>
+              <div className="explanation-similar-cases-list">
+                {similarCases.map((sc, i) => (
+                  <button
+                    key={`${sc.record_id}-${i}`}
+                    className="explanation-similar-case"
+                    onClick={() => onCaseClick?.(sc.record_id)}
+                    title="Click to compare waveforms side-by-side"
+                    id={`${cardId}-similar-case-${i}`}
+                  >
+                    <div className="explanation-similar-case-header">
+                      <span className="explanation-similar-case-rank">#{i + 1}</span>
+                      <span className="explanation-similar-case-score">
+                        {(sc.similarity_score * 100).toFixed(0)}% similar
+                      </span>
+                    </div>
+                    <div className="explanation-similar-case-body">
+                      <div className="explanation-similar-case-diagnoses">
+                        {sc.diagnoses.map((dx, j) => (
+                          <span key={j} className="explanation-similar-case-dx-tag">{dx}</span>
+                        ))}
+                      </div>
+                      <div className="explanation-similar-case-meta">
+                        {sc.age != null && (
+                          <span className="explanation-similar-case-demo">Age {sc.age}</span>
+                        )}
+                        {sc.sex != null && (
+                          <span className="explanation-similar-case-demo">{sc.sex}</span>
+                        )}
+                        <span className="explanation-similar-case-id">{sc.record_id}</span>
+                      </div>
+                      {sc.outcome_summary && (
+                        <p className="explanation-similar-case-outcome">
+                          {sc.outcome_summary}
+                        </p>
+                      )}
+                    </div>
+                    <span className="explanation-similar-case-compare-icon" aria-hidden="true">⇄</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="explanation-section explanation-section--no-retrieval">
+              <h4 className="explanation-section-heading">
+                <span className="explanation-section-icon">🔍</span>
+                Similar Historical Cases
+              </h4>
+              <div className="explanation-no-retrieval-content">
+                <p className="explanation-no-retrieval-text">
+                  Case retrieval unavailable — no retrieval index is currently loaded.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

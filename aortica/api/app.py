@@ -283,6 +283,7 @@ def create_app(
                 enabled_tasks=list(app.state.enabled_tasks),  # type: ignore[attr-defined]
                 include_xai=include_xai,
                 include_suggestions=include_suggestions,
+                retrieval_index_path=getattr(app.state, "retrieval_index_path", None),
             )
         except UnsupportedFormatError as exc:
             return JSONResponse(
