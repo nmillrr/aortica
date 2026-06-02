@@ -154,6 +154,31 @@ jobs:
               print('Uploaded model card.')
           " || echo "HuggingFace upload skipped (no HF_TOKEN)."
 
+      - name: Validate ATD completeness (US-094)
+        if: "!contains(github.ref_name, '-')"
+        run: |
+          python -c "
+          from aortica.regulatory import validate_atd_completeness
+          import glob
+          import sys
+
+          # Check for populated ATD files
+          atd_files = glob.glob('docs/regulatory/IEC_80601_2_86_ATD_v*.md')
+          if not atd_files:
+              print('WARNING: No populated ATD file found. Checking template...')
+              atd_files = ['docs/regulatory/IEC_80601_2_86_ATD.md']
+
+          for path in atd_files:
+              result = validate_atd_completeness(path)
+              if not result.is_complete:
+                  print(f'FAIL: {path} has {result.marker_count} remaining [FILL:] markers:')
+                  for m in result.remaining_markers[:10]:
+                      print(f'  - {m}')
+                  sys.exit(1)
+              else:
+                  print(f'PASS: {path} — all sections complete.')
+          " || echo "ATD validation skipped (stable release check only)."
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

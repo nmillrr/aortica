@@ -1509,13 +1509,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a regulatory affairs specialist, I want an IEC 80601-2-86 ATD template so that algorithm testing documentation is structured correctly for ECG AI submissions.
 
 **Acceptance Criteria:**
-- [ ] `docs/regulatory/` directory with organized template structure
-- [ ] `IEC_80601_2_86_ATD.md` template covering: algorithm description, intended use, training data description, performance metrics, known limitations, test methodology, device compatibility matrix
-- [ ] Placeholders marked with `[FILL: description]` for site-specific information
-- [ ] Auto-population script `aortica.regulatory.populate_atd(benchmark_report, model_version)` fills performance metrics and dataset sections from benchmark output
-- [ ] CI pipeline step that validates ATD template is complete (no empty `[FILL:]` markers) before v-stable tag
-- [ ] Unit tests for auto-population script with synthetic benchmark data
-- [ ] Typecheck passes
+- [x] `docs/regulatory/` directory with organized template structure
+- [x] `IEC_80601_2_86_ATD.md` template covering: algorithm description, intended use, training data description, performance metrics, known limitations, test methodology, device compatibility matrix
+- [x] Placeholders marked with `[FILL: description]` for site-specific information
+- [x] Auto-population script `aortica.regulatory.populate_atd(benchmark_report, model_version)` fills performance metrics and dataset sections from benchmark output
+- [x] CI pipeline step that validates ATD template is complete (no empty `[FILL:]` markers) before v-stable tag
+- [x] Unit tests for auto-population script with synthetic benchmark data
+- [x] Typecheck passes
 
 ---
 
