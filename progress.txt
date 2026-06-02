@@ -1884,3 +1884,34 @@ All acceptance criteria were already fully implemented but the PRD was never upd
 - Always mark PRD tasks complete when committing implementation — this one was missed
 - The reporting_checklists module mirrors populate_atd patterns: FILL marker replacement, output path resolution, result dataclass
 ---
+
+## Iteration US-097 - CI Pipeline Regulatory Performance Enforcement
+### Goal
+Implement regulatory_gate() that enforces minimum performance targets per regulatory device class in CI.
+
+### Files Created
+- regulatory_targets.yaml — Default targets YAML with STEMI sensitivity ≥ 0.90, AF AUC ≥ 0.95, LVSD AUC ≥ 0.88, rhythm macro-F1 ≥ 0.90, plus VT/VF/av_block_3rd/hyperkalaemia/LBBB/RBBB/WPW targets
+- aortica/evaluation/regulatory_gate.py — regulatory_gate() function with RegulatoryGateResult and ClassGateResult dataclasses, YAML loading, metric lookup across all task heads
+- tests/evaluation/test_regulatory_gate.py — 34 tests covering target loading, passing/failing scenarios, missing classes, default targets, summary output, edge cases, imports
+
+### Files Modified
+- aortica/evaluation/__init__.py — Added exports: ClassGateResult, RegulatoryGateResult, regulatory_gate
+- .github/workflows/release.yml — Added regulatory gate CI step that validates module loading and targets YAML on stable releases
+- PRD.md — Marked US-097 complete
+
+### Implementation Details
+- regulatory_gate() loads YAML targets, looks up each class metric from BenchmarkReport, returns pass/fail per class
+- Missing classes in benchmark → automatic fail (conservative for clinical safety)
+- Task-level metrics (macro_f1) supported alongside per-class metrics (sensitivity, auc, specificity)
+- Default targets path resolved relative to module for portability
+- summary() method provides human-readable output with failing checks listed
+
+### Test Results
+- 34/34 passed in test_regulatory_gate.py
+- mypy: Success: no issues found in 1 source file
+
+### Learnings
+- Using yaml.safe_load for security (no arbitrary code execution from YAML)
+- Treating missing classes as failures is the safe default for regulatory gates
+- The >= comparison means exact threshold passes, which is standard for regulatory targets
+---

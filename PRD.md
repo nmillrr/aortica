@@ -1568,11 +1568,11 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinical researcher, I want a study protocol template so that prospective validation studies at multiple sites follow a standardized methodology.
 
 **Acceptance Criteria:**
-- [ ] `docs/validation/PROSPECTIVE_PROTOCOL.md` template covering: study objectives, primary/secondary endpoints, sample size calculation, inclusion/exclusion criteria, site requirements, data collection procedures, statistical analysis plan, ethical considerations, timeline
-- [ ] Pre-filled with Aortica-specific endpoints: STEMI sensitivity, AF detection AUC, LVSD PPV/NPV
-- [ ] Configurable per study (number of sites, target N, study duration)
-- [ ] IRB-ready language and consent form template
-- [ ] Typecheck passes
+- [x] `docs/validation/PROSPECTIVE_PROTOCOL.md` template covering: study objectives, primary/secondary endpoints, sample size calculation, inclusion/exclusion criteria, site requirements, data collection procedures, statistical analysis plan, ethical considerations, timeline
+- [x] Pre-filled with Aortica-specific endpoints: STEMI sensitivity, AF detection AUC, LVSD PPV/NPV
+- [x] Configurable per study (number of sites, target N, study duration)
+- [x] IRB-ready language and consent form template
+- [x] Typecheck passes
 
 ---
 
