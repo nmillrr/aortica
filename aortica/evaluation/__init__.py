@@ -17,6 +17,11 @@ from aortica.evaluation.performance_card import (
     PerformanceCardResult,
     generate_performance_card,
 )
+from aortica.evaluation.regulatory_gate import (
+    ClassGateResult,
+    RegulatoryGateResult,
+    regulatory_gate,
+)
 from aortica.evaluation.site_validation import (
     ReleaseReadiness,
     SiteValidation,
@@ -26,11 +31,13 @@ from aortica.evaluation.site_validation import (
 
 __all__ = [
     "BenchmarkReport",
+    "ClassGateResult",
     "ClassMetrics",
     "ComparisonResult",
     "EquityGateResult",
     "GroupMetrics",
     "PerformanceCardResult",
+    "RegulatoryGateResult",
     "ReleaseReadiness",
     "SiteValidation",
     "SiteValidationRegistry",
@@ -40,4 +47,6 @@ __all__ = [
     "classify_region",
     "equity_gate",
     "generate_performance_card",
+    "regulatory_gate",
 ]
+

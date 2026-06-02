@@ -1766,3 +1766,121 @@ Implement retrieve_similar() for querying ANN index and returning top-K similar 
 - numpy squeeze() returns Any — explicit type annotation needed for mypy strict mode
 - This user story was already implemented in a prior iteration but not tracked — always check existing code before implementing
 ---
+
+## Iteration US-093 - Case-Based Retrieval Integration with XAI Report
+### Goal
+Replace Phase 2 placeholder in ExplanationCard with real similar case retrieval display and integrate retrieval into the predict API response.
+
+### Files Modified
+- frontend/src/components/ExplanationCard.tsx - Added SimilarCase interface, similarCases/onCaseClick props, replaced placeholder with interactive similar cases list and graceful "unavailable" fallback
+- frontend/src/components/ExplanationCard.css - Replaced placeholder styles with similar-case card layout (rank badge, similarity score, diagnosis tags, demographics, outcome, hover compare icon)
+- aortica/api/predict.py - Added SimilarCaseEntry model, similar_cases field in PredictResponse, retrieval_index_path param, step 8 retrieval in pipeline
+- aortica/api/app.py - Pass retrieval_index_path from app.state to run_inference_pipeline
+- PRD.md - Marked US-093 complete
+
+### Implementation Details
+- ExplanationCard shows similar cases as clickable cards with: similarity %, ranked diagnosis tags, age/sex demographics, outcome summary
+- Clicking triggers onCaseClick(recordId) for side-by-side waveform comparison
+- When no similarCases prop (or empty), shows "Case retrieval unavailable" with dimmed styling
+- API includes similar_cases only when include_xai=true AND retrieval_index_path is set on app.state
+- Retrieval is best-effort (try/except wraps the entire retrieval block — never blocks inference)
+- SimilarCaseEntry Pydantic model mirrors SimilarCaseResult dataclass fields
+
+### Test Results
+- 28/28 passed in test_app.py (no regressions)
+- 39/40 passed in test_predict.py (1 pre-existing failure: test expects 22 rhythm classes but model has 28 from US-072 expansion)
+- TypeScript: 0 errors
+- mypy: 0 new errors in predict.py
+
+### Learnings
+- Best-effort retrieval pattern: wrap in try/except so inference never fails due to retrieval errors
+- Passing state through getattr(app.state, ..., None) is the cleanest way to handle optional features
+- The SimilarCase interface in TypeScript allows null for age/sex/outcome to match the Python Optional fields
+---
+
+## Iteration US-094 - IEC 80601-2-86 Algorithm Testing Documentation Template
+### Goal
+Create IEC 80601-2-86 ATD template with auto-population from benchmark data and CI validation.
+
+### Files Created
+- docs/regulatory/IEC_80601_2_86_ATD.md - Comprehensive ATD template with 9 sections (algorithm description, intended use, training data, performance metrics, known limitations, test methodology, device compatibility matrix, SDLC, risk management)
+- aortica/regulatory/__init__.py - Regulatory subpackage init with populate_atd exports
+- aortica/regulatory/populate_atd.py - Auto-population script: reads template, replaces [FILL: auto-populated ...] markers with metric tables from BenchmarkReport, plus validate_atd_completeness() for CI
+- tests/regulatory/__init__.py - Test package init
+- tests/regulatory/test_populate_atd.py - 28 tests covering template existence, auto-population, edge cases, validation, imports
+
+### Files Modified
+- .github/workflows/release.yml - Added ATD completeness validation step (runs only on stable releases, not pre-releases)
+- PRD.md - Marked US-094 complete
+
+### Implementation Details
+- Template uses [FILL: description] markers for site-specific info, [FILL: auto-populated ...] markers for benchmark-derived sections
+- populate_atd() replaces 6 auto-populated sections: overall summary, rhythm/structural/ischaemia per-class tables, risk table, calibration table
+- Also auto-fills model version and document date
+- validate_atd_completeness() uses regex to find remaining [FILL:] markers — returns ATDValidationResult with pass/fail
+- CI step uses "!contains(github.ref_name, '-')" condition to only enforce on stable releases (v1.0.0 but not v1.0.0-rc1)
+- Reuses BenchmarkReport, TaskReport, ClassMetrics from aortica.evaluation.benchmark
+
+### Test Results
+- 28/28 passed in test_populate_atd.py
+- mypy: 0 new errors in aortica/regulatory/ (all errors are pre-existing in aortica/models/)
+
+### Learnings
+- Template design: separate auto-populated markers from site-specific markers so CI can distinguish "needs benchmark data" from "needs human input"
+- Regex pattern r"\[FILL:[^\]]*\]" cleanly matches all fill markers including multiline ones
+- Using os.path.normpath() with os.pardir traversal for default template path keeps the module relocatable
+- CI tag condition "!contains(github.ref_name, '-')" is the simplest way to distinguish stable from pre-release tags
+---
+
+## Iteration US-095 - FDA SaMD Pre-Submission and CE-MDR Templates
+### Goal
+Create regulatory document templates for FDA SaMD pre-submission and CE-MDR technical file.
+
+### Files Created
+- docs/regulatory/FDA_SAMD_PRESUB.md - FDA SaMD pre-submission template with 9 sections: device description, intended use, technological characteristics, performance benchmark plan, predicate comparison, SDLC summary, pre-submission questions, cybersecurity, labelling
+- docs/regulatory/CE_MDR_TECHFILE.md - CE-MDR technical file template with 9 sections: device description, essential requirements checklist (Annex I), clinical evaluation plan, risk management (ISO 14971), software lifecycle (IEC 62304), usability engineering (IEC 62366), post-market surveillance, labelling, declaration of conformity
+
+### Files Modified
+- PRD.md - Marked US-095 complete
+
+### Implementation Details
+- Both templates use consistent [FILL: description] placeholder format matching IEC 80601-2-86 ATD pattern
+- FDA template includes: IMDRF SaMD categorisation, predicate comparison table, PCCP (predetermined change control plan), SBOM reference, cybersecurity considerations
+- CE-MDR template includes: MDR Annex I essential requirements mapping, MEDDEV 2.7/1 Rev 4 clinical evaluation, PMCF plan, harmonised standards matrix, Notified Body correspondence appendix
+- 43 FILL markers in FDA template, 74 in CE-MDR template
+- 8 cross-references to IEC ATD in FDA template, 11 in CE-MDR template
+- Both reference benchmark harness, equity gating, performance cards, and edge validation as evidence sources
+
+### Test Results
+- mypy: 0 errors in aortica/regulatory/ (Success: no issues found in 2 source files)
+- No code changes — documentation templates only
+
+### Learnings
+- CE-MDR requires significantly more documentation structure than FDA (essential requirements checklist, harmonised standards, PMCF plan)
+- Cross-referencing between regulatory templates (ATD ↔ FDA ↔ CE-MDR) is critical for consistency
+- SOUP (Software of Unknown Provenance) table in CE-MDR should be auto-generated from pyproject.toml in future
+---
+
+## Iteration US-096 - TRIPOD-AI / STARD-AI / CONSORT-AI Reporting Templates
+### Goal
+Create AI reporting guideline templates with auto-population from benchmark data.
+
+### Status: Already Implemented
+All acceptance criteria were already fully implemented but the PRD was never updated to reflect completion.
+
+### Verified Artifacts
+- docs/regulatory/TRIPOD_AI.md — 133 lines, 28+ checklist items, cross-references to IEC ATD
+- docs/regulatory/STARD_AI.md — 111 lines, 25+ checklist items with STARD-AI diagnostic accuracy items
+- docs/regulatory/CONSORT_AI.md — 132 lines, 30+ checklist items for RCT AI interventions
+- aortica/regulatory/reporting_checklists.py — generate_reporting_checklist() supporting all 3 templates, benchmark auto-population, version/date injection
+- aortica/regulatory/__init__.py — exports ChecklistResult and generate_reporting_checklist
+- tests/regulatory/test_reporting_checklists.py — 35 tests covering template existence, generation, auto-population, counting, imports
+
+### Test Results
+- 35/35 passed in test_reporting_checklists.py
+- mypy: Success: no issues found in 3 source files
+
+### Learnings
+- Always mark PRD tasks complete when committing implementation — this one was missed
+- The reporting_checklists module mirrors populate_atd patterns: FILL marker replacement, output path resolution, result dataclass
+---

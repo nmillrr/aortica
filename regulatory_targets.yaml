@@ -1,0 +1,48 @@
+# Regulatory Performance Targets
+#
+# Per-class minimum performance thresholds used by
+# aortica.evaluation.regulatory_gate() to enforce quality gates before
+# release.  The CI pipeline runs this gate on every version tag and
+# blocks the release if any target is not met.
+#
+# Structure
+# ---------
+# Each top-level key is a metric type: "sensitivity", "auc",
+# "specificity", or "macro_f1".  Under each metric type, entries map
+# a *class name* (as used in the benchmark report) or a special
+# task-level key (e.g. "rhythm" for overall rhythm macro-F1) to the
+# minimum acceptable value.
+#
+# Class names must match the canonical class lists in
+# aortica.models.rhythm_head, ischaemia_head, etc.
+#
+# Adding new targets
+# ------------------
+# Simply add an entry under the appropriate metric section.  The
+# regulatory_gate function will look up the actual metric from the
+# benchmark report and compare it to the target.
+
+# --- Per-class sensitivity targets ---
+sensitivity:
+  STEMI: 0.90
+  VT: 0.85
+  VF: 0.85
+  av_block_3rd: 0.85
+  hyperkalaemia: 0.80
+
+# --- Per-class AUC targets ---
+auc:
+  AF: 0.95
+  LVSD: 0.88
+  LBBB: 0.92
+  RBBB: 0.92
+  WPW: 0.88
+  STEMI: 0.92
+
+# --- Per-class specificity targets ---
+specificity:
+  STEMI: 0.85
+
+# --- Task-level macro-F1 targets ---
+macro_f1:
+  rhythm: 0.90

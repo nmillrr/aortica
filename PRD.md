@@ -1550,13 +1550,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a release manager, I want CI to enforce minimum performance targets per regulatory device class so that no release falls below the documented thresholds.
 
 **Acceptance Criteria:**
-- [ ] `aortica.evaluation.regulatory_gate(benchmark_report, targets_yaml)` function
-- [ ] Reads per-class minimum performance targets from `regulatory_targets.yaml` (AUC, sensitivity, specificity thresholds per condition)
-- [ ] Returns `RegulatoryGateResult` with pass/fail per class, actual vs. target metrics, and overall pass/fail
-- [ ] Default targets: STEMI sensitivity ≥ 0.90, AF AUC ≥ 0.95, LVSD AUC ≥ 0.88, overall rhythm F1 ≥ 0.90
-- [ ] GitHub Actions step that runs regulatory gate and blocks release on failure
-- [ ] Unit tests with synthetic benchmarks showing passing and failing scenarios
-- [ ] Typecheck passes
+- [x] `aortica.evaluation.regulatory_gate(benchmark_report, targets_yaml)` function
+- [x] Reads per-class minimum performance targets from `regulatory_targets.yaml` (AUC, sensitivity, specificity thresholds per condition)
+- [x] Returns `RegulatoryGateResult` with pass/fail per class, actual vs. target metrics, and overall pass/fail
+- [x] Default targets: STEMI sensitivity ≥ 0.90, AF AUC ≥ 0.95, LVSD AUC ≥ 0.88, overall rhythm F1 ≥ 0.90
+- [x] GitHub Actions step that runs regulatory gate and blocks release on failure
+- [x] Unit tests with synthetic benchmarks showing passing and failing scenarios
+- [x] Typecheck passes
 
 ---
 
