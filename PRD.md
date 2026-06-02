@@ -1536,13 +1536,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a researcher, I want AI reporting guideline templates so that publications and validation studies follow accepted reporting standards.
 
 **Acceptance Criteria:**
-- [ ] `docs/regulatory/TRIPOD_AI.md` checklist template for diagnostic/prognostic AI model reporting
-- [ ] `docs/regulatory/STARD_AI.md` checklist template for diagnostic accuracy study reporting
-- [ ] `docs/regulatory/CONSORT_AI.md` checklist template for randomized controlled trial reporting with AI interventions
-- [ ] Each template includes: checklist items with section references, auto-fillable fields from benchmark reports, guidance notes for Aortica-specific context
-- [ ] `aortica.regulatory.generate_reporting_checklist(template='tripod_ai', benchmark_report=None)` generates a partially pre-filled checklist
-- [ ] Unit tests for checklist generation with synthetic data
-- [ ] Typecheck passes
+- [x] `docs/regulatory/TRIPOD_AI.md` checklist template for diagnostic/prognostic AI model reporting
+- [x] `docs/regulatory/STARD_AI.md` checklist template for diagnostic accuracy study reporting
+- [x] `docs/regulatory/CONSORT_AI.md` checklist template for randomized controlled trial reporting with AI interventions
+- [x] Each template includes: checklist items with section references, auto-fillable fields from benchmark reports, guidance notes for Aortica-specific context
+- [x] `aortica.regulatory.generate_reporting_checklist(template='tripod_ai', benchmark_report=None)` generates a partially pre-filled checklist
+- [x] Unit tests for checklist generation with synthetic data
+- [x] Typecheck passes
 
 ---
 
