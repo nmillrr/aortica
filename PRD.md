@@ -1523,12 +1523,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a regulatory affairs specialist, I want FDA and CE-MDR submission templates so that the regulatory pathway is documented and actionable.
 
 **Acceptance Criteria:**
-- [ ] `docs/regulatory/FDA_SAMD_PRESUB.md` template covering: device description, intended use statement, technological characteristics, performance benchmark plan, predicate comparison, software development lifecycle summary
-- [ ] `docs/regulatory/CE_MDR_TECHFILE.md` template covering: essential requirements checklist (Annex I), clinical evaluation plan, risk management (ISO 14971 reference), software lifecycle (IEC 62304), usability engineering (IEC 62366)
-- [ ] Both templates reference Aortica's benchmark harness and equity gating outputs as evidence sources
-- [ ] Cross-references to IEC 80601-2-86 ATD template
-- [ ] Placeholders marked consistently with `[FILL: description]`
-- [ ] Typecheck passes
+- [x] `docs/regulatory/FDA_SAMD_PRESUB.md` template covering: device description, intended use statement, technological characteristics, performance benchmark plan, predicate comparison, software development lifecycle summary
+- [x] `docs/regulatory/CE_MDR_TECHFILE.md` template covering: essential requirements checklist (Annex I), clinical evaluation plan, risk management (ISO 14971 reference), software lifecycle (IEC 62304), usability engineering (IEC 62366)
+- [x] Both templates reference Aortica's benchmark harness and equity gating outputs as evidence sources
+- [x] Cross-references to IEC 80601-2-86 ATD template
+- [x] Placeholders marked consistently with `[FILL: description]`
+- [x] Typecheck passes
 
 ---
 
