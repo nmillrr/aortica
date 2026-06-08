@@ -49,6 +49,7 @@ def _build_cli() -> Any:
     from aortica.cli.predict import predict
     from aortica.cli.profile_cmd import profile_cmd
     from aortica.cli.train import train_cmd
+    from aortica.cli.validation_cmd import validation_group
 
     @click.group()
     @click.version_option(package_name="aortica")
@@ -63,6 +64,7 @@ def _build_cli() -> Any:
     cli.add_command(federated_group)
     cli.add_command(performance_card_cmd)
     cli.add_command(build_index_cmd)
+    cli.add_command(validation_group)
     return cli
 
 

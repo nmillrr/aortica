@@ -3,6 +3,11 @@
 Provides ``POST /api/v1/validation/submit`` for sites to submit
 ECG + outcome pairs to the prospective data collector.
 
+Also provides adverse event reporting endpoints:
+- ``POST /api/v1/validation/adverse-event``
+- ``GET /api/v1/validation/adverse-events``
+- ``GET /api/v1/validation/adverse-events/summary``
+
 Usage::
 
     from aortica.api.validation_endpoints import create_validation_router
@@ -13,7 +18,7 @@ Usage::
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -111,6 +116,81 @@ class MonitorStatusResponse(BaseModel):
     )
 
 
+# -- Adverse event response models ----------------------------------------
+
+
+class AdverseEventSubmitRequest(BaseModel):
+    """Request body for POST /api/v1/validation/adverse-event."""
+
+    reporter_id: str = Field(
+        ..., description="Identifier for the reporting clinician"
+    )
+    ecg_reference: str = Field(
+        ..., description="ECG recording reference or hash"
+    )
+    event_description: str = Field(
+        ..., description="Free-text description of the adverse event"
+    )
+    severity: str = Field(
+        ...,
+        description="Event severity: minor, moderate, serious, or critical",
+    )
+    ai_finding: str = Field(
+        ...,
+        description="The AI finding that contributed to the adverse event",
+    )
+    patient_outcome: str = Field(
+        default="",
+        description="Description of the patient outcome",
+    )
+
+
+class AdverseEventSubmitResponse(BaseModel):
+    """Response body for POST /api/v1/validation/adverse-event."""
+
+    id: str = Field(..., description="Assigned event record ID")
+    status: str = Field(default="recorded", description="Submission status")
+
+
+class AdverseEventRecordResponse(BaseModel):
+    """An adverse event record in API responses."""
+
+    id: str = Field(..., description="Unique event record ID")
+    reporter_id: str = Field(..., description="Reporting clinician ID")
+    ecg_reference: str = Field(..., description="ECG recording reference")
+    event_description: str = Field(..., description="Event description")
+    severity: str = Field(..., description="Event severity level")
+    ai_finding: str = Field(..., description="Contributing AI finding")
+    patient_outcome: str = Field(default="", description="Patient outcome")
+    timestamp: str = Field(..., description="ISO 8601 timestamp")
+
+
+class SeverityCountResponse(BaseModel):
+    """Count of events by severity level."""
+
+    severity: str = Field(..., description="Severity level")
+    count: int = Field(..., description="Number of events")
+
+
+class FindingCountResponse(BaseModel):
+    """Count of events by AI finding."""
+
+    ai_finding: str = Field(..., description="AI finding name")
+    count: int = Field(..., description="Number of events")
+
+
+class AdverseEventSummaryResponse(BaseModel):
+    """Aggregate adverse event statistics."""
+
+    total_events: int = Field(..., description="Total reported events")
+    by_severity: List[SeverityCountResponse] = Field(
+        ..., description="Event counts by severity"
+    )
+    most_reported_findings: List[FindingCountResponse] = Field(
+        ..., description="Top findings associated with events"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Router factory
 # ---------------------------------------------------------------------------
@@ -119,6 +199,7 @@ class MonitorStatusResponse(BaseModel):
 def create_validation_router(
     collector: Optional[Any] = None,
     monitor: Optional[Any] = None,
+    adverse_event_store: Optional[Any] = None,
 ) -> Any:
     """Create the validation API router.
 
@@ -131,6 +212,9 @@ def create_validation_router(
     monitor:
         A :class:`~aortica.validation.PerformanceMonitor` instance.
         If ``None``, the monitor status endpoint returns a no-op response.
+    adverse_event_store:
+        A :class:`~aortica.validation.AdverseEventStore` instance.
+        If ``None``, the adverse event endpoints return no-op responses.
     """
     if not HAS_FASTAPI:
         raise ImportError(
@@ -223,5 +307,129 @@ def create_validation_router(
             has_drift=status.has_drift(),
         )
 
+    # -- Adverse event endpoints ------------------------------------------
+
+    @router.post(
+        "/adverse-event",
+        response_model=AdverseEventSubmitResponse,
+        summary="Report a voluntary adverse event",
+    )
+    async def report_adverse_event(
+        body: AdverseEventSubmitRequest,
+    ) -> Any:
+        """Report an adverse event related to AI findings.
+
+        Captures the reporter, ECG reference, event description,
+        severity, contributing AI finding, and patient outcome.
+        Events are stored in an append-only audit trail.
+
+        Returns ``422`` for invalid severity values.
+        """
+        if adverse_event_store is None:
+            return AdverseEventSubmitResponse(
+                id="",
+                status="no_store_configured",
+            )
+
+        from aortica.validation.adverse_events import AdverseEventSubmission
+
+        try:
+            submission = AdverseEventSubmission(
+                reporter_id=body.reporter_id,
+                ecg_reference=body.ecg_reference,
+                event_description=body.event_description,
+                severity=body.severity,
+                ai_finding=body.ai_finding,
+                patient_outcome=body.patient_outcome,
+            )
+            record = adverse_event_store.store_submission(submission)
+        except ValueError as exc:
+            from fastapi.responses import JSONResponse
+
+            return JSONResponse(
+                status_code=422,
+                content={"detail": str(exc)},
+            )
+
+        return AdverseEventSubmitResponse(
+            id=record.id,
+            status="recorded",
+        )
+
+    @router.get(
+        "/adverse-events",
+        response_model=List[AdverseEventRecordResponse],
+        summary="List adverse event reports",
+    )
+    async def list_adverse_events(
+        severity: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[AdverseEventRecordResponse]:
+        """Return reported adverse events (admin-only).
+
+        Events are returned in reverse chronological order.
+        Optionally filter by severity level.
+        """
+        if adverse_event_store is None:
+            return []
+
+        events = adverse_event_store.list_events(
+            severity=severity,
+            limit=limit,
+        )
+
+        return [
+            AdverseEventRecordResponse(
+                id=e.id,
+                reporter_id=e.reporter_id,
+                ecg_reference=e.ecg_reference,
+                event_description=e.event_description,
+                severity=e.severity,
+                ai_finding=e.ai_finding,
+                patient_outcome=e.patient_outcome,
+                timestamp=e.timestamp,
+            )
+            for e in events
+        ]
+
+    @router.get(
+        "/adverse-events/summary",
+        response_model=AdverseEventSummaryResponse,
+        summary="Get adverse event summary statistics",
+    )
+    async def adverse_events_summary() -> AdverseEventSummaryResponse:
+        """Return aggregate adverse event statistics.
+
+        Includes total count, breakdown by severity, and the most-
+        reported AI findings (top 10).
+        """
+        if adverse_event_store is None:
+            return AdverseEventSummaryResponse(
+                total_events=0,
+                by_severity=[],
+                most_reported_findings=[],
+            )
+
+        summary = adverse_event_store.get_summary()
+
+        return AdverseEventSummaryResponse(
+            total_events=summary.total_events,
+            by_severity=[
+                SeverityCountResponse(
+                    severity=sc.severity,
+                    count=sc.count,
+                )
+                for sc in summary.by_severity
+            ],
+            most_reported_findings=[
+                FindingCountResponse(
+                    ai_finding=fc.ai_finding,
+                    count=fc.count,
+                )
+                for fc in summary.most_reported_findings
+            ],
+        )
+
     return router
+
 

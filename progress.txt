@@ -1915,3 +1915,73 @@ Implement regulatory_gate() that enforces minimum performance targets per regula
 - Treating missing classes as failures is the safe default for regulatory gates
 - The >= comparison means exact threshold passes, which is standard for regulatory targets
 ---
+
+## Iteration US-099 - Prospective Data Collection Pipeline
+### Status: Already Implemented
+All acceptance criteria were already fully implemented but the PRD was never updated to reflect completion.
+
+### Verified Artifacts
+- aortica/validation/__init__.py — exports ProspectiveCollector, StudyRecord, export_study_data
+- aortica/validation/prospective_collector.py — 540 lines: SQLite + Fernet encrypted collector with ingest_ecg, add_outcome, queries, export
+- aortica/api/validation_endpoints.py — POST /api/v1/validation/submit endpoint
+- tests/validation/test_prospective_collector.py — 36 tests covering init, ingestion, linkage, queries, export, imports
+
+### Test Results
+- 36/36 passed in test_prospective_collector.py
+- mypy: Success: no issues found in 2 source files
+
+### Learnings
+- Same pattern as US-096: always mark PRD tasks complete when committing implementation
+---
+
+## Iteration US-100 - Automated Performance Monitoring
+### Goal
+Implement PerformanceMonitor class with rolling metric tracking and drift detection.
+
+### Files Created
+- aortica/validation/performance_monitor.py — PerformanceMonitor class with SQLite storage, rolling AUC/F1/ECE computation, baseline management, drift detection (threshold + deviation), webhook alerting, MonitorStatus/DriftAlert/TaskMetricSnapshot dataclasses
+- tests/validation/test_performance_monitor.py — 42 tests covering initialization, recording, baselines, metric helpers, stable scenario, drifting scenario, API endpoint, webhook, imports
+
+### Files Modified
+- aortica/validation/__init__.py — Added exports: PerformanceMonitor, MonitorStatus, DriftAlert, TaskMetricSnapshot
+- aortica/api/validation_endpoints.py — Added MonitorStatusResponse model, monitor parameter to create_validation_router, GET /api/v1/validation/monitor/status endpoint
+- PRD.md — Marked US-099 and US-100 complete
+
+### Implementation Details
+- SQLite schema: monitor_predictions (ecg_id, task, class_name, prediction, ground_truth, timestamp) + monitor_baselines (task, metric_name, baseline_value)
+- Rolling metrics computed by querying predictions within window_days of current time
+- Drift detection: two modes — below_threshold (absolute) and deviation_from_baseline (relative %)
+- Webhook alerts via urllib.request (best-effort, logged on failure)
+- API endpoint returns MonitorStatusResponse with metrics, alerts, and has_drift flag
+- No-op response when monitor is None (matches collector pattern)
+
+### Test Results
+- 42/42 passed in test_performance_monitor.py
+- 78/78 passed across all validation tests
+- mypy: Success: no issues found in 2 source files (new files only; pre-existing errors in models/ unchanged)
+
+### Learnings
+- Rolling metric computation over SQLite is efficient for monitoring use case (no need for separate time-series DB)
+- FastAPI router route paths include the prefix, so route matching tests need full paths or partial matching
+- Drift detection with two modes (threshold + deviation) covers both "model completely broken" and "model gradually degrading" scenarios
+- Pre-existing mypy errors in models/ are all torch Module type stubs — not related to new code
+---
+
+## Iteration US-101 - Quarterly Public Performance Report Generator
+### Status: Already Implemented
+All acceptance criteria were already fully implemented but the PRD was never updated to reflect completion.
+
+### Verified Artifacts
+- aortica/validation/quarterly_report.py — 322 lines: generate_quarterly_report(), QuarterlyReportResult dataclass, markdown + CSV generation, quarter-over-quarter comparison support
+- aortica/cli/validation_cmd.py — 154 lines: `aortica validation quarterly-report` CLI command with --quarter, --year, --monitor-db, --output-dir, --format options
+- aortica/validation/__init__.py — exports QuarterlyReportResult and generate_quarterly_report
+- tests/validation/test_quarterly_report.py — 28 tests covering report generation, markdown content, CSV content, quarter comparison, edge cases, CLI registration, module imports
+
+### Test Results
+- 27/28 passed in test_quarterly_report.py (1 failure is pre-existing NameError in train_multitask.py torch import, unrelated)
+- mypy: Success: no issues found in 1 source file (quarterly_report.py)
+
+### Learnings
+- Same pattern as US-096 and US-099: always mark PRD tasks complete when committing implementation
+- The quarterly report module follows the same patterns as performance_monitor: MonitorStatus consumption, dataclass results, markdown + CSV dual output
+---

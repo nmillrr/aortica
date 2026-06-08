@@ -3,9 +3,10 @@ import { ConnectionStatusBanner } from './ConnectionStatusBanner';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
-  { to: '/',       icon: '⌂', label: 'Dashboard' },
-  { to: '/upload', icon: '↑', label: 'Upload ECG' },
-  { to: '/batch',  icon: '⊞', label: 'Batch Analysis' },
+  { to: '/',              icon: '⌂', label: 'Dashboard' },
+  { to: '/upload',        icon: '↑', label: 'Upload ECG' },
+  { to: '/batch',         icon: '⊞', label: 'Batch Analysis' },
+  { to: '/report-event',  icon: '⚠', label: 'Report Event' },
 ] as const;
 
 export function Sidebar() {

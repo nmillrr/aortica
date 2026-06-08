@@ -6,6 +6,7 @@ import { Upload } from './pages/Upload';
 import { Results } from './pages/Results';
 import { Batch } from './pages/Batch';
 import { Login } from './pages/Login';
+import { ReportEvent } from './pages/ReportEvent';
 
 export function App() {
   return (
@@ -22,7 +23,9 @@ export function App() {
         <Route path="/upload" element={<Upload />} />
         <Route path="/results/:id" element={<Results />} />
         <Route path="/batch" element={<Batch />} />
+        <Route path="/report-event" element={<ReportEvent />} />
       </Route>
     </Routes>
   );
 }
+

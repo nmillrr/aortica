@@ -1621,15 +1621,15 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a clinician, I want to report adverse events related to AI findings so that safety signals are captured for post-market surveillance.
 
 **Acceptance Criteria:**
-- [ ] `POST /api/v1/validation/adverse-event` endpoint accepting: reporter ID, ECG reference, event description, severity (minor/moderate/serious/critical), AI finding that contributed, patient outcome
-- [ ] `aortica/validation/adverse_events.py` with Pydantic models and SQLite-backed storage
-- [ ] `GET /api/v1/validation/adverse-events` returns list of reported events (admin-only, requires authentication)
-- [ ] `GET /api/v1/validation/adverse-events/summary` returns aggregate statistics (count by severity, most-reported findings)
-- [ ] React form component in web UI for submitting adverse event reports
-- [ ] Events stored with timestamp, immutable audit trail (append-only)
-- [ ] Unit tests for event CRUD and summary aggregation
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `POST /api/v1/validation/adverse-event` endpoint accepting: reporter ID, ECG reference, event description, severity (minor/moderate/serious/critical), AI finding that contributed, patient outcome
+- [x] `aortica/validation/adverse_events.py` with Pydantic models and SQLite-backed storage
+- [x] `GET /api/v1/validation/adverse-events` returns list of reported events (admin-only, requires authentication)
+- [x] `GET /api/v1/validation/adverse-events/summary` returns aggregate statistics (count by severity, most-reported findings)
+- [x] React form component in web UI for submitting adverse event reports
+- [x] Events stored with timestamp, immutable audit trail (append-only)
+- [x] Unit tests for event CRUD and summary aggregation
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
