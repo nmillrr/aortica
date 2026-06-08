@@ -1594,13 +1594,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a deployment admin, I want automated performance monitoring so that model accuracy is tracked against labeled subsets in production.
 
 **Acceptance Criteria:**
-- [ ] `aortica.validation.PerformanceMonitor` class tracking: rolling AUC, F1, and calibration metrics against labeled production data
-- [ ] Configurable monitoring window (default: 30 days rolling)
-- [ ] Drift detection: flags when any per-task metric drops below configurable threshold or deviates >5% from baseline
-- [ ] Generates alert (log + optional webhook) when drift detected
-- [ ] `GET /api/v1/validation/monitor/status` endpoint returning current monitoring metrics and drift flags
-- [ ] Unit tests with synthetic labeled production data showing stable and drifting scenarios
-- [ ] Typecheck passes
+- [x] `aortica.validation.PerformanceMonitor` class tracking: rolling AUC, F1, and calibration metrics against labeled production data
+- [x] Configurable monitoring window (default: 30 days rolling)
+- [x] Drift detection: flags when any per-task metric drops below configurable threshold or deviates >5% from baseline
+- [x] Generates alert (log + optional webhook) when drift detected
+- [x] `GET /api/v1/validation/monitor/status` endpoint returning current monitoring metrics and drift flags
+- [x] Unit tests with synthetic labeled production data showing stable and drifting scenarios
+- [x] Typecheck passes
 
 ---
 

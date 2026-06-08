@@ -186,6 +186,12 @@ def create_app(
     report_router = create_report_router()
     app.include_router(report_router)
 
+    # Mount validation endpoints router
+    from aortica.api.validation_endpoints import create_validation_router
+
+    validation_router = create_validation_router()
+    app.include_router(validation_router)
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:
