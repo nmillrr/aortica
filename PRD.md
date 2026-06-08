@@ -1580,13 +1580,13 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a site coordinator, I want a data collection pipeline so that prospective ECGs with outcome linkage are captured systematically for validation studies.
 
 **Acceptance Criteria:**
-- [ ] `aortica/validation/` subpackage with `__init__.py`
-- [ ] `aortica.validation.ProspectiveCollector` class managing: ECG ingestion with timestamp and site ID, AI prediction storage, ground-truth outcome entry (clinician-verified diagnosis at follow-up), outcome linkage (prediction ↔ ground truth pairing)
-- [ ] SQLite backend with encrypted storage (reuses `ResultStore` encryption from US-054)
-- [ ] `POST /api/v1/validation/submit` endpoint for sites to submit ECG + outcome pairs
-- [ ] Data export: `aortica.validation.export_study_data(collector, output_path)` generates de-identified CSV for statistical analysis
-- [ ] Unit tests for data ingestion, outcome linkage, and export
-- [ ] Typecheck passes
+- [x] `aortica/validation/` subpackage with `__init__.py`
+- [x] `aortica.validation.ProspectiveCollector` class managing: ECG ingestion with timestamp and site ID, AI prediction storage, ground-truth outcome entry (clinician-verified diagnosis at follow-up), outcome linkage (prediction ↔ ground truth pairing)
+- [x] SQLite backend with encrypted storage (reuses `ResultStore` encryption from US-054)
+- [x] `POST /api/v1/validation/submit` endpoint for sites to submit ECG + outcome pairs
+- [x] Data export: `aortica.validation.export_study_data(collector, output_path)` generates de-identified CSV for statistical analysis
+- [x] Unit tests for data ingestion, outcome linkage, and export
+- [x] Typecheck passes
 
 ---
 
