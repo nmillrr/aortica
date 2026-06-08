@@ -1608,12 +1608,12 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 **Description:** As a release manager, I want automated quarterly performance reports so that Aortica's production accuracy is publicly transparent.
 
 **Acceptance Criteria:**
-- [ ] `aortica.validation.generate_quarterly_report(monitor, output_dir, quarter, year)` function
-- [ ] Report includes: period summary, per-task metrics (AUC, F1, sensitivity, specificity), demographic subgroup breakdowns, drift alerts (if any), comparison to previous quarter, total ECGs processed
-- [ ] Outputs `QUARTERLY_REPORT_YYYY_QN.md` (markdown) and `quarterly_report_YYYY_QN.csv` (tabular)
-- [ ] CLI command `aortica validation quarterly-report --quarter <Q> --year <Y>`
-- [ ] Unit tests with synthetic monitor data producing valid report
-- [ ] Typecheck passes
+- [x] `aortica.validation.generate_quarterly_report(monitor, output_dir, quarter, year)` function
+- [x] Report includes: period summary, per-task metrics (AUC, F1, sensitivity, specificity), demographic subgroup breakdowns, drift alerts (if any), comparison to previous quarter, total ECGs processed
+- [x] Outputs `QUARTERLY_REPORT_YYYY_QN.md` (markdown) and `quarterly_report_YYYY_QN.csv` (tabular)
+- [x] CLI command `aortica validation quarterly-report --quarter <Q> --year <Y>`
+- [x] Unit tests with synthetic monitor data producing valid report
+- [x] Typecheck passes
 
 ---
 
