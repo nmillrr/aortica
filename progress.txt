@@ -1985,3 +1985,41 @@ All acceptance criteria were already fully implemented but the PRD was never upd
 - Same pattern as US-096 and US-099: always mark PRD tasks complete when committing implementation
 - The quarterly report module follows the same patterns as performance_monitor: MonitorStatus consumption, dataclass results, markdown + CSV dual output
 ---
+
+## Iteration US-102 - Voluntary Adverse Event Reporting Form
+### Goal
+Implement adverse event reporting with SQLite-backed append-only storage, API endpoints, React form, and comprehensive tests.
+
+### Files Created
+- aortica/validation/adverse_events.py — AdverseEventStore class with append-only SQLite storage, Pydantic models (AdverseEventSubmission, AdverseEventRecord, AdverseEventSummary, SeverityCount, FindingCount), CRUD operations (report_event, get_event, list_events), aggregate statistics (get_summary)
+- frontend/src/components/AdverseEventForm.tsx — React form component with severity selector grid, offline fallback to localStorage, success state, validation
+- frontend/src/components/AdverseEventForm.css — Dark theme styling matching Aortica design system
+- frontend/src/pages/ReportEvent.tsx — Page wrapper with navigation hooks
+- frontend/src/pages/ReportEvent.css — Page styling
+- tests/validation/test_adverse_events.py — 32 tests covering store CRUD, Pydantic submission, read operations, summary aggregation, immutability guarantees, API endpoints (POST/GET/GET summary), no-op responses, 422 on invalid severity, module imports
+
+### Files Modified
+- aortica/api/validation_endpoints.py — Added adverse event endpoints: POST /adverse-event, GET /adverse-events, GET /adverse-events/summary with Pydantic response models
+- aortica/validation/__init__.py — Added exports: AdverseEventRecord, AdverseEventStore, AdverseEventSummary
+- frontend/src/App.tsx — Added /report-event route
+- frontend/src/components/Sidebar.tsx — Added 'Report Event' nav link
+- PRD.md — Marked US-102 complete
+
+### Implementation Details
+- Append-only audit trail: no update_event or delete_event methods exist on AdverseEventStore
+- 4 severity levels: minor, moderate, serious, critical
+- SQLite with indexes on severity and timestamp for efficient querying
+- API endpoints match existing validation router pattern (create_validation_router with optional adverse_event_store parameter)
+- React form follows FeedbackButtons pattern with offline fallback to localStorage
+- Events listed in reverse chronological order
+
+### Test Results
+- 32/32 passed in test_adverse_events.py
+- mypy: Success (only pre-existing error in predict.py, not in new code)
+- TypeScript: passes cleanly
+
+### Learnings
+- FastAPI router routes include the prefix in their path attribute, so test assertions need full paths
+- Following the FeedbackStore pattern (feedback.py) for SQLite + Pydantic + API router is very efficient
+- Append-only design is simple and correct for audit trails — just omit update/delete methods
+---

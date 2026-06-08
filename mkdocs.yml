@@ -90,6 +90,18 @@ nav:
   - Clinical Background:
       - ECG Primer: clinical/ecg-primer.md
       - AI Findings Guide: clinical/ai-findings.md
+  - Regulatory:
+      - FDA SaMD Pre-Submission: regulatory/FDA_SAMD_PRESUB.md
+      - CE MDR Technical File: regulatory/CE_MDR_TECHFILE.md
+      - IEC 80601-2-86 ATD: regulatory/IEC_80601_2_86_ATD.md
+      - TRIPOD-AI: regulatory/TRIPOD_AI.md
+      - STARD-AI: regulatory/STARD_AI.md
+      - CONSORT-AI: regulatory/CONSORT_AI.md
+  - Federated Learning:
+      - Site Onboarding: federated/ONBOARDING.md
+      - DUA Template: federated/DUA_TEMPLATE.md
+  - Validation:
+      - Prospective Protocol: validation/PROSPECTIVE_PROTOCOL.md
   - Contributing:
       - Development Setup: contributing/setup.md
       - Code Style: contributing/code-style.md
