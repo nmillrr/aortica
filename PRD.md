@@ -1,18 +1,31 @@
-# PRD: Aortica — Core AI ECG Engine (Phase 0 + Phase 1)
+# PRD: Aortica — AI ECG Copilot Platform (Phase 0–4)
 
 ## Introduction
 
 Aortica is an open-source AI ECG analysis platform designed to close the most critical gaps in clinical ECG: poor device generalization, narrow single-task models, black-box outputs, inaccessible tooling, and exclusion of rural/low-resource settings.
 
-This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (Edge & Rural Deployment)**, **Phase 3 (Federated Learning & Equity)**, and **Phase 4 (Regulatory & Scale)**. Phase 0–1 delivered the core ML pipeline. Phase 2 extends this with REST API, CLI, React web UI with AI copilot, edge-optimized models (ONNX + INT8), offline sync, Docker, docs, and LMIC deployment. Phase 3 adds federated learning via Flower, differential privacy, equity gating CI checks, public performance cards, and expanded task heads for rare arrhythmias, STEMI mimics, strain patterns, and metabolic/drug effects. Phase 4 completes the platform with FHIR R4 / HL7 EHR integration, DICOM SR write-back, worklist prioritization, PDF/JSON-LD report generation, case-based ECG retrieval, regulatory document library (IEC 80601-2-86, FDA SaMD, CE-MDR templates), and prospective validation tooling. Native mobile apps are deferred to future work.
+This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (Edge & Rural Deployment)**, **Phase 3 (Federated Learning & Equity)**, and **Phase 4 (Regulatory & Scale)**. Phase 0–1 delivered the core ML pipeline. Phase 2 extends this with REST API, CLI, React web UI with AI copilot, edge-optimized models (ONNX + INT8), offline sync, Docker, docs, Android ONNX app, and LMIC pilot deployment. Phase 3 adds federated learning via Flower, differential privacy, equity gating CI checks, public performance cards, and expanded task heads for rare arrhythmias, STEMI mimics, strain patterns, and metabolic/drug effects. Phase 4 completes the platform with FHIR R4 / HL7 EHR integration, DICOM SR write-back, worklist prioritization, PDF/JSON-LD report generation, case-based ECG retrieval, regulatory document library (IEC 80601-2-86, FDA SaMD, CE-MDR templates), and prospective validation tooling.
 
 **Distribution model:** Aortica is a self-hosted, open-source toolkit distributed via `aortica.io`. Clinicians and institutions download and run it locally (Docker or pip install) — no data ever leaves the deployment site. This preserves patient privacy, eliminates recurring infrastructure costs, and enables deployment in data-sovereignty-constrained settings. A landing page at `aortica.io` provides download links, documentation, and demo assets.
 
 **Deployment target:** The primary deployment scenario is a rural or resource-limited clinic with a laptop or workstation, intermittent internet, and USB-attached 10/12-lead ECG hardware. The FastAPI backend runs locally (Docker or bare-metal), and the React frontend is served as a **Progressive Web App (PWA)** that caches itself and the ONNX edge model for fully offline use after first load. When the local server is reachable, the full model is used; when offline, inference falls back to ONNX Runtime Web (WebAssembly) running the INT8 edge model directly in the browser. This hybrid architecture requires no internet dependency after initial setup.
 
-**Tech stack:** Python with PyTorch (primary) and TensorFlow/Keras (parallel) for ML. FastAPI for REST API, gRPC for high-throughput service. React + Vite + TypeScript for web UI with PWA service worker. ONNX Runtime (server-side) and ONNX Runtime Web/WASM (in-browser offline inference) for edge deployment. Click + Rich for CLI. Docker for packaging. Flower (flwr) for federated learning. OpenDP for differential privacy. FHIR R4 via `fhir.resources` for EHR integration. HL7 v2.x via `hl7apy`. DICOM SR via `pydicom`. WeasyPrint for PDF report generation. JSON-LD via `pyld`. Annoy/FAISS for latent space nearest-neighbor retrieval. OpenCV + pdfplumber for PDF/image ECG scan digitization.
+**Tech stack:** Python with PyTorch (primary) and TensorFlow/Keras (parallel) for ML. FastAPI for REST API, gRPC for high-throughput service. React + Vite + TypeScript for web UI with PWA service worker. ONNX Runtime (server-side), ONNX Runtime Web/WASM (in-browser offline inference), and ONNX Runtime Mobile (Android) for edge deployment. Click + Rich for CLI. Docker for packaging. Flower (flwr) for federated learning. OpenDP for differential privacy. FHIR R4 via `fhir.resources` for EHR integration. HL7 v2.x via `hl7apy`. DICOM SR via `pydicom`. WeasyPrint for PDF report generation. JSON-LD via `pyld`. Annoy/FAISS for latent space nearest-neighbor retrieval. OpenCV + pdfplumber for PDF/image ECG scan digitization.
 
 **Team:** Small team; stories sized at ~30 min of focused implementation each.
+
+## Clinical Mission: AI ECG Copilot for Cardiologists
+
+Aortica's primary clinical identity is an **AI ECG copilot** — a decision-support tool that sits alongside cardiologists and catches the subtle, edge-case findings that are most dangerous when missed.
+
+Cardiologists are highly skilled at routine ECG interpretation, but certain patterns are reliably difficult for even experienced readers:
+
+- **Edge-case arrhythmias:** Intermittent pre-excitation (WPW), Brugada pattern (type 2/3), subtle atrial flutter with variable block, junctional rhythms masquerading as sinus, fascicular VT, short-coupled PVCs with malignant potential
+- **Strain patterns:** Early/subclinical LV strain from hypertension or aortic stenosis, RV strain in pulmonary embolism (S1Q3T3 variants), apical ballooning (Takotsubo) vs. ACS, and diffuse strain from infiltrative cardiomyopathies (amyloid, sarcoid)
+- **Signals hiding in plain sight:** Early repolarization vs. STEMI mimics, de Winter T-waves, Wellens syndrome (biphasic T-wave warning of LAD lesion), aVR ST-elevation suggesting left main/3-vessel disease, subtle QTc prolongation, and Sgarbossa criteria in paced/LBBB rhythms
+- **Risk signals:** ECG-derived markers of future AF onset, subclinical LV dysfunction (normal ECG with reduced EF), and progressive conduction disease before symptomatic block
+
+Every feature in this PRD — from edge deployment to federated learning — serves this mission: making a copilot that is **accurate on the hard cases**, **trustworthy in its confidence estimates**, **explainable in clinical language**, and **accessible everywhere cardiologists practice**.
 
 ## Goals
 
@@ -33,6 +46,8 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - Provide Docker images for server (amd64) and edge (arm64) deployment
 - Deliver a MkDocs documentation site with API reference, deployment guides, and clinical background
 - Support Raspberry Pi deployment and LMIC pilot sites with CHW-facing simplified output tiers
+- Deploy LMIC pilot sites with deployment guides, power consumption optimization (<200 mW on ARM), and community health worker training materials
+- Ship an Android app using ONNX Runtime Mobile with single-lead and 6-lead input, plain-language output tiers, fully offline operation, and anonymized audit log sync
 - Implement federated learning SDK with Flower (FedAvg, FedProx, SCAFFOLD) and differential privacy via OpenDP (ε=1.0 default)
 - Enforce equity gating: no statistically significant demographic performance gap (Bonferroni-corrected p<0.05) for any class with N>100 test examples
 - Generate public performance cards (markdown + CSV) with demographic subgroup breakdowns for every model release
@@ -58,6 +73,25 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - Provide multi-site prospective study protocol template and data collection pipeline
 - Automate quarterly public performance report generation
 - Include voluntary adverse event reporting form
+- Provide MIMIC-IV-ECG dataset loader alongside PTB-XL for cross-dataset training and evaluation
+- Validate per-platform latency targets (RPi < 350ms, Android < 200ms, Jetson Nano < 150ms) via cross-hardware benchmark suite with CI gates
+- Implement API rate limiting and abuse protection with per-tier request throttling
+- Ship a Docker Compose full-stack environment for single-command developer onboarding
+- Build aortica.io landing page with downloads, docs, and live demo links
+- Deliver Android app build pipeline with CI/CD, APK signing, and OTA model updates
+- Build React frontend pages for: result history browser, admin dashboard, worklist dashboard, report download, performance monitoring, federated learning monitoring, site validation registry, prospective data collection, adverse event reporting, model comparison, and site analytics
+- Provide multi-language i18n support for the web UI (English, French, Spanish, Swahili)
+- Implement federated model release pipeline: FL aggregation → validation → equity gate → versioned release
+- Add federated data quality gating to validate site-local datasets before FL round participation
+- Provide model version comparison tool for quantifying deltas between model releases with regression detection
+- Implement centralized, HMAC-chained audit trail for regulatory compliance across all clinical decision workflows
+- Build FHIR Subscription and webhook notification service for push-based EHR alerting
+- Provide extensible ECG management system plugin architecture with MUSE, FHIR, and file watcher reference plugins
+- Deliver end-to-end EHR integration orchestrator connecting DIMSE → inference → DICOM SR → FHIR → worklist → notification
+- Implement worklist-to-EHR notification pipeline pushing urgent findings to clinicians via FHIR, HL7, webhook, and email channels
+- Build copilot-to-report-to-EHR clinical workflow with clinician attestation and single-click submission
+- Connect edge sync to central analytics pipeline for unified cross-site performance monitoring and anomaly detection
+
 
 ## User Stories
 
@@ -234,6 +268,24 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] Returns label vectors compatible with PyTorch Dataset and TF tf.data pipelines
 - [x] Unit tests verifying correct split sizes, label distributions, and data shapes
 - [x] Typecheck passes
+
+---
+
+### US-103: MIMIC-IV-ECG Dataset Loader
+**Description:** As a researcher, I want a convenient loader for the MIMIC-IV-ECG dataset so that I can train, benchmark, and build case-based retrieval indexes using the second-largest public clinical ECG archive alongside PTB-XL.
+
+**Background and rationale:** PTB-XL (US-012) is the primary training dataset, but the case-based retrieval index (US-091) targets 50,000 ECGs from both PTB-XL and MIMIC-IV-ECG. Without a dedicated MIMIC-IV-ECG loader, building the retrieval index and validating cross-dataset generalization requires ad hoc data wrangling. MIMIC-IV-ECG uses WFDB format but has its own metadata schema (linked to MIMIC-IV clinical tables), requiring a purpose-built loader.
+
+**Acceptance Criteria:**
+- [ ] `aortica.data.load_mimic_iv_ecg(path, sampling_rate=500)` returns train/val/test splits as lists of `ECGRecord` objects with labels
+- [ ] Parses MIMIC-IV-ECG WFDB records and links to `machine_measurements.csv` and `record_list.csv` for metadata
+- [ ] Extracts diagnostic labels from MIMIC-IV clinical tables (`diagnoses_icd`) when available, mapped to Aortica's label taxonomy (rhythm, structural, ischaemia superclasses)
+- [ ] Supports configurable split strategy: random (default), patient-level (no patient in both train and test), or temporal (by admission date)
+- [ ] Handles the PhysioNet credentialed access model: clear error message if data files are not present, with download instructions referencing PhysioNet credentialing requirements
+- [ ] Returns label vectors compatible with PyTorch Dataset and TF tf.data pipelines (same interface as `load_ptbxl`)
+- [ ] `aortica.data.load_combined(ptbxl_path, mimic_path, sampling_rate=500)` merges both datasets with source tagging for cross-dataset evaluation
+- [ ] Unit tests verifying correct split sizes, label distributions, data shapes, and combined loader merge logic
+- [ ] Typecheck passes
 
 ---
 
@@ -595,6 +647,23 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] Unit tests: mock HuggingFace Hub responses to test `load_pretrained()` cache behaviour, checksum validation (good and tampered), version listing, and CLI `--model` flag override
 - [x] Typecheck passes
 
+---
+
+### US-111: API Rate Limiting and Abuse Protection
+**Description:** As a deployment administrator, I want rate limiting and abuse protection on the Aortica API so that a single client cannot overwhelm the server and degrade service for other users.
+
+**Acceptance Criteria:**
+- [ ] `aortica/api/rate_limiter.py` with `RateLimiter` middleware for FastAPI
+- [ ] Token bucket rate limiting: configurable per-user and global rate limits (default: 60 requests/minute per API key, 200 requests/minute global)
+- [ ] Rate limit headers in responses: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (RFC 6585 compliant)
+- [ ] Returns `429 Too Many Requests` with `Retry-After` header when limit exceeded
+- [ ] Separate rate limit tiers: `predict` endpoints (lower limit, compute-intensive), `report` endpoints (medium), `admin`/`auth` endpoints (higher limit)
+- [ ] Backend: Redis-backed for multi-process deployments, with in-memory fallback for single-process/edge deployments
+- [ ] Configurable via `rate_limits.yaml` or environment variables
+- [ ] IP-based rate limiting for unauthenticated endpoints (health, info)
+- [ ] Exempt list for trusted internal services (configurable)
+- [ ] Unit tests: rate limit enforcement, header correctness, tier differentiation, Redis and in-memory backends
+- [ ] Typecheck passes
 
 ---
 
@@ -668,6 +737,29 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] Prints summary table of full vs. edge metrics
 - [x] Unit tests with synthetic models and predictions
 - [x] Typecheck passes
+
+---
+
+### US-104: Cross-Hardware Benchmark Suite with Platform Targets
+**Description:** As a release manager, I want a systematic cross-hardware benchmark suite so that every release is validated against specific latency, memory, and throughput targets for each deployment platform (Raspberry Pi 4, Jetson Nano, Android Snapdragon 660+).
+
+**Background and rationale:** US-041 validates edge model AUC within 3% of the full model, and US-061 profiles inference on individual hardware. But the PRD-2 Success Metrics require specific per-platform latency targets (RPi < 350ms, Android < 200ms) that need systematic validation with pass/fail gates integrated into CI. This story creates that validation harness.
+
+**Acceptance Criteria:**
+- [ ] `aortica.edge.hardware_benchmark(model_path, platform_profile, dataset_sample, n_runs=50)` function running full inference benchmark on a specified platform profile
+- [ ] `HardwareBenchmarkReport` dataclass with: platform name, model variant, mean/p50/p95/p99 latency, peak memory (RSS), throughput (inferences/second), model size on disk, pass/fail per metric
+- [ ] Platform profiles defined in `aortica/edge/platform_targets.yaml` with per-platform pass/fail thresholds:
+  - Raspberry Pi 4 (arm64): latency p95 < 350ms, peak memory < 512MB
+  - Jetson Nano (arm64 + CUDA): latency p95 < 150ms, peak memory < 1GB
+  - Android Snapdragon 660+ (arm64): latency p95 < 200ms (single-lead), < 300ms (6-lead)
+  - Server amd64 (CPU): latency p95 < 100ms, throughput > 10 inferences/second
+  - Server amd64 (GPU): latency p95 < 30ms, throughput > 50 inferences/second
+- [ ] CLI command `aortica benchmark-hardware --platform <name> --model <path>` runs the benchmark and prints the report
+- [ ] `aortica.edge.benchmark_all_platforms(model_path)` runs benchmarks for all locally-available platforms and produces a consolidated comparison table
+- [ ] GitHub Actions CI step that runs available platform benchmarks (at minimum CPU server) and blocks release if any target is missed
+- [ ] Consolidated report output as markdown table and CSV for inclusion in performance cards (US-070)
+- [ ] Unit tests with mock platform profiles and synthetic timing data
+- [ ] Typecheck passes
 
 ---
 
@@ -798,6 +890,65 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] Protected React routes redirect to login when unauthenticated
 - [x] Verify changes work in browser
 - [x] Typecheck passes
+
+---
+
+### US-105: Patient ECG History and Result Browser
+**Description:** As a clinician, I want to browse and search historical ECG results stored locally so that I can review past analyses, track patient trends over time, and retrieve previous findings without re-uploading files.
+
+**Acceptance Criteria:**
+- [ ] `ResultBrowser` React page at route `/history` showing all stored ECG results from the local SQLite database (US-054)
+- [ ] Table view with columns: timestamp, patient identifier (if available), quality score, top finding, urgency tier, sync status
+- [ ] Search and filter controls: date range picker, finding filter (dropdown of all detected conditions), quality filter (good/marginal/poor), urgency filter, free-text search on patient metadata
+- [ ] Sortable columns (click column header to sort ascending/descending)
+- [ ] Pagination with configurable page size (default 25, options 10/25/50/100)
+- [ ] Click row to navigate to full results page (`/results/:id`) with waveform, predictions, and XAI
+- [ ] `GET /api/v1/results` API endpoint with query parameters: `page`, `per_page`, `date_from`, `date_to`, `finding`, `quality`, `urgency`, `search`
+- [ ] `GET /api/v1/results/:id` returns full stored result (predictions, quality, XAI data) for a specific result ID
+- [ ] Bulk actions: select multiple results for CSV export or batch report generation
+- [ ] Responsive layout for tablet and desktop use
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+### US-106: Admin Dashboard — User and API Key Management
+**Description:** As a deployment administrator, I want an admin dashboard so that I can manage users, API keys, and system health from the web UI without direct database access.
+
+**Acceptance Criteria:**
+- [ ] `AdminDashboard` React page at route `/admin` (protected: requires admin role)
+- [ ] **User management panel:** list all registered users, their roles (admin/clinician/researcher), last login timestamp, and account status (active/disabled); ability to disable/enable accounts and change roles
+- [ ] **API key management panel:** list all issued API keys with creation date, last-used timestamp, and associated user; ability to revoke keys and generate new keys with configurable expiry
+- [ ] **System health panel:** current server status, model version loaded, database size, total ECGs processed, uptime, ONNX Runtime status, sync engine status
+- [ ] **Activity log:** recent API requests with timestamp, user, endpoint, and response status (last 100, paginated)
+- [ ] `GET /api/v1/admin/users` returns user list (admin-only)
+- [ ] `PATCH /api/v1/admin/users/:id` updates user role or status (admin-only)
+- [ ] `DELETE /api/v1/admin/api-keys/:key_id` revokes an API key (admin-only)
+- [ ] `GET /api/v1/admin/system-health` returns system status metrics
+- [ ] `GET /api/v1/admin/activity-log` returns paginated activity log
+- [ ] Role-based access control: admin endpoints return `403` for non-admin users
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+### US-107: Multi-Language Internationalization for Web UI
+**Description:** As a clinician practicing in a non-English-speaking region, I want the Aortica web UI available in my language so that I can use the platform without language barriers.
+
+**Background and rationale:** US-060 provides localization for simplified CHW output, and US-061b/US-061c provide localization for deployment guides and the Android app. But the main React web UI — which clinicians interact with daily — has no i18n support. For LMIC deployment success, the web UI must support at minimum French, Spanish, and Swahili alongside English.
+
+**Acceptance Criteria:**
+- [ ] `react-i18next` library integrated into the React frontend
+- [ ] All user-facing strings extracted to JSON locale files in `frontend/src/locales/{lang}/translation.json`
+- [ ] Locale files provided: English (en, complete), French (fr, complete), Spanish (es, complete), Swahili (sw, template stub with high-priority strings translated)
+- [ ] Language selector in the header/settings allowing runtime language switching without page reload
+- [ ] Selected language persisted in `localStorage` and applied on next visit
+- [ ] Clinical terminology follows locale-appropriate medical conventions (e.g., "ischaemia" vs. "ischemia" for en-GB vs. en-US)
+- [ ] RTL layout support stubbed for future Arabic/Hebrew localization (CSS logical properties used throughout)
+- [ ] Date and number formatting follows locale conventions via `Intl` API
+- [ ] All condition names in the copilot panel, results panels, and explanation cards use localized display names from the locale files
+- [ ] Verify changes work in browser with at least English and French
+- [ ] Typecheck passes
 
 ---
 
@@ -961,6 +1112,25 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 
 ---
 
+### US-108: Docker Compose Full-Stack Development Environment
+**Description:** As a developer or deployment engineer, I want a single `docker-compose up` command that spins up the full Aortica stack so that onboarding takes minutes rather than hours.
+
+**Background and rationale:** US-057 defines individual Dockerfiles for server (amd64) and edge (arm64), and a basic `docker-compose.yml` for local development. But the full Aortica stack involves: FastAPI backend, React frontend (dev or production), ONNX edge model serving, documentation site, and SQLite result storage. A comprehensive Docker Compose configuration ensures reproducible development environments and simplifies production-like local testing.
+
+**Acceptance Criteria:**
+- [ ] `docker-compose.full.yml` defining services: `api` (FastAPI backend with ONNX Runtime), `frontend` (React dev server or nginx-served production build), `docs` (MkDocs serve), `edge` (edge model ONNX Runtime server on arm64 emulation or native)
+- [ ] Shared volumes: `./data/` for SQLite databases, `./models/` for model checkpoints, `./logs/` for application logs
+- [ ] Environment file template (`.env.example`) with all configurable variables: `AORTICA_MODEL_PATH`, `AORTICA_SECRET_KEY`, `AORTICA_OAUTH_CLIENT_ID`, `AORTICA_SYNC_URL`, `AORTICA_LOG_LEVEL`
+- [ ] Health check configuration for all services (Docker `HEALTHCHECK` instructions)
+- [ ] `make dev` Makefile target that runs `docker-compose -f docker-compose.full.yml up --build` with sensible defaults
+- [ ] `make prod` target that builds production images and runs with nginx reverse proxy and TLS termination (self-signed cert for local testing)
+- [ ] Service dependency ordering: API starts before frontend, model download completes before API accepts requests
+- [ ] Documentation in `docs/deployment/DOCKER_QUICKSTART.md` covering: prerequisites, first-run setup, service architecture diagram, common troubleshooting
+- [ ] Unit tests: Dockerfile lint via hadolint, compose config validation via `docker-compose config`
+- [ ] Typecheck passes
+
+---
+
 ### US-058: MkDocs Documentation Site
 **Description:** As a developer, I want a documentation site so that users can find API reference, deployment guides, and clinical background in one place.
 
@@ -972,6 +1142,27 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] `mkdocs build` produces static site in `site/`
 - [x] GitHub Actions step to deploy docs to GitHub Pages on push to main
 - [x] Typecheck passes
+
+---
+
+### US-109: aortica.io Landing Page and Distribution Portal
+**Description:** As a potential user or institutional evaluator, I want a professional landing page at aortica.io so that I can understand what Aortica does, download it, access documentation, and try a live demo — all from a single entry point.
+
+**Background and rationale:** The PRD introduction states Aortica is "distributed via aortica.io" with "download links, documentation, and demo assets." This story delivers that landing page as a static site (deployable to GitHub Pages, Netlify, or Vercel) that serves as the public face of the project.
+
+**Acceptance Criteria:**
+- [ ] `landing/` directory with static site (HTML/CSS/JS or lightweight framework like Astro/11ty)
+- [ ] Hero section: project name, tagline ("AI ECG Copilot — Open Source"), animated ECG waveform background, prominent CTA buttons: "Get Started" → docs, "Download" → releases, "Live Demo" → hosted demo
+- [ ] Features section: 6 feature cards covering multi-task AI, explainability, edge deployment, federated learning, EHR integration, and regulatory readiness — each linking to relevant docs
+- [ ] Clinical mission section: adapted from PRD Clinical Mission content, emphasizing the copilot identity and hard-case detection capability
+- [ ] Download section: links to PyPI (`pip install aortica`), Docker Hub images, GitHub releases (APK, ONNX models), and HuggingFace Hub (pre-trained checkpoints)
+- [ ] Demo section: embedded or linked interactive demo with a sample ECG showing multi-task predictions, XAI overlay, and copilot panel (can use static screenshot + link to hosted instance initially)
+- [ ] Documentation link: routes to MkDocs site (US-058)
+- [ ] Footer: GitHub repo link, license (Apache 2.0), citation info, community links
+- [ ] SEO: proper meta tags, Open Graph tags for social sharing, structured data (Schema.org SoftwareApplication)
+- [ ] Mobile-responsive design
+- [ ] GitHub Actions deployment to GitHub Pages on push to `main`
+- [ ] Typecheck passes (if using TypeScript framework)
 
 ---
 
@@ -1018,6 +1209,71 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] CLI integration: `aortica profile <model_path>` command
 - [x] Unit tests with synthetic ONNX model
 - [x] Typecheck passes
+
+---
+
+### US-061b: LMIC Pilot Deployment Package
+**Description:** As a field deployment engineer, I want a complete LMIC pilot deployment package so that Aortica can be deployed at 2 target rural/LMIC pilot sites with minimal on-site expertise and maximal reliability under resource constraints.
+
+**Background and rationale:** The edge model and Raspberry Pi profile (US-038–US-041, US-059) provide the inference engine, and the CHW-facing simplified output (US-060) provides the user-facing output layer. This story packages those components into a deployable, field-tested pilot kit — including site-specific deployment guides, power consumption validation, training materials for community health workers, and monitoring infrastructure. Without this story, individual edge components exist but are not assembled into a deployable whole.
+
+**Acceptance Criteria:**
+- [ ] `docs/deployment/LMIC_PILOT_GUIDE.md` covering: site prerequisites (power, connectivity, hardware), SD card image preparation (reuses US-059 `create_pi_image_script.sh`), first-boot walkthrough with screenshots, daily operational procedures, troubleshooting guide for common failure modes (power loss, SD card corruption, serial capture timeout)
+- [ ] `docs/deployment/CHW_TRAINING.md` with plain-language, image-heavy training guide for community health workers covering: device power-on, ECG acquisition, result interpretation (three-tier output from US-060), when to refer, and data sync verification
+- [ ] Localization support: deployment guide and CHW training materials translatable via JSON locale files (English and French provided; Spanish and Swahili as template stubs)
+- [ ] `aortica.edge.validate_power_consumption(model_path, hardware_profile, n_inferences=50)` function measuring per-inference energy consumption; asserts < 200 mW sustained on ARM hardware profiles (RPi4 at 4W TDP × duty cycle)
+- [ ] Power optimization: inference duty-cycling configuration in `deploy_profiles.py` — model loads on-demand per ECG rather than keeping ONNX session resident, reducing idle power draw
+- [ ] `aortica.edge.SiteMonitor` class providing: daily inference count, error rate, sync status, storage utilization, and last-sync timestamp; exposes `GET /edge/status` endpoint on the local edge server
+- [ ] `aortica edge site-report` CLI command generating a daily site activity summary (inferences, errors, sync status) for remote monitoring
+- [ ] `docs/deployment/PILOT_CHECKLIST.md` — pre-deployment checklist covering: hardware verification, network connectivity test, edge model validation (reuses US-041), CHW competency sign-off, ethics/IRB documentation
+- [ ] Unit tests for power consumption validation, site monitor, and site report generation
+- [ ] Typecheck passes
+
+---
+
+### US-061c: Android ONNX Mobile Application
+**Description:** As a community health worker or clinician in the field, I want an Android app that runs Aortica's edge model locally on my phone so that I can get AI ECG analysis anywhere — even without internet access or a Raspberry Pi.
+
+**Background and rationale:** While the PWA (US-042b) provides browser-based offline inference via WASM, a native Android app using ONNX Runtime Mobile delivers lower latency, better battery efficiency, and a more reliable offline experience on low-end Android devices (Snapdragon 660+) common in LMIC settings. The app complements the Raspberry Pi deployment path — providing a zero-infrastructure alternative when a dedicated edge device is unavailable. Single-lead input support is critical for low-cost, handheld ECG devices (e.g., AliveCor KardiaMobile) prevalent in rural settings.
+
+**Acceptance Criteria:**
+- [ ] `mobile/android/` directory with Android Studio project (Kotlin, min SDK 26 / Android 8.0)
+- [ ] ONNX Runtime Mobile (`onnxruntime-android`) integrated for local inference using the INT8 quantized edge model (from US-040)
+- [ ] ECG input support: single-lead (Lead I or Lead II) and 6-lead (limb leads) via file import (CSV, WFDB) or direct Bluetooth LE capture from compatible devices (AliveCor protocol stub, extensible interface)
+- [ ] Inference pipeline: signal preprocessing (resampling to 500 Hz, zero-padding missing leads) → ONNX edge model → multi-task output → simplified output mapping (reuses US-060 tier logic)
+- [ ] Plain-language output tiers displayed prominently: **'Low risk'** (green), **'Refer for assessment'** (amber), **'Urgent referral recommended'** (red) with 1–2 sentence finding summary and recommended actions
+- [ ] Inference latency < 200 ms on Snapdragon 660+ (single-lead input, edge model)
+- [ ] **Fully offline operation:** app functions with no network connectivity after initial install; model bundled in APK (or downloaded on first launch with progress indicator)
+- [ ] Anonymized audit log: stores each inference (timestamp, input hash, tier result, inference latency) in local SQLite; auto-syncs to configured remote endpoint when connectivity detected (reuses sync protocol from US-055/US-056)
+- [ ] Audit log sync strips all patient-identifiable metadata before upload (reuses anonymization function from US-056)
+- [ ] Settings screen: configurable remote sync URL, device ID, sync frequency, language selection
+- [ ] Localization: UI strings externalized to `res/values-*/strings.xml`; English default, locale stubs for French, Spanish, Swahili matching LMIC deployment guide (US-061b)
+- [ ] Accessibility: high-contrast mode for outdoor/bright-light use, large touch targets (≥48dp), screen reader support via Android content descriptions
+- [ ] `aortica.edge.export_mobile_model(model_path, output_path)` Python utility that packages the INT8 ONNX model with Android-specific metadata (input/output names, shape expectations, version tag)
+- [ ] Unit tests (Android instrumentation tests via Espresso/JUnit4): model loading, inference pipeline with synthetic ECG, tier mapping, audit log CRUD, sync queue behavior
+- [ ] Typecheck passes (Kotlin)
+
+---
+
+### US-110: Android App Build and Distribution Pipeline
+**Description:** As a release manager, I want an automated build and distribution pipeline for the Aortica Android app so that new releases are built, signed, tested, and distributed consistently alongside backend releases.
+
+**Background and rationale:** US-061c defines the Android app's features and acceptance criteria. This story covers the CI/CD infrastructure needed to build, test, sign, and distribute the APK — which is a separate workflow from the Python package and Docker image pipelines.
+
+**Acceptance Criteria:**
+- [ ] `mobile/android/` Gradle build configuration with release signing config (keystore path, alias, passwords via environment variables)
+- [ ] GitHub Actions workflow `android_build.yml`: triggers on push to `main` or version tag; runs lint (ktlint), unit tests, instrumentation tests (on Firebase Test Lab or local emulator), builds signed release APK and AAB
+- [ ] APK includes the latest INT8 ONNX edge model bundled in `assets/` (copied from `aortica/edge/` artifacts during build)
+- [ ] Version management: app version code and name derived from git tag (e.g., tag `v0.3.0` → versionCode 300, versionName "0.3.0")
+- [ ] Distribution channels:
+  - GitHub Releases: signed APK attached to each version tag release
+  - Sideload distribution page on aortica.io (US-109) with QR code linking to latest APK
+  - Google Play Store: AAB uploaded via Gradle Play Publisher plugin (manual promotion from internal → production track)
+- [ ] OTA model update mechanism: app checks configured endpoint for newer model version on startup (when online); downloads and caches new ONNX model without requiring app update; falls back to bundled model if download fails
+- [ ] `POST /api/v1/mobile/model-manifest` API endpoint returning: latest model version, download URL, SHA-256 hash, minimum app version required
+- [ ] App size budget: APK < 25 MB (excluding model), total installed size < 40 MB (including bundled model)
+- [ ] Unit tests for version derivation, model manifest parsing, and OTA update logic
+- [ ] Typecheck passes (Kotlin)
 
 ---
 
@@ -1121,6 +1377,45 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 
 ---
 
+### US-112: Federated Model Release Pipeline
+**Description:** As a release manager, I want an automated pipeline for releasing federated-trained models so that aggregated models from FL rounds are validated, versioned, and distributed alongside centrally-trained checkpoints.
+
+**Background and rationale:** US-036b covers centrally-trained model distribution via HuggingFace Hub. But federated models emerge from a different workflow: FL rounds produce aggregated weights that must be validated against the equity gate (US-069), benchmarked (US-028/US-079), and published as a distinct model variant. Without this story, there's no defined process for going from FL aggregation output to a released, trustworthy model.
+
+**Acceptance Criteria:**
+- [ ] `aortica.federated.release_pipeline(aggregated_weights_path, base_version, config)` function orchestrating the full release workflow
+- [ ] Pipeline steps: (1) load aggregated weights into AorticaModel, (2) run full benchmark suite (US-028), (3) run equity gate (US-069), (4) run regulatory gate (US-097), (5) export ONNX + INT8 edge model (US-037/US-040), (6) generate performance card (US-070), (7) push to HuggingFace Hub with `federated-` version prefix
+- [ ] Federated models versioned as `aortica-federated-v{version}-r{round}.pt` (e.g., `aortica-federated-v0.3.0-r50.pt`) to distinguish from centrally-trained models
+- [ ] Model card for federated releases includes: participating site count (anonymized), total training samples contributed, aggregation strategy used, differential privacy parameters (ε spent), equity gate results per site region
+- [ ] `load_pretrained(variant='federated')` fetches the latest federated model; `load_pretrained(variant='federated', version='v0.3.0-r50')` fetches a specific federated release
+- [ ] CLI command `aortica federated release --weights <path> --version <v>` runs the full release pipeline
+- [ ] Abort-on-failure: pipeline halts and reports if any gate (equity, regulatory, benchmark threshold) fails
+- [ ] GitHub Actions workflow `federated_release.yml` triggered manually or on completion of FL server run
+- [ ] Unit tests with synthetic aggregated weights verifying pipeline orchestration, gating logic, and version naming
+- [ ] Typecheck passes
+
+---
+
+### US-113: Federated Learning Monitoring Dashboard
+**Description:** As an FL campaign coordinator, I want a web dashboard showing federated training progress so that I can monitor round completion, per-site contributions, convergence, and privacy budget consumption in real time.
+
+**Acceptance Criteria:**
+- [ ] `FLDashboard` React page at route `/federated` (protected: requires admin role)
+- [ ] **Campaign overview panel:** active FL campaign name, current round number, total rounds configured, aggregation strategy, start timestamp, elapsed time
+- [ ] **Per-round metrics chart:** line chart showing aggregated loss and per-task F1 across rounds (updates after each round completion)
+- [ ] **Site participation panel:** table of connected sites (anonymized site IDs) with: connection status (online/offline), samples contributed, last communication timestamp, local training time
+- [ ] **Privacy budget panel:** cumulative ε spent per site, projected ε at campaign end, visual warning when any site approaches budget exhaustion (> 80% of configured ε)
+- [ ] **Convergence indicators:** gradient norm trend, loss plateau detection, early stopping recommendation
+- [ ] `GET /api/v1/federated/status` API endpoint returning current FL campaign state
+- [ ] `GET /api/v1/federated/rounds` API endpoint returning per-round aggregated metrics
+- [ ] `GET /api/v1/federated/sites` API endpoint returning anonymized site participation stats
+- [ ] FL server (US-062) updated to persist per-round metrics to SQLite for dashboard consumption
+- [ ] WebSocket or polling-based live update (configurable interval, default 30s)
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
 #### Equity Infrastructure
 
 ---
@@ -1165,6 +1460,23 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] Persists registry to JSON file
 - [x] Unit tests for registration, region classification, and readiness check
 - [x] Typecheck passes
+
+---
+
+### US-114: Site Validation Registry UI
+**Description:** As a release manager, I want a web interface for the non-Western site validation registry so that I can register validation results, view per-site benchmark reports, and check release readiness without using the Python API directly.
+
+**Acceptance Criteria:**
+- [ ] `SiteValidationPage` React page at route `/validation/sites` (protected: requires admin role)
+- [ ] **Registry table:** list of all registered validation sites with: site ID, region, dataset size, validation date, overall pass/fail, link to full benchmark report
+- [ ] **Add validation form:** site ID, region (dropdown with Western/non-Western auto-classification), upload benchmark report JSON, dataset size
+- [ ] **Release readiness indicator:** prominent badge showing whether v-stable requirements are met (≥2 non-Western validations), with breakdown of which sites satisfy the requirement
+- [ ] **Region map visualization:** world map (lightweight SVG) with markers showing validated site locations, color-coded by region classification
+- [ ] `POST /api/v1/validation/sites` API endpoint for registering a new site validation
+- [ ] `GET /api/v1/validation/sites` API endpoint returning all registered validations
+- [ ] `GET /api/v1/validation/readiness` API endpoint returning release readiness status
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
 
 ---
 
@@ -1281,6 +1593,46 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 
 ---
 
+### US-115: Federated Data Quality Gating
+**Description:** As an FL campaign coordinator, I want automated data quality checks at each federated learning site so that sites with insufficient data quality, sample size, or label completeness are flagged before they participate in training rounds.
+
+**Background and rationale:** US-063 defines the FL client wrapper that trains on site-local data, but there's no validation that the local data meets minimum quality standards. A site with noisy data, too few samples, or missing labels could degrade the aggregated model. This story adds pre-training quality gates that run at the client before joining an FL round.
+
+**Acceptance Criteria:**
+- [ ] `aortica.federated.DataQualityGate` class performing pre-training validation on site-local data
+- [ ] Quality checks:
+  - Minimum sample size: configurable threshold (default 500 ECGs), warns below 200, blocks below 100
+  - Signal quality distribution: ≥70% of ECGs must have quality score ≥ 40 ("marginal" or better)
+  - Label completeness: ≥80% of ECGs must have at least one diagnostic label
+  - Label diversity: at least 3 of 4 task superclasses (rhythm, structural, ischaemia, risk) must have ≥10 positive examples
+  - Format consistency: all ECGs must successfully pass through the preprocessing pipeline without error
+- [ ] `gate.validate(dataset)` returns `DataQualityReport` with pass/fail per check, detailed statistics, and recommendations
+- [ ] FL client (US-063) runs data quality gate before first FL round; reports results to server; server can be configured to exclude failing sites
+- [ ] `aortica federated validate-data <data_path>` CLI command for sites to pre-check their data before joining a campaign
+- [ ] Server-side configurable policy: `strict` (exclude failing sites), `warn` (include with warning), `permissive` (include all)
+- [ ] Unit tests with synthetic datasets hitting each quality threshold
+- [ ] Typecheck passes
+
+---
+
+### US-116: Model Version Comparison and A/B Analysis
+**Description:** As an ML engineer, I want to compare two model versions side-by-side so that I can quantify the impact of federated training, expanded task heads, or any model update before releasing it.
+
+**Acceptance Criteria:**
+- [ ] `aortica.evaluation.compare_models(model_a_path, model_b_path, dataset, tasks='all')` returns a `ModelComparisonReport`
+- [ ] Per-task delta metrics: ΔAUC, ΔF1, Δsensitivity, Δspecificity, ΔC-index for risk tasks
+- [ ] Statistical significance testing: paired bootstrap test per class, reporting p-values and 95% confidence intervals for each delta
+- [ ] Demographic subgroup comparison: per-group delta metrics (age decile, sex) to detect equity regressions
+- [ ] Regression detection: flags any class where model B performs statistically worse than model A (p < 0.05)
+- [ ] Generates `MODEL_COMPARISON.md` report with: version IDs, summary table of deltas, per-task breakdown, regression warnings, recommendation (upgrade/hold/investigate)
+- [ ] CLI command `aortica compare --model-a <path> --model-b <path> --dataset <path>` generates the comparison report
+- [ ] React page at `/compare` allowing upload of two benchmark reports (JSON) and displaying side-by-side metrics with delta highlighting (green for improvement, red for regression)
+- [ ] Unit tests with synthetic predictions showing improvement, regression, and mixed scenarios
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
 ### Phase 4 — Regulatory & Scale
 
 ---
@@ -1392,6 +1744,66 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 
 ---
 
+### US-117: FHIR Subscription and Webhook Notification Service
+**Description:** As a hospital integrator, I want FHIR Subscription resources and webhook notifications so that the EHR is automatically alerted when Aortica detects critical findings, without polling the API.
+
+**Acceptance Criteria:**
+- [ ] `aortica.integration.fhir_subscription.SubscriptionManager` class managing FHIR R4 Subscription resources
+- [ ] Supports `rest-hook` channel type: sends HTTP POST to a configured EHR webhook URL when a matching event occurs
+- [ ] Subscription criteria: configurable filters by finding severity (critical/warning), specific conditions (STEMI, VT, VF, Brugada), urgency score threshold
+- [ ] `POST /api/v1/subscriptions` creates a new subscription with criteria and webhook URL
+- [ ] `GET /api/v1/subscriptions` lists active subscriptions
+- [ ] `DELETE /api/v1/subscriptions/:id` removes a subscription
+- [ ] When a `POST /api/v1/predict` result matches a subscription's criteria, the system sends a FHIR Bundle (type: `subscription-notification`) to the webhook URL within 5 seconds
+- [ ] Webhook payload includes: FHIR DiagnosticReport reference, matched finding(s), urgency score, and timestamp
+- [ ] Retry logic: 3 retries with exponential backoff on webhook delivery failure; dead-letter queue for persistently failed notifications
+- [ ] `GET /api/v1/subscriptions/:id/notifications` returns delivery history for a subscription (sent, failed, pending)
+- [ ] Unit tests: subscription CRUD, matching logic, webhook delivery (mock server), retry behavior
+- [ ] Typecheck passes
+
+---
+
+### US-118: ECG Management System Plugin Architecture
+**Description:** As a hospital IT administrator, I want an extensible plugin architecture so that Aortica can embed into existing ECG management platforms (GE MUSE, Philips TraceMasterVue, Mortara/Welch Allyn) as a decision-support module.
+
+**Background and rationale:** PRD-2 Phase 4 mentions "FHIR ECG management system plugin" and "national programme support." Individual integration protocols exist (DICOM DIMSE in US-083, SCP-ECG in US-084, FHIR in US-080), but there's no pluggable architecture that ties them together into a coherent plugin interface that ECG management system vendors or hospital IT teams can adapt.
+
+**Acceptance Criteria:**
+- [ ] `aortica/integration/plugins/` subpackage with `base.py` defining `ECGSystemPlugin` abstract base class
+- [ ] Plugin interface methods: `connect(config)`, `poll_for_ecgs()`, `submit_result(ecg_id, result)`, `get_worklist()`, `health_check()`
+- [ ] Reference plugin implementations:
+  - `MusePlugin`: DIMSE C-FIND to poll for new ECGs, C-STORE to write back DICOM SR results (wraps US-083)
+  - `FHIRPlugin`: FHIR R4 search to poll for ECGs, DiagnosticReport POST to submit results (wraps US-080)
+  - `FileWatcherPlugin`: watches a configurable directory for new ECG files (SCP-ECG, WFDB, CSV), processes them automatically, writes results to output directory
+- [ ] Plugin registry: `aortica.integration.plugins.register_plugin(name, cls)` and `get_plugin(name)` for discovery
+- [ ] Plugin configuration via YAML (`plugins.yaml`) with per-plugin connection parameters
+- [ ] Daemon mode: `aortica plugin run --config plugins.yaml` starts a long-running service that polls the configured ECG management system, processes new ECGs, and submits results back
+- [ ] Event hooks: `on_ecg_received`, `on_result_generated`, `on_critical_finding` for custom post-processing
+- [ ] Unit tests for plugin registry, base class contract, and FileWatcherPlugin with synthetic ECG files
+- [ ] Typecheck passes
+
+---
+
+### US-119: Worklist Dashboard Page
+**Description:** As a cardiologist, I want a web dashboard showing the AI-prioritized ECG worklist so that I can review the most urgent ECGs first and work through my queue efficiently.
+
+**Acceptance Criteria:**
+- [ ] `WorklistDashboard` React page at route `/worklist`
+- [ ] Table view with columns: urgency score (0–100) with color-coded badge, ECG ID, acquisition timestamp, patient identifier (if available), top finding, recommended action, review status (pending/in-progress/completed)
+- [ ] Default sort by urgency score (highest first); sortable by all columns
+- [ ] Filter controls: urgency tier (critical/moderate/routine), finding type, date range, review status
+- [ ] Critical findings row styling: red left border + animated urgency indicator for scores ≥80
+- [ ] Click row to open full results page with ECG waveform, predictions, and copilot panel
+- [ ] Inline actions: "Mark as Reviewed", "Assign to" (dropdown of registered clinicians), "Generate Report"
+- [ ] `PATCH /api/v1/worklist/:ecg_id` API endpoint for updating review status and assignee
+- [ ] `GET /api/v1/worklist` API endpoint returning prioritized worklist with status filters
+- [ ] Real-time update: new ECGs appear in the worklist automatically (polling or WebSocket, configurable interval default 30s)
+- [ ] Worklist summary bar: total pending, critical count, average time-to-review
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
 #### Report Generation
 
 ---
@@ -1451,6 +1863,25 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - [x] Returns `404` for unknown result IDs, `422` for invalid parameters
 - [x] Unit tests for each endpoint with stored synthetic results
 - [x] Typecheck passes
+
+---
+
+### US-120: Report Generation and Download Page
+**Description:** As a clinician, I want a web page for generating and downloading clinical reports so that I can produce PDF, FHIR, HL7, and JSON-LD reports from the UI without using the API directly.
+
+**Acceptance Criteria:**
+- [ ] `ReportPage` React page at route `/reports/:result_id` accessible from results page and worklist
+- [ ] **Format selector:** radio buttons or tabs for: PDF Clinical Report, FHIR R4 Bundle, HL7 v2.x Message, JSON-LD, CSV (for batch)
+- [ ] **PDF preview:** inline preview of the PDF report using a PDF viewer component (e.g., `react-pdf`), with download button
+- [ ] **FHIR/HL7/JSON-LD preview:** syntax-highlighted JSON/text view of the report content with copy-to-clipboard button
+- [ ] **Download button:** triggers file download with appropriate filename and MIME type for each format
+- [ ] **Batch report generation:** from the result browser (US-105) or batch dashboard (US-047), select multiple results and generate a combined CSV analytics export or individual PDF reports as a ZIP archive
+- [ ] **Report history:** list of previously generated reports for a given result, with timestamp and download link
+- [ ] `GET /api/v1/reports/:result_id` API endpoint listing available/generated reports for a result
+- [ ] Loading state with progress indicator for PDF generation (which may take 2–5 seconds)
+- [ ] Error handling: clear message if report generation fails (e.g., missing XAI data, incomplete result)
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
 
 ---
 
@@ -1560,6 +1991,28 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 
 ---
 
+### US-121: Audit Trail and Compliance Logging
+**Description:** As a regulatory affairs specialist, I want a centralized, immutable audit trail so that every clinical decision-support interaction is logged for regulatory compliance, post-market surveillance, and forensic investigation.
+
+**Background and rationale:** Individual audit logging exists in the Android app (US-061c) and clinician feedback (US-053), but there's no centralized, tamper-evident audit trail covering the full lifecycle: ECG ingestion → AI prediction → clinician review → report generation → EHR submission. Regulatory frameworks (IEC 62304, FDA SaMD guidance) require traceability of AI-assisted clinical decisions.
+
+**Acceptance Criteria:**
+- [ ] `aortica/audit/` subpackage with `__init__.py`
+- [ ] `aortica.audit.AuditLogger` class recording immutable audit events to an append-only SQLite table with HMAC integrity verification per row
+- [ ] Audit event types: `ecg_ingested`, `prediction_generated`, `xai_computed`, `finding_accepted`, `finding_rejected`, `finding_modified`, `report_generated`, `report_exported`, `ehr_submitted`, `adverse_event_reported`, `model_loaded`, `model_updated`
+- [ ] Each event includes: timestamp (UTC), event_type, user_id (if authenticated), ecg_reference_id, model_version, session_id, IP address, event_details (JSON), HMAC signature
+- [ ] HMAC chain: each row's HMAC includes the previous row's hash, creating a tamper-evident chain (any modification to a past row invalidates all subsequent HMACs)
+- [ ] `aortica.audit.verify_integrity(audit_db_path)` validates the HMAC chain and reports any broken links
+- [ ] FastAPI middleware that automatically logs `prediction_generated`, `report_generated`, and `ehr_submitted` events without requiring manual instrumentation in each endpoint
+- [ ] `GET /api/v1/audit/events` API endpoint with filters: date range, event type, user, ECG reference (admin-only)
+- [ ] `GET /api/v1/audit/verify` API endpoint that runs integrity verification and returns pass/fail with details
+- [ ] CLI command `aortica audit export --from <date> --to <date> --format csv|json` exports audit log for regulatory submission
+- [ ] Audit log rotation: configurable max database size with archival to compressed files
+- [ ] Unit tests: event logging, HMAC chain verification (valid and tampered), integrity check, export
+- [ ] Typecheck passes
+
+---
+
 #### Prospective Validation Tooling
 
 ---
@@ -1633,9 +2086,160 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 
 ---
 
-## Non-Goals (Phase 4)
+### US-122: Prospective Study Data Collection UI
+**Description:** As a site coordinator running a prospective validation study, I want a web interface for submitting ECGs with ground-truth outcomes so that data collection is systematic and doesn't require API scripting.
 
-- **No native Android or iOS apps** — mobile access via responsive web UI and ONNX-based edge inference; native app store distribution deferred to future work
+**Acceptance Criteria:**
+- [ ] `ProspectiveDataPage` React page at route `/validation/prospective` (protected: requires authenticated site coordinator role)
+- [ ] **ECG submission form:** upload ECG file, auto-runs prediction pipeline, displays results for clinician review
+- [ ] **Ground-truth entry form:** structured input for clinician-verified diagnosis at follow-up — checkbox list of conditions (matching Aortica's class taxonomy), free-text notes, follow-up date, outcome category (confirmed/ruled-out/indeterminate)
+- [ ] **Outcome linkage:** pairs the AI prediction with the ground-truth entry for the same ECG, auto-computing per-class concordance (TP/FP/TN/FN)
+- [ ] **Collection progress dashboard:** total ECGs submitted per site, target vs. actual enrollment, per-class label distribution, concordance summary
+- [ ] **Data quality indicators:** flags incomplete submissions (missing ground-truth, missing demographics), highlights outlier predictions for review
+- [ ] Export button: generates de-identified CSV (reuses US-099 `export_study_data`) downloadable from the UI
+- [ ] `GET /api/v1/validation/prospective/progress` API endpoint returning collection progress stats
+- [ ] Multi-site support: each authenticated user is associated with a site ID; data is tagged and filterable by site
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+### US-123: Performance Monitoring Dashboard
+**Description:** As a deployment administrator, I want a web dashboard showing live performance monitoring metrics so that I can detect model drift, track accuracy trends, and respond to degradation without running CLI commands.
+
+**Acceptance Criteria:**
+- [ ] `PerformanceMonitorPage` React page at route `/validation/monitor` (protected: requires admin role)
+- [ ] **Metrics overview panel:** current rolling AUC, F1, and calibration (ECE) per task head, with trend arrows (↑↓↔) vs. previous period
+- [ ] **Time-series charts:** line charts of per-task AUC and F1 over the monitoring window (default 30 days), with configurable window selector
+- [ ] **Drift alert panel:** list of active drift alerts with: alert timestamp, affected task/class, metric value, threshold, deviation percentage, severity (warning/critical)
+- [ ] **Demographic breakdown:** per-subgroup (age decile, sex) metric cards showing current performance vs. baseline, with equity gate status
+- [ ] **Volume metrics:** total ECGs processed (daily/weekly/monthly), inference latency trends, error rate
+- [ ] **Baseline comparison:** overlay baseline metrics (from original benchmark) on the time-series chart for visual drift assessment
+- [ ] `GET /api/v1/validation/monitor/metrics` API endpoint returning current monitoring metrics with time-series data
+- [ ] `GET /api/v1/validation/monitor/alerts` API endpoint returning active drift alerts
+- [ ] Auto-refresh with configurable interval (default 5 minutes)
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+### US-124: Adverse Event Reporting Form (Dedicated Frontend)
+**Description:** As a clinician, I want a polished, standalone adverse event reporting form so that safety events are captured with minimal friction and maximum completeness.
+
+**Background and rationale:** US-102 defines the backend API and mentions "React form component" as an acceptance criterion. However, adverse event reporting is a safety-critical workflow that deserves a dedicated, carefully designed frontend story ensuring the form guides clinicians through a complete report with required fields, severity classification, and confirmation flow — not just a checkbox item on a backend story.
+
+**Acceptance Criteria:**
+- [ ] `AdverseEventForm` React page at route `/report-event` accessible from the copilot panel, results page, and sidebar navigation
+- [ ] **Guided form flow:** multi-step wizard with: (1) Event identification — ECG reference (auto-populated if navigated from results page), event date, reporter information; (2) Event details — description (free-text, required, min 50 characters), severity classification (minor/moderate/serious/critical with tooltip definitions), AI finding that contributed (auto-populated from predictions if available); (3) Patient outcome — outcome description, follow-up status, was clinical harm prevented; (4) Review and submit — summary of all fields with edit links, confirmation checkbox ("I confirm this report is accurate")
+- [ ] **Severity guidance:** tooltip/popover for each severity level with clinical definitions and examples (e.g., "Serious: resulted in hospitalization or significant intervention")
+- [ ] **Auto-population:** when accessed from a results page, pre-fills ECG reference, AI findings, and confidence levels
+- [ ] **Draft saving:** form state persisted to `localStorage` to prevent data loss on accidental navigation; draft indicator with resume option
+- [ ] **Submission confirmation:** success modal with event reference number and option to download a copy of the report
+- [ ] **Event history page:** at `/report-event/history`, list of previously submitted reports by the current user with status indicators
+- [ ] Accessibility: all form fields properly labeled, keyboard-navigable, screen reader tested
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+#### Integration & Orchestration Workflows
+
+---
+
+### US-125: End-to-End EHR Integration Workflow
+**Description:** As a hospital IT administrator, I want a complete end-to-end EHR integration workflow so that ECGs arriving from the ECG management system are automatically processed by Aortica and results are written back to the EHR and PACS without manual intervention.
+
+**Background and rationale:** Individual integration components exist in isolation: DICOM DIMSE (US-083), FHIR output (US-080), HL7 output (US-081), DICOM SR (US-082), worklist (US-086), and SMART on FHIR (US-085). But no story connects them into a complete automated workflow: ECG arrives → Aortica processes → results written to PACS + EHR + worklist + notifications. This orchestration story provides that glue layer.
+
+**Acceptance Criteria:**
+- [ ] `aortica.integration.orchestrator.IntegrationOrchestrator` class managing the full EHR integration loop
+- [ ] Workflow steps: (1) ECG ingestion — via DIMSE C-STORE listener, FHIR Subscription, or file watcher (configurable); (2) AI processing — full inference pipeline + XAI; (3) Result storage — persist to local SQLite (US-054); (4) PACS write-back — DICOM SR via C-STORE (US-082/083); (5) EHR submission — FHIR DiagnosticReport or HL7 ORU^R01 (US-080/081); (6) Worklist update — add to prioritized worklist (US-086); (7) Notification — trigger FHIR Subscription notifications for matching criteria (US-117)
+- [ ] Configurable via `integration.yaml`: which output channels are enabled, EHR connection parameters, PACS connection parameters, notification rules
+- [ ] Error handling: per-step failure isolation (e.g., PACS write-back failure doesn't block EHR submission), retry queue for failed steps, dead-letter log for persistently failed integrations
+- [ ] `aortica integration run --config integration.yaml` CLI command starting the orchestrator as a long-running daemon
+- [ ] `GET /api/v1/integration/status` API endpoint showing: orchestrator status, queue depth, per-channel success/failure counts, last error per channel
+- [ ] Integration health monitoring: alerts if any channel error rate exceeds configurable threshold (default 5% over 1 hour)
+- [ ] Unit tests with mock EHR/PACS endpoints verifying full workflow execution, per-step error isolation, and retry logic
+- [ ] Typecheck passes
+
+---
+
+### US-126: Worklist to EHR Notification Pipeline
+**Description:** As a cardiologist, I want urgent AI findings to automatically trigger notifications in my EHR so that critical ECGs are flagged for immediate review without me checking the Aortica worklist manually.
+
+**Acceptance Criteria:**
+- [ ] `aortica.integration.notifications.UrgentFindingNotifier` class monitoring worklist for critical findings and pushing alerts to configured EHR channels
+- [ ] Notification channels:
+  - FHIR CommunicationRequest resource sent to the FHIR server (for EHRs supporting FHIR R4 communication)
+  - HL7 v2.x ADT^A08 (patient update) or ORU^R01 (unsolicited result) with ORC segment flagging urgency
+  - Webhook POST to configurable URL (generic, for EHRs with custom alert endpoints)
+  - Email notification via SMTP (configurable, for fallback alerting)
+- [ ] Notification trigger rules (configurable in `notification_rules.yaml`): condition list, minimum confidence threshold, urgency score threshold, de-duplication window (don't re-notify for same patient + finding within configurable hours)
+- [ ] Notification payload: patient identifier (if available), finding name, confidence, urgency score, Aortica result URL, recommended action
+- [ ] Delivery tracking: per-notification status (sent/delivered/failed/acknowledged), stored in SQLite
+- [ ] `GET /api/v1/notifications` API endpoint returning notification history with delivery status
+- [ ] Unit tests with mock EHR endpoints verifying: trigger logic, de-duplication, multi-channel delivery, failure handling
+- [ ] Typecheck passes
+
+---
+
+### US-127: Copilot to Report to EHR Clinical Workflow
+**Description:** As a cardiologist, I want a single-click workflow that takes my reviewed AI findings, generates a clinical report, and submits it to the EHR so that the entire AI-assisted interpretation cycle is completed without leaving the Aortica interface.
+
+**Acceptance Criteria:**
+- [ ] **"Finalize & Submit" button** on the copilot panel (US-049) visible after the clinician has accepted/rejected/modified all AI findings
+- [ ] Workflow on click: (1) Collect clinician-reviewed findings (accepted findings + modifications from US-053 feedback); (2) Generate PDF clinical report incorporating clinician decisions (US-087); (3) Generate FHIR DiagnosticReport with clinician attestation (US-080); (4) Submit to configured EHR channel (orchestrator from US-125); (5) Update worklist status to "completed" (US-119)
+- [ ] **Attestation step:** before submission, display summary modal with: report preview, findings included, excluded findings, clinician name + timestamp; require explicit "Attest and Submit" confirmation
+- [ ] **Configurable output channels:** checkboxes for which outputs to generate (PDF, FHIR, HL7, DICOM SR) — pre-configured per deployment
+- [ ] **Post-submission state:** results page shows "Submitted to EHR" badge with timestamp, EHR reference ID, and link to download the finalized report
+- [ ] `POST /api/v1/workflow/finalize` API endpoint accepting: result_id, reviewed_findings, attestation, output_channels; orchestrates the full workflow
+- [ ] Audit trail: `finalize_and_submit` event logged with clinician ID, all reviewed findings, generated report references, EHR submission status (US-121)
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+### US-128: Edge Sync to Central Analytics Pipeline
+**Description:** As a deployment coordinator managing multiple edge sites, I want synced edge results to flow automatically into the central performance monitor and analytics pipeline so that I have a unified view of AI performance across all deployment sites.
+
+**Background and rationale:** Edge sites store results locally (US-054) and sync them to a central server (US-055/US-056). The performance monitor (US-100) tracks accuracy against labeled data. But there's no story connecting synced edge data into the central monitoring pipeline. Without this, edge deployments are invisible to the central performance tracking system.
+
+**Acceptance Criteria:**
+- [ ] `aortica.sync.CentralAggregator` class that receives synced results from edge devices and ingests them into the central analytics pipeline
+- [ ] Sync receiver: `POST /api/v1/sync/receive` endpoint (authenticated per-device) accepting batch result uploads from edge sync engines (US-055)
+- [ ] Per-site tagging: each synced result tagged with source device_id and site_id for site-level analytics
+- [ ] Performance monitor integration: synced results automatically fed into `PerformanceMonitor` (US-100) when ground-truth labels are available (from prospective collection US-099)
+- [ ] Site-level analytics: `GET /api/v1/analytics/sites` API endpoint returning per-site metrics: total ECGs processed, finding distribution, quality score distribution, sync status, last sync timestamp
+- [ ] Cross-site dashboard: `SiteAnalyticsPage` React page at route `/analytics/sites` showing all edge sites with per-site metrics, geographic distribution (if location configured), and aggregate performance
+- [ ] Anomaly detection: flag sites with significantly different finding distributions or quality scores vs. fleet average (z-score > 2.0)
+- [ ] Data reconciliation: detect and report sync gaps (expected vs. received result count per device based on inference timestamps)
+- [ ] Unit tests with synthetic multi-site sync data verifying aggregation, site-level metrics, and anomaly detection
+- [ ] Verify changes work in browser
+- [ ] Typecheck passes
+
+---
+
+## Success Metrics
+
+| Metric | Target |
+|--------|--------|
+| Edge model AUC vs. full model | Within 3% on PTB-XL |
+| Android app inference latency | < 200 ms (single-lead, Snapdragon 660+) |
+| Raspberry Pi inference latency | < 350 ms (12-lead, edge model) |
+| Federated learning partners | 5+ sites across ≥ 3 continents |
+| Equity gates | Passed for all v-stable releases |
+| STEMI sensitivity | ≥ 90% on held-out external test |
+| Risk prediction C-statistic | ≥ 0.72 |
+| GitHub stars | 2,500+ within 12 months of v1.0 |
+| Pilot deployments | 2+ rural/LMIC sites processing real patient ECGs |
+| Peer-reviewed publications | 3+ citing or using Aortica |
+| FDA pre-submission meeting | Completed by Month 22 |
+
+---
+
+## Non-Goals
+
+- **No native iOS app** — iOS support deferred to future work; Android app covers the primary LMIC mobile deployment scenario
 - **No FDA 510(k) or CE-MDR submission** — Phase 4 achieves *regulatory readiness* (templates, validation tooling, pre-submission meeting) but does not complete clearance
 - **No commercial cloud hosting** — Aortica Cloud is a future sustainability initiative
 - **No automated treatment recommendations** — all outputs are decision support only, requiring clinician review
@@ -1650,7 +2254,7 @@ This PRD covers **Phase 0 (Foundation)**, **Phase 1 (Core Engine)**, **Phase 2 (
 - WFDB reading uses the **wfdb** Python package; DICOM uses **pydicom**; MAT uses **scipy.io**
 - **FastAPI** serves the REST API; **gRPC** (grpcio) for high-throughput integrations
 - **React + Vite + TypeScript** for web frontend in `frontend/` directory
-- **ONNX Runtime** for edge model inference; ONNX Runtime quantization tools for INT8
+- **ONNX Runtime** for edge model inference; ONNX Runtime quantization tools for INT8; **ONNX Runtime Mobile** (`onnxruntime-android`) for native Android inference
 - **Click + Rich** for CLI tooling
 - **MkDocs Material** for documentation site
 - Docker images target **amd64** (server/GPU) and **arm64** (edge/RPi)
