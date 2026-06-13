@@ -75,12 +75,13 @@ def _check_onnxruntime() -> None:
         )
 
 
-# Task output sizes (same as benchmark.TASK_NUM_OUTPUTS)
+# Task output sizes (same as benchmark.TASK_NUM_OUTPUTS). Must stay in sync with
+# the head class constants (rhythm=28, structural=19, ischaemia=19, risk=6).
 TASK_NUM_OUTPUTS: dict[str, int] = {
-    "rhythm": 22,
-    "structural": 15,
-    "ischaemia": 10,
-    "risk": 3,
+    "rhythm": 28,
+    "structural": 19,
+    "ischaemia": 19,
+    "risk": 6,
 }
 
 CLASSIFICATION_TASKS: list[str] = ["rhythm", "structural", "ischaemia"]

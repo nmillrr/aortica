@@ -263,12 +263,14 @@ def calibrate(
     all_logits: dict[str, list[torch.Tensor]] = {t: [] for t in tasks}
     all_labels: dict[str, list[torch.Tensor]] = {t: [] for t in tasks}
 
-    # Task output sizes for splitting concatenated labels
+    # Task output sizes for splitting concatenated labels. Must stay in sync
+    # with the head class constants (rhythm=28, structural=19, ischaemia=19,
+    # risk=6) and benchmark.TASK_NUM_OUTPUTS.
     task_sizes: dict[str, int] = {
-        "rhythm": 22,
-        "structural": 15,
-        "ischaemia": 10,
-        "risk": 3,
+        "rhythm": 28,
+        "structural": 19,
+        "ischaemia": 19,
+        "risk": 6,
     }
 
     with torch.no_grad():

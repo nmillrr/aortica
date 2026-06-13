@@ -209,11 +209,14 @@ class FLClientConfig:
 # Task output dimensions
 # ---------------------------------------------------------------------------
 
+# Must stay in sync with the task-head class constants
+# (RHYTHM_CLASSES, STRUCTURAL_CLASSES, ISCHAEMIA_CLASSES, RISK_OUTPUTS) and with
+# aortica.models.train_multitask._TASK_NUM_OUTPUTS.
 _TASK_NUM_OUTPUTS: Dict[str, int] = {
-    "rhythm": 22,
-    "structural": 15,
-    "ischaemia": 10,
-    "risk": 3,
+    "rhythm": 28,
+    "structural": 19,
+    "ischaemia": 19,
+    "risk": 6,
 }
 
 
@@ -435,7 +438,11 @@ class AorticaFlowerClient:
 
         params: List[np.ndarray] = []
         for param in self._model.state_dict().values():
-            arr: np.ndarray = param.cpu().numpy()
+            # .numpy() shares memory with the live tensor for CPU tensors, so
+            # in-place optimizer updates during training would silently mutate
+            # any previously-returned snapshot (e.g. the server's global model).
+            # Copy to return an independent snapshot.
+            arr: np.ndarray = param.detach().cpu().numpy().copy()
             params.append(arr)
         return params
 

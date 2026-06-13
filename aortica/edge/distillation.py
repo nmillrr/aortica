@@ -111,11 +111,13 @@ class DistillationConfig:
 # Task definitions
 # ---------------------------------------------------------------------------
 
+# Must stay in sync with the head class constants (rhythm=28, structural=19,
+# ischaemia=19, risk=6) and benchmark.TASK_NUM_OUTPUTS.
 _TASK_NUM_OUTPUTS: dict[str, int] = {
-    "rhythm": 22,
-    "structural": 15,
-    "ischaemia": 10,
-    "risk": 3,
+    "rhythm": 28,
+    "structural": 19,
+    "ischaemia": 19,
+    "risk": 6,
 }
 
 _CLASSIFICATION_TASKS: set[str] = {"rhythm", "structural", "ischaemia"}

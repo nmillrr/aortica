@@ -74,7 +74,7 @@ def _make_data_loaders(
     if enabled_tasks is None:
         enabled_tasks = ["rhythm", "structural", "ischaemia", "risk"]
 
-    task_widths = {"rhythm": 22, "structural": 15, "ischaemia": 10, "risk": 3}
+    task_widths = {"rhythm": 28, "structural": 19, "ischaemia": 19, "risk": 6}
     label_cols = sum(task_widths[t] for t in enabled_tasks)
 
     x = torch.randn(num_samples, LEADS, SAMPLES)
@@ -308,18 +308,18 @@ class TestSplitLabels:
     """Tests for _split_labels."""
 
     def test_all_tasks(self) -> None:
-        labels = torch.rand(4, 50)  # 22+15+10+3
+        labels = torch.rand(4, 72)  # 28+19+19+6
         result = _split_labels(labels, ["rhythm", "structural", "ischaemia", "risk"])
-        assert result["rhythm"].shape == (4, 22)
-        assert result["structural"].shape == (4, 15)
-        assert result["ischaemia"].shape == (4, 10)
-        assert result["risk"].shape == (4, 3)
+        assert result["rhythm"].shape == (4, 28)
+        assert result["structural"].shape == (4, 19)
+        assert result["ischaemia"].shape == (4, 19)
+        assert result["risk"].shape == (4, 6)
 
     def test_subset_tasks(self) -> None:
-        labels = torch.rand(4, 25)  # 22+3
+        labels = torch.rand(4, 34)  # 28+6
         result = _split_labels(labels, ["rhythm", "risk"])
-        assert result["rhythm"].shape == (4, 22)
-        assert result["risk"].shape == (4, 3)
+        assert result["rhythm"].shape == (4, 28)
+        assert result["risk"].shape == (4, 6)
         assert "structural" not in result
 
 

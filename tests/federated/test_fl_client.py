@@ -157,20 +157,20 @@ class TestLabelSplitting:
     def test_split_all_tasks(self) -> None:
         torch = pytest.importorskip("torch")
         from aortica.federated.fl_client import _split_labels
-        labels = torch.randn(4, 50)  # 22+15+10+3
+        labels = torch.randn(4, 72)  # 28+19+19+6
         result = _split_labels(labels, ["rhythm", "structural", "ischaemia", "risk"])
-        assert result["rhythm"].shape == (4, 22)
-        assert result["structural"].shape == (4, 15)
-        assert result["ischaemia"].shape == (4, 10)
-        assert result["risk"].shape == (4, 3)
+        assert result["rhythm"].shape == (4, 28)
+        assert result["structural"].shape == (4, 19)
+        assert result["ischaemia"].shape == (4, 19)
+        assert result["risk"].shape == (4, 6)
 
     def test_split_subset(self) -> None:
         torch = pytest.importorskip("torch")
         from aortica.federated.fl_client import _split_labels
-        labels = torch.randn(4, 25)  # 22+3
+        labels = torch.randn(4, 34)  # 28+6
         result = _split_labels(labels, ["rhythm", "risk"])
-        assert result["rhythm"].shape == (4, 22)
-        assert result["risk"].shape == (4, 3)
+        assert result["rhythm"].shape == (4, 28)
+        assert result["risk"].shape == (4, 6)
 
 
 # ---------------------------------------------------------------------------
@@ -353,9 +353,9 @@ class TestClientFitEvaluate:
             feature_dim=252,
         )
 
-        # Synthetic data: 8 samples, 12 leads, 500 samples; 22 rhythm labels
+        # Synthetic data: 8 samples, 12 leads, 500 samples; 28 rhythm labels
         x = torch.randn(8, 12, 500)
-        y = torch.zeros(8, 22)
+        y = torch.zeros(8, 28)
         y[:, 0] = 1.0  # normal sinus rhythm
 
         ds = TensorDataset(x, y)
@@ -481,7 +481,7 @@ class TestFedProxProximalTerm:
         )
 
         x = torch.randn(8, 12, 500)
-        y = torch.zeros(8, 22)
+        y = torch.zeros(8, 28)
         y[:, 0] = 1.0
 
         ds = TensorDataset(x, y)
@@ -509,43 +509,40 @@ class TestFedProxProximalTerm:
             lr=1e-2, feature_dim=252, seed=42,
         )
         x = torch.randn(8, 12, 500)
-        y = torch.zeros(8, 22)
+        y = torch.zeros(8, 28)
         y[:, 0] = 1.0
         ds = TensorDataset(x, y)
         train_loader = DataLoader(ds, batch_size=4, shuffle=False)
 
-        model_no_prox = AorticaModel(enabled_tasks=["rhythm"], feature_dim=252)
-        client_no_prox = AorticaFlowerClient(
-            cfg, model=model_no_prox, train_loader=train_loader
-        )
-        client_no_prox._device = torch.device("cpu")
-        params = client_no_prox.get_parameters()
-        updated_no_prox, _, metrics_no_prox = client_no_prox.fit(params)
+        # Both runs must start from identical initial weights so the drift
+        # comparison is apples-to-apples.
+        init_model = AorticaModel(enabled_tasks=["rhythm"], feature_dim=252)
+        init_state = {k: v.clone() for k, v in init_model.state_dict().items()}
+        init_params = [
+            p.detach().cpu().numpy().copy() for p in init_model.parameters()
+        ]
 
-        # Train WITH FedProx (mu=10.0 — strong regularisation)
-        model_prox = AorticaModel(enabled_tasks=["rhythm"], feature_dim=252)
-        # Copy the same initial weights
-        model_prox.load_state_dict(model_no_prox.state_dict())
-        client_prox = AorticaFlowerClient(
-            cfg, model=model_prox, train_loader=train_loader
-        )
-        client_prox._device = torch.device("cpu")
-        params2 = client_prox.get_parameters()
-        updated_prox, _, metrics_prox = client_prox.fit(
-            params2, config={"proximal_mu": 10.0}
-        )
+        def trained_param_drift(proximal_mu: float) -> float:
+            model = AorticaModel(enabled_tasks=["rhythm"], feature_dim=252)
+            model.load_state_dict(init_state)
+            client = AorticaFlowerClient(
+                cfg, model=model, train_loader=train_loader
+            )
+            client._device = torch.device("cpu")
+            cfg_dict = {"proximal_mu": proximal_mu} if proximal_mu else None
+            client.fit(client.get_parameters(), config=cfg_dict)
+            # Measure drift only over the nn.Parameters the proximal term
+            # actually constrains (state_dict also holds BN running buffers,
+            # which the proximal penalty does not touch).
+            return sum(
+                float(np.sum((cur.detach().cpu().numpy() - ref) ** 2))
+                for cur, ref in zip(model.parameters(), init_params)
+            )
 
-        # Compute total parameter drift for each
-        drift_no_prox = sum(
-            float(np.sum((u - p) ** 2))
-            for u, p in zip(updated_no_prox, params)
-        )
-        drift_prox = sum(
-            float(np.sum((u - p) ** 2))
-            for u, p in zip(updated_prox, params2)
-        )
+        drift_no_prox = trained_param_drift(0.0)
+        drift_prox = trained_param_drift(10.0)  # strong regularisation
 
-        # With strong proximal term, drift should be smaller
+        # With a strong proximal term, weights should stay closer to global.
         assert drift_prox < drift_no_prox, (
             f"FedProx drift ({drift_prox:.6f}) should be less than "
             f"no-prox drift ({drift_no_prox:.6f})"

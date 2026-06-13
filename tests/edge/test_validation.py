@@ -56,10 +56,10 @@ class TestConstants:
         assert CLASSIFICATION_TASKS == ["rhythm", "structural", "ischaemia"]
 
     def test_task_num_outputs(self) -> None:
-        assert TASK_NUM_OUTPUTS["rhythm"] == 22
-        assert TASK_NUM_OUTPUTS["structural"] == 15
-        assert TASK_NUM_OUTPUTS["ischaemia"] == 10
-        assert TASK_NUM_OUTPUTS["risk"] == 3
+        assert TASK_NUM_OUTPUTS["rhythm"] == 28
+        assert TASK_NUM_OUTPUTS["structural"] == 19
+        assert TASK_NUM_OUTPUTS["ischaemia"] == 19
+        assert TASK_NUM_OUTPUTS["risk"] == 6
 
     def test_default_threshold(self) -> None:
         assert DEFAULT_THRESHOLD == 0.03
@@ -281,18 +281,18 @@ class TestSplitLabels:
     """Test _split_labels."""
 
     def test_all_tasks(self) -> None:
-        labels = np.random.rand(10, 50).astype(np.float64)
+        labels = np.random.rand(10, 72).astype(np.float64)
         result = _split_labels(labels, ALL_TASKS)
-        assert result["rhythm"].shape == (10, 22)
-        assert result["structural"].shape == (10, 15)
-        assert result["ischaemia"].shape == (10, 10)
-        assert result["risk"].shape == (10, 3)
+        assert result["rhythm"].shape == (10, 28)
+        assert result["structural"].shape == (10, 19)
+        assert result["ischaemia"].shape == (10, 19)
+        assert result["risk"].shape == (10, 6)
 
     def test_subset(self) -> None:
-        labels = np.random.rand(5, 25).astype(np.float64)
+        labels = np.random.rand(5, 34).astype(np.float64)
         result = _split_labels(labels, ["rhythm", "risk"])
-        assert result["rhythm"].shape == (5, 22)
-        assert result["risk"].shape == (5, 3)
+        assert result["rhythm"].shape == (5, 28)
+        assert result["risk"].shape == (5, 6)
 
 
 # ---------------------------------------------------------------------------

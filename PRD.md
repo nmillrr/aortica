@@ -2219,6 +2219,40 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 
 ---
 
+#### Technical Debt & Correctness Hardening
+
+---
+
+### US-129: Single Source of Truth for Task-Head Output Dimensions
+**Description:** As an ML engineer, I want the per-task output dimensions (rhythm/structural/ischaemia/risk) defined in exactly one place so that expanding a task head can never again leave downstream modules silently mis-sized.
+
+**Background and rationale:** The task-head expansion (US-072–US-079) raised the head sizes to rhythm=28, structural=19, ischaemia=19, risk=6 (72 total). However, the per-task dimension map (`TASK_NUM_OUTPUTS` / `_TASK_NUM_OUTPUTS`) is **duplicated across at least seven modules** — `models/train_multitask.py`, `models/conformal_prediction.py`, `models/temperature_scaling.py`, `evaluation/benchmark.py`, `edge/distillation.py`, `edge/validation.py`, and `federated/fl_client.py`. Several copies were not updated during the expansion and remained at the old 22/15/10/3 values. This caused real, silent correctness bugs: the federated client trained against mis-sized labels, and the conformal predictor, temperature-scaling calibrator, INT8 distillation, and edge-validation harness all split concatenated labels at the wrong offsets when run against the real (expanded) model. The acceptance criterion "Update all downstream code referencing RHYTHM_CLASSES count" was checked off without these copies being caught, because each module's unit tests built synthetic data sized to its own stale copy and therefore stayed self-consistently green.
+
+**Acceptance Criteria:**
+- [ ] A single canonical definition of per-task output dimensions, derived from the head class constants (`len(RHYTHM_CLASSES)`, `len(STRUCTURAL_CLASSES)`, `len(ISCHAEMIA_CLASSES)`, `len(RISK_OUTPUTS)`), exposed as e.g. `aortica.models.task_dims.TASK_NUM_OUTPUTS`
+- [ ] All seven (or more) existing copies replaced by an import of the canonical map; no module hardcodes the integers
+- [ ] The canonical map is importable without forcing a heavyweight (torch/tf) import at module load, preserving the existing lazy-import behaviour of `federated/fl_client.py`
+- [ ] A regression test asserts the canonical map equals the actual head class-list lengths, so any future head expansion that forgets a downstream update fails CI immediately
+- [ ] A test that exercises conformal prediction, temperature scaling, distillation label-splitting, and the FL client against a real `AorticaModel` (not synthetic fixed-width data) so dimension drift is caught end-to-end
+- [ ] Typecheck passes
+
+---
+
+### US-130: Demographic-Stratified Production Monitoring
+**Description:** As a release manager, I want the production performance monitor and quarterly report to actually break metrics down by demographic subgroup so that the equity claims in US-100/US-101 are backed by real data rather than absent.
+
+**Background and rationale:** US-100 and US-101 are marked complete, and US-101's acceptance criteria promise "demographic subgroup breakdowns" in the quarterly report. In practice `PerformanceMonitor` records only `(ecg_id, task, class_name, prediction, ground_truth, timestamp)` — it stores **no demographic attributes**, so neither the monitor nor `generate_quarterly_report` can produce any subgroup stratification. The report's "demographic subgroup breakdowns" criterion is therefore unsatisfiable as built. This story closes the gap between the stated criterion and the implementation.
+
+**Acceptance Criteria:**
+- [ ] `PerformanceMonitor.record_prediction(...)` accepts optional demographic attributes (at minimum `age` and `sex`), persisted alongside each prediction
+- [ ] `get_status()` / a new `get_subgroup_status()` computes rolling AUC/F1/ECE stratified by sex and age decile for subgroups with sufficient sample size (configurable minimum, default N≥30)
+- [ ] `generate_quarterly_report` renders a real demographic-subgroup section (markdown table + CSV rows) instead of omitting it; when demographics are absent it states so explicitly rather than implying a breakdown exists
+- [ ] Drift detection optionally runs per subgroup so an equity regression in one group is flagged even when the aggregate metric looks stable
+- [ ] Unit tests with synthetic demographic-tagged production data verifying subgroup stratification, the minimum-sample guard, and the "no demographics available" path
+- [ ] Typecheck passes
+
+---
+
 ## Success Metrics
 
 | Metric | Target |
@@ -2263,6 +2297,7 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 - **TenSEAL** (CKKS scheme) for homomorphic encryption in secure aggregation
 - Expanded task head dimensions: rhythm=28, structural=19, ischaemia=19, risk=6 (72 total outputs)
 - All models should be designed for ONNX export (avoid non-exportable operations where possible)
+- **PyYAML** is a core (non-optional) runtime dependency: training, sync, federated, integration, and the regulatory gate all load YAML config, and `aortica.evaluation` imports the regulatory gate at package import time. It must be declared in the base `dependencies`, not behind an extra
 - **fhir.resources** for FHIR R4 resource validation and generation
 - **hl7apy** for HL7 v2.x message construction and validation
 - **pynetdicom** for DICOM DIMSE network operations (C-STORE, C-FIND)

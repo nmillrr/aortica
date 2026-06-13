@@ -518,10 +518,10 @@ class TestPredictEndpointWithModel:
         from aortica.models.aortica_model import MultiTaskOutput
 
         output = MultiTaskOutput(
-            rhythm=torch.rand(1, 22) if "rhythm" in enabled_tasks else None,
-            structural=torch.rand(1, 15) if "structural" in enabled_tasks else None,
-            ischaemia=torch.rand(1, 10) if "ischaemia" in enabled_tasks else None,
-            risk=torch.rand(1, 3) if "risk" in enabled_tasks else None,
+            rhythm=torch.rand(1, 28) if "rhythm" in enabled_tasks else None,
+            structural=torch.rand(1, 19) if "structural" in enabled_tasks else None,
+            ischaemia=torch.rand(1, 19) if "ischaemia" in enabled_tasks else None,
+            risk=torch.rand(1, 6) if "risk" in enabled_tasks else None,
         )
         model.__call__ = MagicMock(return_value=output)
         model.return_value = output
@@ -594,8 +594,8 @@ class TestPredictEndpointWithModel:
         preds = resp.json()["predictions"]
         assert len(preds) >= 1
         rhythm_pred = [p for p in preds if p["task"] == "rhythm"][0]
-        assert len(rhythm_pred["class_names"]) == 22
-        assert len(rhythm_pred["probabilities"]) == 22
+        assert len(rhythm_pred["class_names"]) == 28
+        assert len(rhythm_pred["probabilities"]) == 28
         # Check probabilities are all between 0 and 1
         for p in rhythm_pred["probabilities"]:
             assert 0.0 <= p <= 1.0

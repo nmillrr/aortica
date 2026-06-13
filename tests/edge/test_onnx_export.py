@@ -95,8 +95,8 @@ class TestOnnxWrapper:
         wrapper = _OnnxWrapper(model)
         x = torch.randn(3, 12, 5000)
         out = wrapper(x)
-        # rhythm=22, structural=15, ischaemia=10, risk=3
-        expected_dims = [22, 15, 10, 3]
+        # rhythm=28, structural=19, ischaemia=19, risk=6
+        expected_dims = [28, 19, 19, 6]
         for tensor, dim in zip(out, expected_dims):
             assert tensor.shape == (3, dim)
 
@@ -105,9 +105,9 @@ class TestOnnxWrapper:
         wrapper = _OnnxWrapper(model)
         x = torch.randn(1, 12, 5000)
         out = wrapper(x)
-        # risk = 3 outputs, rhythm = 22 outputs
-        assert out[0].shape[1] == 3   # risk first
-        assert out[1].shape[1] == 22  # rhythm second
+        # risk = 6 outputs, rhythm = 28 outputs
+        assert out[0].shape[1] == 6   # risk first
+        assert out[1].shape[1] == 28  # rhythm second
 
 
 # ---------------------------------------------------------------------------
@@ -203,12 +203,12 @@ class TestExportOnnx:
         out_short = sess.run(
             None, {"ecg_input": np.random.randn(1, 12, 2500).astype(np.float32)},
         )
-        assert out_short[0].shape == (1, 22)
+        assert out_short[0].shape == (1, 28)
         # Long signal (10000 samples = 20s at 500 Hz)
         out_long = sess.run(
             None, {"ecg_input": np.random.randn(1, 12, 10000).astype(np.float32)},
         )
-        assert out_long[0].shape == (1, 22)
+        assert out_long[0].shape == (1, 28)
 
     def test_custom_opset_version(self, tmp_path: pathlib.Path) -> None:
         model = _make_model(enabled_tasks=["rhythm"])
@@ -341,12 +341,12 @@ class TestEndToEnd:
         inp = np.random.randn(2, 12, 5000).astype(np.float32)
         outputs = sess.run(None, {"ecg_input": inp})
 
-        # 4 outputs: rhythm[22], structural[15], ischaemia[10], risk[3]
+        # 4 outputs: rhythm[28], structural[19], ischaemia[19], risk[6]
         assert len(outputs) == 4
-        assert outputs[0].shape == (2, 22)
-        assert outputs[1].shape == (2, 15)
-        assert outputs[2].shape == (2, 10)
-        assert outputs[3].shape == (2, 3)
+        assert outputs[0].shape == (2, 28)
+        assert outputs[1].shape == (2, 19)
+        assert outputs[2].shape == (2, 19)
+        assert outputs[3].shape == (2, 6)
 
     def test_output_values_in_range(self, tmp_path: pathlib.Path) -> None:
         """ONNX outputs should be sigmoid-scaled (0, 1)."""

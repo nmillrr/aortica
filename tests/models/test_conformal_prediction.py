@@ -75,10 +75,10 @@ class TestConstants:
         assert ALL_TASKS == ["rhythm", "structural", "ischaemia", "risk"]
 
     def test_task_num_outputs(self) -> None:
-        assert TASK_NUM_OUTPUTS["rhythm"] == 22
-        assert TASK_NUM_OUTPUTS["structural"] == 15
-        assert TASK_NUM_OUTPUTS["ischaemia"] == 10
-        assert TASK_NUM_OUTPUTS["risk"] == 3
+        assert TASK_NUM_OUTPUTS["rhythm"] == 28
+        assert TASK_NUM_OUTPUTS["structural"] == 19
+        assert TASK_NUM_OUTPUTS["ischaemia"] == 19
+        assert TASK_NUM_OUTPUTS["risk"] == 6
 
 
 # ---------------------------------------------------------------------------
@@ -210,8 +210,8 @@ class TestPrediction:
     def test_predictions_shapes(self, fitted_cp: ConformalPredictor) -> None:
         x = torch.randn(4, 12, 2500)
         preds, _ = fitted_cp.predict(x)
-        assert preds["rhythm"].shape == (4, 22)
-        assert preds["structural"].shape == (4, 15)
+        assert preds["rhythm"].shape == (4, 28)
+        assert preds["structural"].shape == (4, 19)
 
     def test_predictions_range(self, fitted_cp: ConformalPredictor) -> None:
         x = torch.randn(4, 12, 2500)
@@ -271,7 +271,7 @@ class TestUncertaintyReport:
         _, report = fitted_cp.predict(x)
         for ps in report.prediction_sets["rhythm"]:
             for idx in ps:
-                assert 0 <= idx < 22
+                assert 0 <= idx < 28
 
     def test_ood_flags_shape(self, fitted_cp: ConformalPredictor) -> None:
         x = torch.randn(4, 12, 2500)
@@ -348,8 +348,8 @@ class TestConfidenceIntervals:
         x = torch.randn(4, 12, 2500)
         _, report = fitted_cp_risk.predict(x)
         lower, upper = report.confidence_intervals["risk"]
-        assert lower.shape == (4, 3)
-        assert upper.shape == (4, 3)
+        assert lower.shape == (4, 6)
+        assert upper.shape == (4, 6)
 
     def test_confidence_intervals_range(
         self, fitted_cp_risk: ConformalPredictor
@@ -479,7 +479,7 @@ class TestCoverageGuarantee:
 
         # Test data
         x_test = torch.randn(n_test, 12, 2500)
-        labels_test = (torch.rand(n_test, 22) > 0.5).float()
+        labels_test = (torch.rand(n_test, 28) > 0.5).float()
 
         _, report = cp.predict(x_test)
         pred_sets = report.prediction_sets["rhythm"]
@@ -527,7 +527,7 @@ class TestEndToEnd:
 
         # Predictions
         assert "rhythm" in preds
-        assert preds["rhythm"].shape == (4, 22)
+        assert preds["rhythm"].shape == (4, 28)
         assert (preds["rhythm"] >= 0).all()
         assert (preds["rhythm"] <= 1).all()
 
@@ -557,7 +557,7 @@ class TestEndToEnd:
         # Risk confidence intervals
         assert "risk" in report.confidence_intervals
         lower, upper = report.confidence_intervals["risk"]
-        assert lower.shape == (4, 3)
+        assert lower.shape == (4, 6)
         assert (lower <= upper).all()
 
     def test_forward_is_alias_for_predict(self) -> None:

@@ -320,8 +320,8 @@ class TestCalibratedModel:
         calibrated = CalibratedModel(model, ts)
         x = torch.randn(2, 12, 2500)
         output = calibrated(x)
-        assert output["rhythm"].shape == (2, 22)
-        assert output["structural"].shape == (2, 15)
+        assert output["rhythm"].shape == (2, 28)
+        assert output["structural"].shape == (2, 19)
 
     def test_output_range(self, model_and_ts: tuple) -> None:
         model, ts = model_and_ts
@@ -368,10 +368,10 @@ class TestCalibrate:
             enabled_tasks = ["rhythm", "structural"]
 
         task_sizes = {
-            "rhythm": 22,
-            "structural": 15,
-            "ischaemia": 10,
-            "risk": 3,
+            "rhythm": 28,
+            "structural": 19,
+            "ischaemia": 19,
+            "risk": 6,
         }
         label_dim = sum(task_sizes[t] for t in enabled_tasks)
 
@@ -470,7 +470,7 @@ class TestEndToEnd:
         # Synthetic val data
         n = 64
         x = torch.randn(n, 12, 2500)
-        labels = (torch.rand(n, 22) > 0.5).float()
+        labels = (torch.rand(n, 28) > 0.5).float()
         val_ds = torch.utils.data.TensorDataset(x, labels)
         val_loader = torch.utils.data.DataLoader(val_ds, batch_size=16)
 
@@ -487,6 +487,6 @@ class TestEndToEnd:
 
         # Smoke checks
         assert "rhythm" in output
-        assert output["rhythm"].shape == (4, 22)
+        assert output["rhythm"].shape == (4, 28)
         assert (output["rhythm"] >= 0).all()
         assert (output["rhythm"] <= 1).all()
