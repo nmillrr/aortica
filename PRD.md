@@ -277,15 +277,15 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** PTB-XL (US-012) is the primary training dataset, but the case-based retrieval index (US-091) targets 50,000 ECGs from both PTB-XL and MIMIC-IV-ECG. Without a dedicated MIMIC-IV-ECG loader, building the retrieval index and validating cross-dataset generalization requires ad hoc data wrangling. MIMIC-IV-ECG uses WFDB format but has its own metadata schema (linked to MIMIC-IV clinical tables), requiring a purpose-built loader.
 
 **Acceptance Criteria:**
-- [ ] `aortica.data.load_mimic_iv_ecg(path, sampling_rate=500)` returns train/val/test splits as lists of `ECGRecord` objects with labels
-- [ ] Parses MIMIC-IV-ECG WFDB records and links to `machine_measurements.csv` and `record_list.csv` for metadata
-- [ ] Extracts diagnostic labels from MIMIC-IV clinical tables (`diagnoses_icd`) when available, mapped to Aortica's label taxonomy (rhythm, structural, ischaemia superclasses)
-- [ ] Supports configurable split strategy: random (default), patient-level (no patient in both train and test), or temporal (by admission date)
-- [ ] Handles the PhysioNet credentialed access model: clear error message if data files are not present, with download instructions referencing PhysioNet credentialing requirements
-- [ ] Returns label vectors compatible with PyTorch Dataset and TF tf.data pipelines (same interface as `load_ptbxl`)
-- [ ] `aortica.data.load_combined(ptbxl_path, mimic_path, sampling_rate=500)` merges both datasets with source tagging for cross-dataset evaluation
-- [ ] Unit tests verifying correct split sizes, label distributions, data shapes, and combined loader merge logic
-- [ ] Typecheck passes
+- [x] `aortica.data.load_mimic_iv_ecg(path, sampling_rate=500)` returns train/val/test splits as lists of `ECGRecord` objects with labels
+- [x] Parses MIMIC-IV-ECG WFDB records and links to `machine_measurements.csv` and `record_list.csv` for metadata
+- [x] Extracts diagnostic labels from MIMIC-IV clinical tables (`diagnoses_icd`) when available, mapped to Aortica's label taxonomy (rhythm, structural, ischaemia superclasses)
+- [x] Supports configurable split strategy: random (default), patient-level (no patient in both train and test), or temporal (by admission date)
+- [x] Handles the PhysioNet credentialed access model: clear error message if data files are not present, with download instructions referencing PhysioNet credentialing requirements
+- [x] Returns label vectors compatible with PyTorch Dataset and TF tf.data pipelines (same interface as `load_ptbxl`)
+- [x] `aortica.data.load_combined(ptbxl_path, mimic_path, sampling_rate=500)` merges both datasets with source tagging for cross-dataset evaluation
+- [x] Unit tests verifying correct split sizes, label distributions, data shapes, and combined loader merge logic
+- [x] Typecheck passes
 
 ---
 
