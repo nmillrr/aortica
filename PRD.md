@@ -653,17 +653,17 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a deployment administrator, I want rate limiting and abuse protection on the Aortica API so that a single client cannot overwhelm the server and degrade service for other users.
 
 **Acceptance Criteria:**
-- [ ] `aortica/api/rate_limiter.py` with `RateLimiter` middleware for FastAPI
-- [ ] Token bucket rate limiting: configurable per-user and global rate limits (default: 60 requests/minute per API key, 200 requests/minute global)
-- [ ] Rate limit headers in responses: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (RFC 6585 compliant)
-- [ ] Returns `429 Too Many Requests` with `Retry-After` header when limit exceeded
-- [ ] Separate rate limit tiers: `predict` endpoints (lower limit, compute-intensive), `report` endpoints (medium), `admin`/`auth` endpoints (higher limit)
-- [ ] Backend: Redis-backed for multi-process deployments, with in-memory fallback for single-process/edge deployments
-- [ ] Configurable via `rate_limits.yaml` or environment variables
-- [ ] IP-based rate limiting for unauthenticated endpoints (health, info)
-- [ ] Exempt list for trusted internal services (configurable)
-- [ ] Unit tests: rate limit enforcement, header correctness, tier differentiation, Redis and in-memory backends
-- [ ] Typecheck passes
+- [x] `aortica/api/rate_limiter.py` with `RateLimiter` middleware for FastAPI
+- [x] Token bucket rate limiting: configurable per-user and global rate limits (default: 60 requests/minute per API key, 200 requests/minute global)
+- [x] Rate limit headers in responses: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` (RFC 6585 compliant)
+- [x] Returns `429 Too Many Requests` with `Retry-After` header when limit exceeded
+- [x] Separate rate limit tiers: `predict` endpoints (lower limit, compute-intensive), `report` endpoints (medium), `admin`/`auth` endpoints (higher limit)
+- [x] Backend: Redis-backed for multi-process deployments, with in-memory fallback for single-process/edge deployments
+- [x] Configurable via `rate_limits.yaml` or environment variables
+- [x] IP-based rate limiting for unauthenticated endpoints (health, info)
+- [x] Exempt list for trusted internal services (configurable)
+- [x] Unit tests: rate limit enforcement, header correctness, tier differentiation, Redis and in-memory backends
+- [x] Typecheck passes
 
 ---
 

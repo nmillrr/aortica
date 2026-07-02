@@ -97,6 +97,8 @@ def create_app(
     model: Any = None,
     conformal_predictor: Any = None,
     enable_auth: bool = True,
+    rate_limit_config: Any = None,
+    rate_limit_config_path: Optional[str] = None,
 ) -> Any:
     """Create and configure the FastAPI application.
 
@@ -115,6 +117,11 @@ def create_app(
     enable_auth:
         Whether to enforce authentication on ``/api/v1/`` endpoints.
         Defaults to ``True``.
+    rate_limit_config:
+        An optional ``RateLimitConfig`` instance for rate limiting.
+        If *None*, rate limiting is configured from environment variables.
+    rate_limit_config_path:
+        Optional path to a ``rate_limits.yaml`` configuration file.
 
     Returns
     -------
@@ -132,6 +139,15 @@ def create_app(
         title="Aortica ECG Analysis API",
         description="AI-powered multi-task ECG analysis platform",
         version=aortica.__version__,
+    )
+
+    # ---- Rate limiting middleware ----
+    from aortica.api.rate_limiter import add_rate_limiting
+
+    add_rate_limiting(
+        app,
+        config=rate_limit_config,
+        config_path=rate_limit_config_path,
     )
 
     # ---- CORS middleware ----
