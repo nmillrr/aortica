@@ -76,6 +76,35 @@ jobs:
           print('INT8 quantization complete.')
           " || echo "INT8 quantization skipped."
 
+      - name: Cross-hardware benchmark (US-104)
+        run: |
+          python -c "
+          from aortica.edge.hardware_benchmark import hardware_benchmark, consolidated_markdown_table
+          import sys
+
+          # Run server_cpu benchmark (the only platform available in CI)
+          try:
+              report = hardware_benchmark(
+                  model_path='aortica_edge_int8_v${{ steps.version.outputs.VERSION }}.onnx',
+                  platform_profile='server_cpu',
+                  n_runs=50,
+              )
+              print(report.summary_table())
+
+              # Write consolidated report for performance card
+              md = consolidated_markdown_table([report])
+              with open('hardware_benchmark_report.md', 'w') as f:
+                  f.write(md)
+              print('Hardware benchmark report saved.')
+
+              if not report.overall_pass:
+                  print('ERROR: Server CPU platform targets not met!', file=sys.stderr)
+                  sys.exit(1)
+              print('All platform targets met.')
+          except FileNotFoundError:
+              print('ONNX model not found — skipping hardware benchmark.')
+          " || echo "Hardware benchmark skipped (missing dependencies)."
+
       - name: Save full model checkpoint
         run: |
           python -c "

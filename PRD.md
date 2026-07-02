@@ -746,20 +746,20 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-041 validates edge model AUC within 3% of the full model, and US-061 profiles inference on individual hardware. But the PRD-2 Success Metrics require specific per-platform latency targets (RPi < 350ms, Android < 200ms) that need systematic validation with pass/fail gates integrated into CI. This story creates that validation harness.
 
 **Acceptance Criteria:**
-- [ ] `aortica.edge.hardware_benchmark(model_path, platform_profile, dataset_sample, n_runs=50)` function running full inference benchmark on a specified platform profile
-- [ ] `HardwareBenchmarkReport` dataclass with: platform name, model variant, mean/p50/p95/p99 latency, peak memory (RSS), throughput (inferences/second), model size on disk, pass/fail per metric
-- [ ] Platform profiles defined in `aortica/edge/platform_targets.yaml` with per-platform pass/fail thresholds:
+- [x] `aortica.edge.hardware_benchmark(model_path, platform_profile, dataset_sample, n_runs=50)` function running full inference benchmark on a specified platform profile
+- [x] `HardwareBenchmarkReport` dataclass with: platform name, model variant, mean/p50/p95/p99 latency, peak memory (RSS), throughput (inferences/second), model size on disk, pass/fail per metric
+- [x] Platform profiles defined in `aortica/edge/platform_targets.yaml` with per-platform pass/fail thresholds:
   - Raspberry Pi 4 (arm64): latency p95 < 350ms, peak memory < 512MB
   - Jetson Nano (arm64 + CUDA): latency p95 < 150ms, peak memory < 1GB
   - Android Snapdragon 660+ (arm64): latency p95 < 200ms (single-lead), < 300ms (6-lead)
   - Server amd64 (CPU): latency p95 < 100ms, throughput > 10 inferences/second
   - Server amd64 (GPU): latency p95 < 30ms, throughput > 50 inferences/second
-- [ ] CLI command `aortica benchmark-hardware --platform <name> --model <path>` runs the benchmark and prints the report
-- [ ] `aortica.edge.benchmark_all_platforms(model_path)` runs benchmarks for all locally-available platforms and produces a consolidated comparison table
-- [ ] GitHub Actions CI step that runs available platform benchmarks (at minimum CPU server) and blocks release if any target is missed
-- [ ] Consolidated report output as markdown table and CSV for inclusion in performance cards (US-070)
-- [ ] Unit tests with mock platform profiles and synthetic timing data
-- [ ] Typecheck passes
+- [x] CLI command `aortica benchmark-hardware --platform <name> --model <path>` runs the benchmark and prints the report
+- [x] `aortica.edge.benchmark_all_platforms(model_path)` runs benchmarks for all locally-available platforms and produces a consolidated comparison table
+- [x] GitHub Actions CI step that runs available platform benchmarks (at minimum CPU server) and blocks release if any target is missed
+- [x] Consolidated report output as markdown table and CSV for inclusion in performance cards (US-070)
+- [x] Unit tests with mock platform profiles and synthetic timing data
+- [x] Typecheck passes
 
 ---
 

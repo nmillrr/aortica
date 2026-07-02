@@ -1,0 +1,68 @@
+# Cross-Hardware Platform Targets
+#
+# Per-platform pass/fail thresholds for the hardware benchmark suite
+# (aortica.edge.hardware_benchmark).  Each platform profile specifies
+# latency, memory, and throughput targets that must be met before release.
+#
+# Structure
+# ---------
+# Each top-level key is a platform identifier.  Under each platform:
+#   - arch: CPU architecture (arm64, amd64)
+#   - accelerator: GPU/accelerator type (none, cuda, nnapi)
+#   - latency_p95_ms: Maximum p95 latency in milliseconds
+#   - peak_memory_mb: Maximum peak memory (RSS) in megabytes
+#   - min_throughput_ips: Minimum throughput (inferences per second); optional
+#   - input_mode: Expected input configuration (12-lead, 6-lead, single-lead)
+#   - description: Human-readable platform description
+
+rpi4:
+  arch: arm64
+  accelerator: none
+  latency_p95_ms: 350
+  peak_memory_mb: 512
+  min_throughput_ips: 2.0
+  input_mode: 12-lead
+  description: "Raspberry Pi 4 (arm64, CPU only)"
+
+jetson_nano:
+  arch: arm64
+  accelerator: cuda
+  latency_p95_ms: 150
+  peak_memory_mb: 1024
+  min_throughput_ips: 6.0
+  input_mode: 12-lead
+  description: "NVIDIA Jetson Nano (arm64 + CUDA)"
+
+android_snapdragon_12lead:
+  arch: arm64
+  accelerator: nnapi
+  latency_p95_ms: 300
+  peak_memory_mb: 512
+  input_mode: 6-lead
+  description: "Android Snapdragon 660+ (6-lead input)"
+
+android_snapdragon_1lead:
+  arch: arm64
+  accelerator: nnapi
+  latency_p95_ms: 200
+  peak_memory_mb: 256
+  input_mode: single-lead
+  description: "Android Snapdragon 660+ (single-lead input)"
+
+server_cpu:
+  arch: amd64
+  accelerator: none
+  latency_p95_ms: 100
+  peak_memory_mb: 2048
+  min_throughput_ips: 10.0
+  input_mode: 12-lead
+  description: "Server amd64 (CPU only)"
+
+server_gpu:
+  arch: amd64
+  accelerator: cuda
+  latency_p95_ms: 30
+  peak_memory_mb: 4096
+  min_throughput_ips: 50.0
+  input_mode: 12-lead
+  description: "Server amd64 (GPU / CUDA)"
