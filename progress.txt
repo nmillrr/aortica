@@ -2127,3 +2127,79 @@ Implement systematic cross-hardware benchmark suite with per-platform latency, m
 - resource.getrusage maxrss units differ between macOS (bytes) and Linux (KB) — need platform detection
 - Token bucket from previous iteration informed the metric comparison pattern (threshold + pass/fail)
 ---
+
+## Iteration US-105 - Patient ECG History and Result Browser
+### Goal
+Implement result browser UI and API endpoints for browsing, searching, filtering, and exporting stored ECG results.
+
+### Files Created
+- aortica/api/result_endpoints.py — GET /api/v1/results (paginated + filtered listing), GET /api/v1/results/{id} (detail), POST /api/v1/results/export/csv (bulk export)
+- frontend/src/pages/ResultBrowser.tsx — ResultBrowser React page with table, sortable columns, filters, pagination, bulk select, CSV export
+- frontend/src/pages/ResultBrowser.css — Dark theme styling with glassmorphism, micro-animations, responsive layout
+- tests/api/test_result_endpoints.py — 49 tests covering helpers, Pydantic models, API endpoints, integration
+
+### Files Modified
+- aortica/api/app.py — Registered result_browser_router in create_app()
+- frontend/src/App.tsx — Added /history route for ResultBrowser
+- frontend/src/components/Sidebar.tsx — Added ECG History navigation item
+- PRD.md — Marked US-105 complete
+
+### Implementation Details
+- Backend queries ResultStore (SQLite) and applies filters (date range, quality, urgency, finding, search) in Python
+- Urgency classification derived from prediction probabilities: critical (STEMI/VT/VF >50%), urgent (AF/LVH/ischaemia >50%), routine (>30%), normal
+- Top finding extracted as highest-probability prediction across all task heads
+- CSV export fetches full results by ID and includes predictions JSON column
+- Frontend fetches from API with all query params, handles loading/empty/error states
+- Sortable columns toggle asc/desc on click, highlighted with accent color
+- Bulk select with checkbox column, bulk action bar appears with CSV export button
+- Pagination with page size selector (10/25/50/100) and page number buttons
+
+### Test Results
+- 49/49 passed in test_result_endpoints.py
+- 28/28 passed in test_app.py (regression check)
+- TypeScript typecheck: clean (no errors)
+- mypy: only pre-existing predict.py error, result_endpoints.py clean
+
+### Learnings
+- ResultStore.list_results() returns all results up to limit; rich filtering done in Python since SQLite schema doesn't have indexed filter columns
+- Pre-existing mypy error in predict.py:364 is unrelated to this change
+- React router needs /history before /results/:id to avoid path conflicts
+- FakeStoredResult pattern useful for testing without requiring cryptography dependency
+---
+
+## Iteration US-106 - Admin Dashboard — User and API Key Management
+### Goal
+Implement admin dashboard with user management, API key management, system health, and activity log panels with role-based access control.
+
+### Files Created
+- aortica/api/admin_endpoints.py — UserStore, ActivityLog, RBAC dependency, create_admin_router() with 5 endpoints (users list/update, api-keys list/revoke, system-health, activity-log)
+- frontend/src/pages/AdminDashboard.tsx — AdminDashboard React page with 4 tabbed panels: Users, API Keys, System Health, Activity Log
+- frontend/src/pages/AdminDashboard.css — Dark theme styling with glassmorphism, health grid cards, tabbed navigation, responsive layout
+- tests/api/test_admin_endpoints.py — 67 tests covering Pydantic models, UserStore, ActivityLog, RBAC, all endpoints, pagination, app integration
+
+### Files Modified
+- aortica/api/app.py — Registered admin_router, user_store, and activity_log on app.state
+- frontend/src/App.tsx — Added /admin route for AdminDashboard
+- frontend/src/components/Sidebar.tsx — Added Admin nav item with ⚙ icon
+- PRD.md — Marked US-106 complete
+
+### Implementation Details
+- UserStore: in-memory user store with add/get/list/update/upsert_from_auth for self-hosted deployments
+- ActivityLog: bounded deque (max 1000) with paginated listing (newest first)
+- RBAC: _require_admin dependency checks user role in UserStore; auto-registers on first access; returns 403 for non-admin
+- Auth-disabled mode grants admin to all requests (consistent with existing auth_dependency pattern)
+- System health reads model state, database sizes, ONNX Runtime availability, sync engine status, uptime
+- Frontend: 4-tab panel design with health cards grid, data tables, pagination, role dropdown selectors, status toggle buttons
+
+### Test Results
+- 67/67 passed in test_admin_endpoints.py
+- 28/28 passed in test_app.py (regression check)
+- mypy: Success: no issues found (only pre-existing yaml stubs and model warnings in other files)
+- TypeScript typecheck: clean (no errors)
+
+### Learnings
+- FastAPI router prefix is included in route.path attribute (e.g., /api/v1/admin/users not /users)
+- UserStore upsert pattern works well for auto-registering users from JWT claims on first admin access
+- Activity log bounded deque naturally handles FIFO eviction without explicit cleanup
+- Role-based access control as a dependency factory (closure over user_store) keeps the pattern reusable
+---

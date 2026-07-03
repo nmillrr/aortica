@@ -214,6 +214,20 @@ def create_app(
     result_browser_router = create_result_browser_router()
     app.include_router(result_browser_router)
 
+    # Mount admin dashboard router
+    from aortica.api.admin_endpoints import ActivityLog, UserStore, create_admin_router
+
+    user_store = UserStore()
+    activity_log = ActivityLog()
+    admin_router, user_store, activity_log = create_admin_router(
+        user_store=user_store,
+        api_key_store=api_key_store,
+        activity_log=activity_log,
+    )
+    app.state.user_store = user_store  # type: ignore[attr-defined]
+    app.state.activity_log = activity_log  # type: ignore[attr-defined]
+    app.include_router(admin_router)
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:

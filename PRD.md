@@ -916,19 +916,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a deployment administrator, I want an admin dashboard so that I can manage users, API keys, and system health from the web UI without direct database access.
 
 **Acceptance Criteria:**
-- [ ] `AdminDashboard` React page at route `/admin` (protected: requires admin role)
-- [ ] **User management panel:** list all registered users, their roles (admin/clinician/researcher), last login timestamp, and account status (active/disabled); ability to disable/enable accounts and change roles
-- [ ] **API key management panel:** list all issued API keys with creation date, last-used timestamp, and associated user; ability to revoke keys and generate new keys with configurable expiry
-- [ ] **System health panel:** current server status, model version loaded, database size, total ECGs processed, uptime, ONNX Runtime status, sync engine status
-- [ ] **Activity log:** recent API requests with timestamp, user, endpoint, and response status (last 100, paginated)
-- [ ] `GET /api/v1/admin/users` returns user list (admin-only)
-- [ ] `PATCH /api/v1/admin/users/:id` updates user role or status (admin-only)
-- [ ] `DELETE /api/v1/admin/api-keys/:key_id` revokes an API key (admin-only)
-- [ ] `GET /api/v1/admin/system-health` returns system status metrics
-- [ ] `GET /api/v1/admin/activity-log` returns paginated activity log
-- [ ] Role-based access control: admin endpoints return `403` for non-admin users
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `AdminDashboard` React page at route `/admin` (protected: requires admin role)
+- [x] **User management panel:** list all registered users, their roles (admin/clinician/researcher), last login timestamp, and account status (active/disabled); ability to disable/enable accounts and change roles
+- [x] **API key management panel:** list all issued API keys with creation date, last-used timestamp, and associated user; ability to revoke keys and generate new keys with configurable expiry
+- [x] **System health panel:** current server status, model version loaded, database size, total ECGs processed, uptime, ONNX Runtime status, sync engine status
+- [x] **Activity log:** recent API requests with timestamp, user, endpoint, and response status (last 100, paginated)
+- [x] `GET /api/v1/admin/users` returns user list (admin-only)
+- [x] `PATCH /api/v1/admin/users/:id` updates user role or status (admin-only)
+- [x] `DELETE /api/v1/admin/api-keys/:key_id` revokes an API key (admin-only)
+- [x] `GET /api/v1/admin/system-health` returns system status metrics
+- [x] `GET /api/v1/admin/activity-log` returns paginated activity log
+- [x] Role-based access control: admin endpoints return `403` for non-admin users
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

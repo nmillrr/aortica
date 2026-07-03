@@ -8,6 +8,7 @@ import { ResultBrowser } from './pages/ResultBrowser';
 import { Batch } from './pages/Batch';
 import { Login } from './pages/Login';
 import { ReportEvent } from './pages/ReportEvent';
+import { AdminDashboard } from './pages/AdminDashboard';
 
 export function App() {
   return (
@@ -26,6 +27,7 @@ export function App() {
         <Route path="/results/:id" element={<Results />} />
         <Route path="/batch" element={<Batch />} />
         <Route path="/report-event" element={<ReportEvent />} />
+        <Route path="/admin" element={<AdminDashboard />} />
       </Route>
     </Routes>
   );

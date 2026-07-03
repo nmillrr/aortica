@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/history',       icon: '📋', label: 'ECG History' },
   { to: '/batch',         icon: '⊞', label: 'Batch Analysis' },
   { to: '/report-event',  icon: '⚠', label: 'Report Event' },
+  { to: '/admin',         icon: '⚙', label: 'Admin' },
 ] as const;
 
 export function Sidebar() {

@@ -1,0 +1,571 @@
+/* ============================================================
+   AdminDashboard — User, API Key, System Health, Activity Log
+   ============================================================ */
+
+.admin-dashboard {
+  padding: var(--space-8);
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: adminFadeIn 0.4s ease;
+}
+
+@keyframes adminFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Page header ──────────────────────────────────────────── */
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.admin-header h1 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.admin-header h1 .page-icon {
+  font-size: 1.3em;
+  opacity: 0.85;
+}
+
+.admin-refresh-btn {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-surface-border);
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-refresh-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.admin-refresh-btn.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ── Tab navigation ───────────────────────────────────────── */
+
+.admin-tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+  border: 1px solid var(--color-surface-border);
+}
+
+.admin-tab {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.admin-tab:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+}
+
+.admin-tab.active {
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-tab .tab-icon {
+  font-size: 1.1em;
+}
+
+.admin-tab .tab-badge {
+  background: var(--color-accent);
+  color: #fff;
+  font-size: var(--font-size-xs);
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-bold);
+  min-width: 20px;
+  text-align: center;
+}
+
+/* ── Panel containers ─────────────────────────────────────── */
+
+.admin-panel {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-md);
+  animation: panelSlideIn 0.3s ease;
+}
+
+@keyframes panelSlideIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.admin-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.admin-panel-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.admin-panel-actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+/* ── Common table styles ──────────────────────────────────── */
+
+.admin-table-container {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-surface-border);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.admin-table thead {
+  background: var(--color-bg-tertiary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.admin-table th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--color-surface-border);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid rgba(42, 50, 80, 0.3);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr {
+  transition: background var(--transition-fast);
+}
+
+.admin-table tbody tr:hover {
+  background: var(--color-bg-hover);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Badges & pills ───────────────────────────────────────── */
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: capitalize;
+}
+
+.admin-badge.role-admin {
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+  border: 1px solid rgba(230, 57, 70, 0.25);
+}
+
+.admin-badge.role-clinician {
+  background: var(--color-info-muted);
+  color: var(--color-info);
+  border: 1px solid rgba(52, 152, 219, 0.25);
+}
+
+.admin-badge.role-researcher {
+  background: rgba(155, 89, 182, 0.12);
+  color: #bb8fce;
+  border: 1px solid rgba(155, 89, 182, 0.25);
+}
+
+.admin-badge.status-active {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+}
+
+.admin-badge.status-disabled {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+}
+
+.admin-badge.status-ok {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+}
+
+.admin-badge.status-unavailable {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+}
+
+/* Status code badges */
+.admin-badge.code-2xx {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+}
+
+.admin-badge.code-4xx {
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
+  border: 1px solid rgba(243, 156, 18, 0.25);
+}
+
+.admin-badge.code-5xx {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+}
+
+/* ── Action buttons ───────────────────────────────────────── */
+
+.admin-action-btn {
+  background: transparent;
+  border: 1px solid var(--color-surface-border);
+  color: var(--color-text-secondary);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.admin-action-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-muted);
+}
+
+.admin-action-btn.danger:hover {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background: var(--color-danger-muted);
+}
+
+.admin-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-action-btn.primary {
+  background: var(--color-accent-muted);
+  color: var(--color-accent);
+  border-color: rgba(230, 57, 70, 0.3);
+}
+
+.admin-action-btn.primary:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* ── Role selector dropdown ───────────────────────────────── */
+
+.admin-role-select {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-surface-border);
+  color: var(--color-text-primary);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: var(--space-6);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b95b0' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.admin-role-select:hover,
+.admin-role-select:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+/* ── System health grid ───────────────────────────────────── */
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+
+.health-card {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.health-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 12px rgba(230, 57, 70, 0.08);
+}
+
+.health-card-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.health-card-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.health-card-value .health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: healthPulse 2s ease-in-out infinite;
+}
+
+.health-dot.green {
+  background: var(--color-success);
+  box-shadow: 0 0 6px rgba(46, 204, 113, 0.5);
+}
+
+.health-dot.red {
+  background: var(--color-danger);
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.5);
+}
+
+.health-dot.yellow {
+  background: var(--color-warning);
+  box-shadow: 0 0 6px rgba(243, 156, 18, 0.5);
+}
+
+@keyframes healthPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.health-card-detail {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ── Pagination ───────────────────────────────────────────── */
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-4);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.admin-pagination-info {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.admin-pagination-controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.admin-page-btn {
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-surface-border);
+  color: var(--color-text-secondary);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 36px;
+  text-align: center;
+}
+
+.admin-page-btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.admin-page-btn.active {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+.admin-page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+
+.admin-empty {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  color: var(--color-text-tertiary);
+}
+
+.admin-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-3);
+  opacity: 0.5;
+}
+
+.admin-empty-text {
+  font-size: var(--font-size-base);
+  margin: 0;
+}
+
+/* ── Loading state ────────────────────────────────────────── */
+
+.admin-loading {
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.admin-loading-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--color-surface-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: adminSpin 0.8s linear infinite;
+  margin-bottom: var(--space-3);
+}
+
+@keyframes adminSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Error state ──────────────────────────────────────────── */
+
+.admin-error {
+  background: var(--color-danger-muted);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: var(--space-4);
+  }
+
+  .admin-tabs {
+    flex-wrap: wrap;
+  }
+
+  .admin-tab {
+    flex: 1 1 45%;
+    font-size: var(--font-size-xs);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .health-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: var(--space-2) var(--space-3);
+  }
+}
