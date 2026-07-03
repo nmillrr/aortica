@@ -897,18 +897,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a clinician, I want to browse and search historical ECG results stored locally so that I can review past analyses, track patient trends over time, and retrieve previous findings without re-uploading files.
 
 **Acceptance Criteria:**
-- [ ] `ResultBrowser` React page at route `/history` showing all stored ECG results from the local SQLite database (US-054)
-- [ ] Table view with columns: timestamp, patient identifier (if available), quality score, top finding, urgency tier, sync status
-- [ ] Search and filter controls: date range picker, finding filter (dropdown of all detected conditions), quality filter (good/marginal/poor), urgency filter, free-text search on patient metadata
-- [ ] Sortable columns (click column header to sort ascending/descending)
-- [ ] Pagination with configurable page size (default 25, options 10/25/50/100)
-- [ ] Click row to navigate to full results page (`/results/:id`) with waveform, predictions, and XAI
-- [ ] `GET /api/v1/results` API endpoint with query parameters: `page`, `per_page`, `date_from`, `date_to`, `finding`, `quality`, `urgency`, `search`
-- [ ] `GET /api/v1/results/:id` returns full stored result (predictions, quality, XAI data) for a specific result ID
-- [ ] Bulk actions: select multiple results for CSV export or batch report generation
-- [ ] Responsive layout for tablet and desktop use
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `ResultBrowser` React page at route `/history` showing all stored ECG results from the local SQLite database (US-054)
+- [x] Table view with columns: timestamp, patient identifier (if available), quality score, top finding, urgency tier, sync status
+- [x] Search and filter controls: date range picker, finding filter (dropdown of all detected conditions), quality filter (good/marginal/poor), urgency filter, free-text search on patient metadata
+- [x] Sortable columns (click column header to sort ascending/descending)
+- [x] Pagination with configurable page size (default 25, options 10/25/50/100)
+- [x] Click row to navigate to full results page (`/results/:id`) with waveform, predictions, and XAI
+- [x] `GET /api/v1/results` API endpoint with query parameters: `page`, `per_page`, `date_from`, `date_to`, `finding`, `quality`, `urgency`, `search`
+- [x] `GET /api/v1/results/:id` returns full stored result (predictions, quality, XAI data) for a specific result ID
+- [x] Bulk actions: select multiple results for CSV export or batch report generation
+- [x] Responsive layout for tablet and desktop use
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

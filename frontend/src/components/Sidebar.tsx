@@ -5,6 +5,7 @@ import './Sidebar.css';
 const NAV_ITEMS = [
   { to: '/',              icon: '⌂', label: 'Dashboard' },
   { to: '/upload',        icon: '↑', label: 'Upload ECG' },
+  { to: '/history',       icon: '📋', label: 'ECG History' },
   { to: '/batch',         icon: '⊞', label: 'Batch Analysis' },
   { to: '/report-event',  icon: '⚠', label: 'Report Event' },
 ] as const;

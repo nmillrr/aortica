@@ -2023,3 +2023,107 @@ Implement adverse event reporting with SQLite-backed append-only storage, API en
 - Following the FeedbackStore pattern (feedback.py) for SQLite + Pydantic + API router is very efficient
 - Append-only design is simple and correct for audit trails — just omit update/delete methods
 ---
+
+## Iteration US-103 - MIMIC-IV-ECG Dataset Loader
+### Goal
+Implement MIMIC-IV-ECG dataset loader with ICD label mapping, configurable splits, and combined PTB-XL+MIMIC loader.
+
+### Files Created
+- aortica/data/mimic_iv_ecg.py — load_mimic_iv_ecg(), load_combined(), MIMICDataNotFoundError, ICD-9/10 taxonomy mapping, patient/temporal/random split strategies
+- tests/data/test_mimic_iv_ecg.py — 37 tests covering ICD mapping, split strategies, error handling, main loader, combined loader, module imports
+
+### Files Modified
+- aortica/data/__init__.py — Added exports: load_mimic_iv_ecg, load_combined, MIMICDataNotFoundError
+- PRD.md — Marked US-103 complete
+
+### Implementation Details
+- ICD-9 and ICD-10 code maps covering rhythm (AF, blocks, bundles), structural (cardiomyopathy, valve, HTN), and ischaemia (MI, IHD, angina)
+- Prefix matching for ICD codes (e.g., "410.11" matches "410.1")
+- Patient-level split ensures no subject appears in multiple splits
+- Temporal split by admittime or study_id ordering
+- MIMICDataNotFoundError provides full PhysioNet credentialing instructions
+- Machine measurements from machine_measurements.csv attached to patient_metadata
+- Source tagging: "mimic_iv_ecg" in patient_metadata["source_dataset"]
+- load_combined merges both datasets with "ptbxl" and "mimic_iv_ecg" source tags
+- Same return interface as load_ptbxl: (train, val, test) tuples of (List[ECGRecord], np.ndarray)
+
+### Test Results
+- 37/37 passed in test_mimic_iv_ecg.py
+- mypy: Success: no issues found in 1 source file
+
+### Learnings
+- .gitignore had data/ directory excluded; needed `git add -f` for aortica/data/ and tests/data/
+- load_ptbxl resamples via read_ecg dispatcher; MIMIC loader follows same pattern for consistency
+- Patient-level splits are essential for MIMIC since patients can have multiple ECG studies
+---
+
+## Iteration US-111 - API Rate Limiting and Abuse Protection
+### Goal
+Implement token bucket rate limiting middleware for FastAPI with per-user and global limits, tiered endpoints, and Redis + in-memory backends.
+
+### Files Created
+- aortica/api/rate_limiter.py — RateLimiterMiddleware, TokenBucket, InMemoryBackend, RedisBackend, RateLimitConfig (Pydantic), TierConfig, EndpointTier enum, classify_endpoint(), add_rate_limiting()
+- tests/api/test_rate_limiter.py — 53 tests covering token bucket, backends, tier classification, headers, 429 enforcement, exemptions, disabled mode, integration
+
+### Files Modified
+- aortica/api/app.py — Added rate_limit_config and rate_limit_config_path params to create_app(), integrated add_rate_limiting() middleware
+- PRD.md — Marked US-111 complete
+
+### Implementation Details
+- Token bucket algorithm with configurable capacity (RPM + burst) and refill rate (RPM/60)
+- 4 endpoint tiers: predict (30 RPM), report (60 RPM), admin (120 RPM), system (300 RPM)
+- Path prefix matching for tier classification
+- RFC 6585 compliant headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+- 429 response with Retry-After header and JSON body
+- In-memory backend for single-process/edge; Redis backend with Lua script for atomic operations
+- Config from YAML (rate_limits.yaml), environment variables (AORTICA_RATE_LIMIT_*), or code
+- Exempt lists for API keys and IPs
+- IP-based fallback when no API key provided
+
+### Test Results
+- 53/53 passed in test_rate_limiter.py
+- 28/28 passed in test_app.py (regression check)
+- mypy: Success: no issues found (only pre-existing yaml stubs warning, same as worklist.py)
+
+### Learnings
+- Pydantic gt=0 validator means burst_size must be at least 1; test values need to account for capacity = RPM + burst_size
+- BaseHTTPMiddleware requires type: ignore[misc] for mypy when subclassing
+- Rate limiter must be added before CORS middleware in the middleware stack for headers to be set correctly
+- request.headers.get() returns Any, need explicit type annotation to satisfy mypy
+---
+
+## Iteration US-104 - Cross-Hardware Benchmark Suite with Platform Targets
+### Goal
+Implement systematic cross-hardware benchmark suite with per-platform latency, memory, and throughput targets.
+
+### Files Created
+- aortica/edge/hardware_benchmark.py — hardware_benchmark(), benchmark_all_platforms(), HardwareBenchmarkReport, MetricResult, PlatformProfile, load_platform_profiles(), consolidated_markdown_table(), consolidated_csv()
+- aortica/edge/platform_targets.yaml — 6 platform profiles: rpi4, jetson_nano, android_snapdragon_12lead, android_snapdragon_1lead, server_cpu, server_gpu
+- aortica/cli/hardware_benchmark_cmd.py — `aortica benchmark-hardware` CLI command with --platform, --all, --format, --output options
+- tests/edge/test_hardware_benchmark.py — 42 tests with mock ONNX sessions and synthetic timing data
+
+### Files Modified
+- aortica/edge/__init__.py — Added HardwareBenchmarkReport, MetricResult, PlatformProfile, hardware_benchmark, benchmark_all_platforms, consolidated_csv/markdown, load_platform_profiles exports
+- aortica/cli/__init__.py — Registered benchmark_hardware_cmd in CLI group
+- .github/workflows/release.yml — Added cross-hardware benchmark CI step running server_cpu benchmark and blocking release on failure
+- PRD.md — Marked US-104 complete
+
+### Implementation Details
+- hardware_benchmark() runs ONNX model inference with warmup, measures latency (mean/p50/p95/p99), peak memory, throughput
+- MetricResult with pass/fail per metric against PlatformProfile targets
+- Platform profiles loaded from bundled YAML or custom file
+- Input shape adapts to platform input_mode (12-lead, 6-lead, single-lead)
+- Model variant auto-detected from filename (edge_int8, edge, full)
+- benchmark_all_platforms runs all profiles sorted by name
+- Markdown table and CSV output for performance card integration
+- CLI exits with code 1 if any target missed (CI gate)
+
+### Test Results
+- 42/42 passed in test_hardware_benchmark.py
+- mypy: Success (only pre-existing yaml stubs warning)
+
+### Learnings
+- Mock onnxruntime sessions work well for testing benchmark logic without real ONNX files
+- resource.getrusage maxrss units differ between macOS (bytes) and Linux (KB) — need platform detection
+- Token bucket from previous iteration informed the metric comparison pattern (threshold + pass/fail)
+---

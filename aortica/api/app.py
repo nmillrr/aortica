@@ -208,6 +208,12 @@ def create_app(
     validation_router = create_validation_router()
     app.include_router(validation_router)
 
+    # Mount result browser router
+    from aortica.api.result_endpoints import create_result_browser_router
+
+    result_browser_router = create_result_browser_router()
+    app.include_router(result_browser_router)
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:
