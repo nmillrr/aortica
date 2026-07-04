@@ -1,42 +1,46 @@
 import { Link } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 import './Dashboard.css';
 
 const STATS = [
-  { label: 'ECGs Analyzed',    value: '1,247',  change: '+12%',  trend: 'up'   },
-  { label: 'Flagged Findings', value: '89',     change: '+3%',   trend: 'up'   },
-  { label: 'Edge Inferences',  value: '392',    change: '+24%',  trend: 'up'   },
-  { label: 'Avg Confidence',   value: '94.2%',  change: '+0.8%', trend: 'up'   },
+  { key: 'ecgsAnalyzed',    value: '1,247',  change: '+12%',  trend: 'up'   },
+  { key: 'flaggedFindings', value: '89',     change: '+3%',   trend: 'up'   },
+  { key: 'edgeInferences',  value: '392',    change: '+24%',  trend: 'up'   },
+  { key: 'avgConfidence',   value: '94.2%',  change: '+0.8%', trend: 'up'   },
 ] as const;
 
 const RECENT = [
-  { id: 'ecg-001', patient: 'Patient #4821', time: '2 min ago',  finding: 'AF detected',         severity: 'high'   },
-  { id: 'ecg-002', patient: 'Patient #4820', time: '15 min ago', finding: 'Normal Sinus Rhythm',  severity: 'normal' },
-  { id: 'ecg-003', patient: 'Patient #4819', time: '43 min ago', finding: 'LBBB',                 severity: 'medium' },
-  { id: 'ecg-004', patient: 'Patient #4818', time: '1 hr ago',   finding: 'LVH suspected',        severity: 'medium' },
-  { id: 'ecg-005', patient: 'Patient #4817', time: '2 hr ago',   finding: 'Normal Sinus Rhythm',  severity: 'normal' },
+  { id: 'ecg-001', patient: 4821, time: '2 min ago',  finding: 'AF',                  severity: 'high'   },
+  { id: 'ecg-002', patient: 4820, time: '15 min ago', finding: 'Normal Sinus Rhythm', severity: 'normal' },
+  { id: 'ecg-003', patient: 4819, time: '43 min ago', finding: 'LBBB',                severity: 'medium' },
+  { id: 'ecg-004', patient: 4818, time: '1 hr ago',   finding: 'LVH',                 severity: 'medium' },
+  { id: 'ecg-005', patient: 4817, time: '2 hr ago',   finding: 'Normal Sinus Rhythm', severity: 'normal' },
 ] as const;
 
 const TASKS = [
-  { name: 'Rhythm',     classes: 22, icon: '♥' },
-  { name: 'Structural', classes: 15, icon: '◇' },
-  { name: 'Ischaemia',  classes: 10, icon: '△' },
-  { name: 'Risk',       classes: 3,  icon: '⚡' },
+  { key: 'rhythm',     classes: 22, icon: '♥' },
+  { key: 'structural', classes: 15, icon: '◇' },
+  { key: 'ischaemia',  classes: 10, icon: '△' },
+  { key: 'risk',       classes: 3,  icon: '⚡' },
 ] as const;
 
 export function Dashboard() {
+  const { t, i18n } = useTranslation();
+  const numberFmt = new Intl.NumberFormat(i18n.resolvedLanguage);
+
   return (
     <div className="dashboard" id="page-dashboard">
       {/* Hero welcome */}
       <section className="dashboard-hero">
         <div className="dashboard-hero-text">
           <h2 className="dashboard-hero-title">
-            Welcome to <span className="text-accent">Aortica</span>
+            <Trans i18nKey="dashboard.heroTitle" components={{ accent: <span className="text-accent" /> }} />
           </h2>
           <p className="dashboard-hero-subtitle">
-            AI-powered ECG analysis platform — multi-task deep learning with explainable predictions.
+            {t('dashboard.heroSubtitle')}
           </p>
           <Link to="/upload" className="btn btn-primary" id="hero-upload-btn">
-            ↑ Upload ECG
+            {t('dashboard.uploadBtn')}
           </Link>
         </div>
       </section>
@@ -44,8 +48,8 @@ export function Dashboard() {
       {/* Stats */}
       <section className="dashboard-stats" id="stats-grid">
         {STATS.map(stat => (
-          <div className="stat-card card" key={stat.label}>
-            <span className="stat-label">{stat.label}</span>
+          <div className="stat-card card" key={stat.key}>
+            <span className="stat-label">{t(`dashboard.stats.${stat.key}`)}</span>
             <span className="stat-value">{stat.value}</span>
             <span className={`stat-change stat-change--${stat.trend}`}>
               {stat.change}
@@ -59,8 +63,8 @@ export function Dashboard() {
         {/* Recent */}
         <section className="dashboard-recent card" id="recent-ecgs">
           <div className="card-header">
-            <h3 className="card-title">Recent ECGs</h3>
-            <Link to="/batch" className="card-action btn-ghost btn">View all</Link>
+            <h3 className="card-title">{t('dashboard.recentEcgs')}</h3>
+            <Link to="/batch" className="card-action btn-ghost btn">{t('common.viewAll')}</Link>
           </div>
           <ul className="recent-list">
             {RECENT.map(ecg => (
@@ -69,8 +73,10 @@ export function Dashboard() {
                   <div className="recent-info">
                     <span className={`recent-severity-dot severity-${ecg.severity}`} />
                     <div>
-                      <span className="recent-patient">{ecg.patient}</span>
-                      <span className="recent-finding">{ecg.finding}</span>
+                      <span className="recent-patient">
+                        {t('dashboard.patient', 'Patient #{{id}}', { id: numberFmt.format(ecg.patient) })}
+                      </span>
+                      <span className="recent-finding">{t(`conditions.${ecg.finding}`, ecg.finding)}</span>
                     </div>
                   </div>
                   <span className="recent-time">{ecg.time}</span>
@@ -82,19 +88,19 @@ export function Dashboard() {
 
         {/* Task heads overview */}
         <section className="dashboard-tasks" id="task-heads-overview">
-          <h3 className="dashboard-section-title">Multi-Task Engine</h3>
+          <h3 className="dashboard-section-title">{t('dashboard.multiTaskEngine')}</h3>
           <div className="task-cards">
             {TASKS.map(task => (
-              <div className="task-card card" key={task.name}>
+              <div className="task-card card" key={task.key}>
                 <span className="task-icon">{task.icon}</span>
-                <span className="task-name">{task.name}</span>
-                <span className="task-classes">{task.classes} classes</span>
+                <span className="task-name">{t(`dashboard.tasks.${task.key}`)}</span>
+                <span className="task-classes">{t('dashboard.classes', { count: task.classes })}</span>
               </div>
             ))}
           </div>
           <div className="model-badge">
             <span className="model-badge-dot" />
-            <span>Model v0.2.0 — full precision</span>
+            <span>{t('dashboard.modelBadge')}</span>
           </div>
         </section>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useCallback, type FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import './AdverseEventForm.css';
 
 /* ---------- Types -------------------------------------------------------- */
@@ -16,11 +17,11 @@ interface AdverseEventFormProps {
 
 type Severity = 'minor' | 'moderate' | 'serious' | 'critical';
 
-const SEVERITY_OPTIONS: { value: Severity; label: string; icon: string }[] = [
-  { value: 'minor', label: 'Minor', icon: '●' },
-  { value: 'moderate', label: 'Moderate', icon: '▲' },
-  { value: 'serious', label: 'Serious', icon: '◆' },
-  { value: 'critical', label: 'Critical', icon: '⬟' },
+const SEVERITY_OPTIONS: { value: Severity; icon: string }[] = [
+  { value: 'minor', icon: '●' },
+  { value: 'moderate', icon: '▲' },
+  { value: 'serious', icon: '◆' },
+  { value: 'critical', icon: '⬟' },
 ];
 
 /* ---------- Component ---------------------------------------------------- */
@@ -31,6 +32,7 @@ export function AdverseEventForm({
   onSubmitted,
   onCancel,
 }: AdverseEventFormProps) {
+  const { t } = useTranslation();
   const [reporterId, setReporterId] = useState('');
   const [ecgRef, setEcgRef] = useState(ecgReference);
   const [description, setDescription] = useState('');
@@ -115,16 +117,19 @@ export function AdverseEventForm({
       <div className="adverse-event-form" id="adverse-event-form">
         <div className="ae-form-card ae-success">
           <div className="ae-success-icon">✓</div>
-          <h3>Report Submitted</h3>
+          <h3>{t('adverseEvent.submitted')}</h3>
           <p>
-            Your adverse event report has been recorded.
-            <br />
-            This information helps improve AI safety.
+            {t('adverseEvent.submittedMessage').split('\n').map((line, i) => (
+              <span key={i}>
+                {i > 0 && <br />}
+                {line}
+              </span>
+            ))}
           </p>
-          <div className="ae-success-id">Event ID: {submittedId}</div>
+          <div className="ae-success-id">{t('adverseEvent.eventId', { id: submittedId })}</div>
           <div>
             <button className="ae-submit-btn" onClick={handleReset}>
-              Submit Another Report
+              {t('adverseEvent.submitAnother')}
             </button>
           </div>
         </div>
@@ -136,12 +141,8 @@ export function AdverseEventForm({
   return (
     <div className="adverse-event-form" id="adverse-event-form">
       <div className="ae-form-header">
-        <h2>⚠ Adverse Event Report</h2>
-        <p>
-          Report an adverse event where AI findings may have contributed to a
-          patient safety concern. All reports are stored in an immutable audit
-          trail for post-market surveillance.
-        </p>
+        <h2>{t('adverseEvent.title')}</h2>
+        <p>{t('adverseEvent.description')}</p>
       </div>
 
       <form className="ae-form-card" onSubmit={handleSubmit}>
@@ -150,14 +151,14 @@ export function AdverseEventForm({
         {/* Reporter ID */}
         <div className="ae-field">
           <label htmlFor="ae-reporter-id">
-            Reporter ID<span className="ae-required">*</span>
+            {t('adverseEvent.reporterId')}<span className="ae-required">{t('common.required')}</span>
           </label>
           <input
             id="ae-reporter-id"
             type="text"
             value={reporterId}
             onChange={(e) => setReporterId(e.target.value)}
-            placeholder="e.g. dr_smith, clinician_042"
+            placeholder={t('adverseEvent.reporterPlaceholder')}
             required
           />
         </div>
@@ -165,14 +166,14 @@ export function AdverseEventForm({
         {/* ECG Reference */}
         <div className="ae-field">
           <label htmlFor="ae-ecg-reference">
-            ECG Reference<span className="ae-required">*</span>
+            {t('adverseEvent.ecgReference')}<span className="ae-required">{t('common.required')}</span>
           </label>
           <input
             id="ae-ecg-reference"
             type="text"
             value={ecgRef}
             onChange={(e) => setEcgRef(e.target.value)}
-            placeholder="ECG recording ID or hash"
+            placeholder={t('adverseEvent.ecgRefPlaceholder')}
             required
           />
         </div>
@@ -180,7 +181,7 @@ export function AdverseEventForm({
         {/* Severity */}
         <div className="ae-field">
           <label>
-            Severity<span className="ae-required">*</span>
+            {t('adverseEvent.severity')}<span className="ae-required">{t('common.required')}</span>
           </label>
           <div className="ae-severity-grid">
             {SEVERITY_OPTIONS.map((opt) => (
@@ -194,7 +195,7 @@ export function AdverseEventForm({
                 id={`ae-severity-${opt.value}`}
               >
                 <span className="ae-severity-icon">{opt.icon}</span>
-                <span className="ae-severity-label">{opt.label}</span>
+                <span className="ae-severity-label">{t(`adverseEvent.severityOptions.${opt.value}`)}</span>
               </button>
             ))}
           </div>
@@ -203,14 +204,14 @@ export function AdverseEventForm({
         {/* AI Finding */}
         <div className="ae-field">
           <label htmlFor="ae-ai-finding">
-            AI Finding That Contributed<span className="ae-required">*</span>
+            {t('adverseEvent.aiFinding')}<span className="ae-required">{t('common.required')}</span>
           </label>
           <input
             id="ae-ai-finding"
             type="text"
             value={finding}
             onChange={(e) => setFinding(e.target.value)}
-            placeholder="e.g. normal_sinus_rhythm, AF"
+            placeholder={t('adverseEvent.aiFindingPlaceholder')}
             required
           />
         </div>
@@ -218,25 +219,25 @@ export function AdverseEventForm({
         {/* Event Description */}
         <div className="ae-field">
           <label htmlFor="ae-description">
-            Event Description<span className="ae-required">*</span>
+            {t('adverseEvent.eventDescription')}<span className="ae-required">{t('common.required')}</span>
           </label>
           <textarea
             id="ae-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe the adverse event, including relevant clinical context…"
+            placeholder={t('adverseEvent.eventDescPlaceholder')}
             required
           />
         </div>
 
         {/* Patient Outcome */}
         <div className="ae-field">
-          <label htmlFor="ae-patient-outcome">Patient Outcome</label>
+          <label htmlFor="ae-patient-outcome">{t('adverseEvent.patientOutcome')}</label>
           <textarea
             id="ae-patient-outcome"
             value={patientOutcome}
             onChange={(e) => setPatientOutcome(e.target.value)}
-            placeholder="Describe the patient outcome (optional)"
+            placeholder={t('adverseEvent.outcomePlaceholder')}
             rows={3}
           />
         </div>
@@ -245,10 +246,7 @@ export function AdverseEventForm({
         <div className="ae-disclaimer">
           <span className="ae-disclaimer-icon">ℹ</span>
           <span className="ae-disclaimer-text">
-            This report is voluntary and confidential. All submitted events are
-            stored in an append-only audit trail and cannot be modified or
-            deleted. Reports help improve AI safety and are reviewed as part of
-            post-market surveillance.
+            {t('adverseEvent.disclaimer')}
           </span>
         </div>
 
@@ -256,7 +254,7 @@ export function AdverseEventForm({
         <div className="ae-submit-row">
           {onCancel && (
             <button type="button" className="ae-cancel-btn" onClick={onCancel}>
-              Cancel
+              {t('common.cancel')}
             </button>
           )}
           <button
@@ -265,7 +263,7 @@ export function AdverseEventForm({
             disabled={!isValid || isSubmitting}
             id="ae-submit-btn"
           >
-            {isSubmitting ? 'Submitting…' : 'Submit Report'}
+            {isSubmitting ? t('adverseEvent.submitting') : t('adverseEvent.submitReport')}
           </button>
         </div>
       </form>

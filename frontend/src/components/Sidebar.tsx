@@ -1,17 +1,20 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ConnectionStatusBanner } from './ConnectionStatusBanner';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
-  { to: '/',              icon: '⌂', label: 'Dashboard' },
-  { to: '/upload',        icon: '↑', label: 'Upload ECG' },
-  { to: '/history',       icon: '📋', label: 'ECG History' },
-  { to: '/batch',         icon: '⊞', label: 'Batch Analysis' },
-  { to: '/report-event',  icon: '⚠', label: 'Report Event' },
-  { to: '/admin',         icon: '⚙', label: 'Admin' },
+  { to: '/',              icon: '⌂', id: 'dashboard',    labelKey: 'nav.dashboard' },
+  { to: '/upload',        icon: '↑', id: 'upload',       labelKey: 'nav.uploadEcg' },
+  { to: '/history',       icon: '📋', id: 'history',      labelKey: 'nav.ecgHistory' },
+  { to: '/batch',         icon: '⊞', id: 'batch',        labelKey: 'nav.batchAnalysis' },
+  { to: '/report-event',  icon: '⚠', id: 'report-event', labelKey: 'nav.reportEvent' },
+  { to: '/admin',         icon: '⚙', id: 'admin',        labelKey: 'nav.admin' },
 ] as const;
 
 export function Sidebar() {
+  const { t } = useTranslation();
+
   return (
     <aside className="sidebar" id="sidebar-nav">
       {/* Brand */}
@@ -20,8 +23,8 @@ export function Sidebar() {
           <span className="sidebar-logo-icon">♥</span>
         </div>
         <div className="sidebar-brand-text">
-          <span className="sidebar-brand-name">Aortica</span>
-          <span className="sidebar-brand-version">v0.2.0</span>
+          <span className="sidebar-brand-name">{t('common.appName')}</span>
+          <span className="sidebar-brand-version">{t('common.version')}</span>
         </div>
       </div>
 
@@ -36,10 +39,10 @@ export function Sidebar() {
                 className={({ isActive }) =>
                   `sidebar-nav-link ${isActive ? 'active' : ''}`
                 }
-                id={`nav-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                id={`nav-${item.id}`}
               >
                 <span className="sidebar-nav-icon">{item.icon}</span>
-                <span className="sidebar-nav-label">{item.label}</span>
+                <span className="sidebar-nav-label">{t(item.labelKey)}</span>
               </NavLink>
             </li>
           ))}

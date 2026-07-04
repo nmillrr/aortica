@@ -1,0 +1,303 @@
+{
+  "common": {
+    "appName": "Aortica",
+    "version": "v0.2.0",
+    "loading": "Chargement…",
+    "cancel": "Annuler",
+    "submit": "Soumettre",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "viewAll": "Tout voir",
+    "search": "Rechercher patients, ECG…",
+    "noData": "Aucune donnée disponible",
+    "error": "Erreur",
+    "success": "Succès",
+    "required": "*",
+    "optional": "(facultatif)",
+    "footer": "Auto-hébergé · Aucune donnée ne quitte votre déploiement"
+  },
+
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "uploadEcg": "Téléverser un ECG",
+    "ecgHistory": "Historique ECG",
+    "batchAnalysis": "Analyse par lots",
+    "reportEvent": "Signaler un événement",
+    "admin": "Administration"
+  },
+
+  "header": {
+    "dashboard": "Tableau de bord",
+    "uploadEcg": "Téléverser un ECG",
+    "batchAnalysis": "Analyse par lots",
+    "analysisResults": "Résultats d'analyse",
+    "userMenu": "Menu utilisateur"
+  },
+
+  "dashboard": {
+    "heroTitle": "Bienvenue sur <accent>Aortica</accent>",
+    "heroSubtitle": "Plateforme d'analyse ECG par IA — apprentissage profond multi-tâche avec prédictions explicables.",
+    "uploadBtn": "↑ Téléverser un ECG",
+    "recentEcgs": "ECG récents",
+    "multiTaskEngine": "Moteur multi-tâche",
+    "modelBadge": "Modèle v0.2.0 — pleine précision",
+    "classes": "{{count}} classes",
+    "stats": {
+      "ecgsAnalyzed": "ECG analysés",
+      "flaggedFindings": "Résultats signalés",
+      "edgeInferences": "Inférences en périphérie",
+      "avgConfidence": "Confiance moyenne"
+    },
+    "tasks": {
+      "rhythm": "Rythme",
+      "structural": "Structurel",
+      "ischaemia": "Ischémie",
+      "risk": "Risque"
+    }
+  },
+
+  "login": {
+    "title": "Aortica",
+    "subtitle": "Plateforme d'analyse ECG par IA",
+    "email": "Courriel",
+    "password": "Mot de passe",
+    "signIn": "Se connecter",
+    "signingIn": "Connexion en cours…",
+    "orContinueWith": "ou continuer avec",
+    "useApiKey": "Utiliser une clé API",
+    "authenticate": "Authentifier",
+    "invalidEmail": "Courriel ou mot de passe invalide",
+    "loginFailed": "Échec de la connexion. Veuillez réessayer.",
+    "invalidApiKey": "Clé API invalide",
+    "apiKeyFailed": "Échec de la validation de la clé API",
+    "enterApiKey": "Veuillez entrer une clé API"
+  },
+
+  "upload": {
+    "title": "Téléverser un fichier ECG",
+    "subtitle": "Glissez-déposez votre fichier ECG ici, ou cliquez pour parcourir",
+    "browseFiles": "Parcourir les fichiers",
+    "analyzeEcg": "Analyser l'ECG",
+    "supportedFormats": "Formats pris en charge",
+    "analyzingEcg": "Analyse de l'ECG",
+    "formatWarning": "⚠ Format non reconnu — la détection automatique sera tentée",
+    "errorTitle": "Erreur d'analyse",
+    "unsupportedFormat": "Format de fichier non pris en charge. Veuillez téléverser un fichier dans l'un des formats ECG pris en charge.",
+    "fileTooLarge": "Fichier trop volumineux. Veuillez téléverser un fichier ECG plus petit.",
+    "analysisFailed": "Échec de l'analyse : {{message}}. Veuillez vérifier votre connexion et réessayer.",
+    "pipeline": {
+      "readingFile": "Lecture du fichier ECG",
+      "denoising": "Débruitage du signal",
+      "qualityAssessment": "Évaluation de la qualité",
+      "aiInference": "Inférence IA multi-tâche",
+      "generatingReport": "Génération du rapport"
+    }
+  },
+
+  "copilot": {
+    "title": "Copilote IA",
+    "findingsCount": "{{count}} résultat",
+    "findingsCount_other": "{{count}} résultats",
+    "critical": "Critique",
+    "criticalCount": "⚠ {{count}} Critique(s)",
+    "warning": "Avertissement",
+    "info": "Info",
+    "disclaimer": "Aide à la décision uniquement — nécessite le jugement clinique",
+    "noFindings": "Aucun résultat significatif détecté",
+    "noFindingsSub": "Toutes les têtes de tâche rapportent des prédictions sous le seuil. Poursuivez l'évaluation clinique de routine.",
+    "viewOnWaveform": "Cliquer pour voir {{name}} sur la forme d'onde avec l'explication XAI",
+    "urgency": {
+      "routine": "De routine",
+      "prompt": "Rapide",
+      "urgent": "Urgent",
+      "emergent": "Émergent"
+    }
+  },
+
+  "connection": {
+    "server": "Serveur — Modèle complet",
+    "serverDetail": "Connecté au serveur local",
+    "offline": "Mode hors ligne — Modèle en périphérie",
+    "offlineDetail": "Inférence WASM dans le navigateur",
+    "checking": "Vérification de la connexion…",
+    "checkingDetail": "Tentative de contact du serveur"
+  },
+
+  "feedback": {
+    "accepted": "✓ Accepté",
+    "rejected": "✗ Rejeté",
+    "modified": "✎ Modifié",
+    "changeFeedback": "Modifier le retour",
+    "modifyPlaceholder": "Décrivez votre modification…",
+    "acceptTitle": "Accepter ce résultat",
+    "rejectTitle": "Rejeter ce résultat",
+    "modifyTitle": "Modifier ce résultat"
+  },
+
+  "adverseEvent": {
+    "title": "⚠ Rapport d'événement indésirable",
+    "description": "Signalez un événement indésirable où les résultats de l'IA ont pu contribuer à un problème de sécurité du patient. Tous les rapports sont stockés dans un journal d'audit immuable pour la surveillance post-commercialisation.",
+    "reporterId": "Identifiant du déclarant",
+    "reporterPlaceholder": "ex. dr_dupont, clinicien_042",
+    "ecgReference": "Référence ECG",
+    "ecgRefPlaceholder": "ID ou hash de l'enregistrement ECG",
+    "severity": "Gravité",
+    "aiFinding": "Résultat IA ayant contribué",
+    "aiFindingPlaceholder": "ex. rythme_sinusal_normal, FA",
+    "eventDescription": "Description de l'événement",
+    "eventDescPlaceholder": "Décrivez l'événement indésirable, y compris le contexte clinique pertinent…",
+    "patientOutcome": "Issue pour le patient",
+    "outcomePlaceholder": "Décrivez l'issue pour le patient (facultatif)",
+    "disclaimer": "Ce rapport est volontaire et confidentiel. Tous les événements soumis sont stockés dans un journal d'audit en ajout seul et ne peuvent être modifiés ni supprimés. Les rapports aident à améliorer la sécurité de l'IA et sont examinés dans le cadre de la surveillance post-commercialisation.",
+    "submitReport": "Soumettre le rapport",
+    "submitting": "Envoi en cours…",
+    "submitted": "Rapport soumis",
+    "submittedMessage": "Votre rapport d'événement indésirable a été enregistré.\nCette information contribue à améliorer la sécurité de l'IA.",
+    "eventId": "ID de l'événement : {{id}}",
+    "submitAnother": "Soumettre un autre rapport",
+    "severityOptions": {
+      "minor": "Mineur",
+      "moderate": "Modéré",
+      "serious": "Grave",
+      "critical": "Critique"
+    }
+  },
+
+  "results": {
+    "title": "Résultats d'analyse"
+  },
+
+  "batch": {
+    "title": "Analyse par lots"
+  },
+
+  "history": {
+    "title": "Historique ECG"
+  },
+
+  "admin": {
+    "title": "Tableau de bord d'administration",
+    "tabs": {
+      "users": "Utilisateurs",
+      "apiKeys": "Clés API",
+      "systemHealth": "Santé du système",
+      "activityLog": "Journal d'activité"
+    }
+  },
+
+  "conditions": {
+    "AF": "Fibrillation auriculaire",
+    "AFL": "Flutter auriculaire",
+    "SVT": "Tachycardie supraventriculaire",
+    "AVNRT": "Tachycardie par réentrée nodale AV",
+    "AVRT": "Tachycardie par réentrée AV",
+    "VT": "Tachycardie ventriculaire",
+    "VF": "Fibrillation ventriculaire",
+    "Idioventricular": "Rythme idioventriculaire",
+    "Sinus Brady": "Bradycardie sinusale",
+    "Sinus Tachy": "Tachycardie sinusale",
+    "Sinus Tachycardia": "Tachycardie sinusale",
+    "PAC": "Extrasystole auriculaire",
+    "PVC": "Extrasystole ventriculaire",
+    "1st AVB": "Bloc AV du 1er degré",
+    "2nd AVB": "Bloc AV du 2e degré",
+    "3rd AVB": "Bloc AV du 3e degré",
+    "LBBB": "Bloc de branche gauche",
+    "RBBB": "Bloc de branche droit",
+    "LAFB": "Hémibloc antérieur gauche",
+    "LPFB": "Hémibloc postérieur gauche",
+    "WPW": "Syndrome de Wolff-Parkinson-White",
+    "Pacemaker": "Rythme de stimulateur",
+    "Normal Sinus": "Rythme sinusal normal",
+    "Normal Sinus Rhythm": "Rythme sinusal normal",
+    "LVH": "Hypertrophie ventriculaire gauche",
+    "RVH": "Hypertrophie ventriculaire droite",
+    "LVSD": "Dysfonction systolique ventriculaire gauche",
+    "HFpEF Risk": "Risque d'IC à fraction d'éjection préservée",
+    "DCM": "Cardiomyopathie dilatée",
+    "HCM": "Cardiomyopathie hypertrophique",
+    "ARVC": "Cardiomyopathie arythmogène du ventricule droit",
+    "Amyloidosis": "Amylose cardiaque",
+    "Aortic Stenosis": "Sténose aortique",
+    "Mitral Regurgitation": "Régurgitation mitrale",
+    "Pulmonary HTN": "Hypertension pulmonaire",
+    "LA Enlargement": "Dilatation auriculaire gauche",
+    "RA Enlargement": "Dilatation auriculaire droite",
+    "Pericarditis": "Péricardite",
+    "Pericarditis Pattern": "Aspect de péricardite",
+    "Myocarditis": "Myocardite",
+    "Myocarditis Pattern": "Aspect de myocardite",
+    "STEMI": "Infarctus du myocarde avec sus-décalage du segment ST",
+    "Posterior MI": "Infarctus du myocarde postérieur",
+    "Occlusive NSTEMI": "NSTEMI occlusif",
+    "Old MI": "Ancien infarctus du myocarde",
+    "Hyperkalaemia": "Hyperkaliémie",
+    "Hypokalaemia": "Hypokaliémie",
+    "Hypercalcaemia": "Hypercalcémie",
+    "Hypothyroidism": "Hypothyroïdie",
+    "Hypothyroidism Pattern": "Aspect d'hypothyroïdie",
+    "Digitalis": "Effet digitalique",
+    "Digitalis Effect": "Effet digitalique",
+    "QTc Prolongation": "Allongement du QTc"
+  },
+
+  "suggestions": {
+    "AF": "Évaluer le risque d'AVC (CHA₂DS₂-VASc) et envisager une anticoagulation",
+    "AFL": "Consultation de cardiologie recommandée pour le contrôle du rythme/fréquence",
+    "SVT": "Si symptomatique, envisager des manœuvres vagales ou de l'adénosine",
+    "AVNRT": "Consultation d'électrophysiologie pour envisager une ablation",
+    "AVRT": "Consultation d'électrophysiologie — évaluer la voie accessoire",
+    "VT": "Avis cardiologique urgent — évaluer la stabilité hémodynamique",
+    "VF": "Défibrillation immédiate et protocole ACLS",
+    "Idioventricular": "Surveillance — généralement autolimité après reperfusion",
+    "Sinus Brady": "Évaluer les symptômes ; rechercher les causes réversibles",
+    "Sinus Tachy": "Évaluer la cause sous-jacente (fièvre, douleur, état volémique)",
+    "PAC": "Généralement bénin — rassurer sauf si très symptomatique",
+    "PVC": "Si fréquentes (>10%), envisager une échocardiographie",
+    "1st AVB": "Surveillance — généralement bénin sauf si progressif",
+    "2nd AVB": "Différencier Mobitz I de II — avis cardiologique si Mobitz II",
+    "3rd AVB": "Cardiologie urgente — une stimulation temporaire peut être nécessaire",
+    "LBBB": "Un nouveau BBG justifie un bilan de syndrome coronarien aigu",
+    "RBBB": "Évaluer la surcharge cardiaque droite si d'apparition récente",
+    "LAFB": "Généralement bénin — noter pour la surveillance des tendances",
+    "LPFB": "Rare — envisager une évaluation de cardiopathie structurelle",
+    "WPW": "Consultation d'électrophysiologie — stratification du risque de mort subite",
+    "Pacemaker": "Vérifier la capture et la détection appropriées du stimulateur",
+    "Normal Sinus": "Rythme sinusal normal — aucune action spécifique nécessaire",
+    "LVH": "Optimisation de la pression artérielle et évaluation échographique",
+    "RVH": "Évaluer l'hypertension pulmonaire ou la surcharge cardiaque droite",
+    "LVSD": "Échocardiographie et bilan d'insuffisance cardiaque recommandés",
+    "HFpEF Risk": "NT-proBNP et épreuve d'effort peuvent clarifier le diagnostic",
+    "DCM": "Consultation de cardiologie pour imagerie complète",
+    "HCM": "Dépistage familial et évaluation du risque de mort subite",
+    "ARVC": "IRM cardiaque et tests génétiques recommandés",
+    "Amyloidosis": "Envisager scintigraphie Tc-PYP et consultation d'hématologie",
+    "Aortic Stenosis": "Échocardiographie pour évaluation valvulaire",
+    "Mitral Regurgitation": "Évaluation échocardiographique pour gradation de la sévérité",
+    "Pulmonary HTN": "Un cathétérisme cardiaque droit peut être nécessaire",
+    "LA Enlargement": "Évaluer le risque de fibrillation auriculaire et la valvulopathie",
+    "RA Enlargement": "Évaluer la surcharge de volume/pression du cœur droit",
+    "Pericarditis": "AINS ± colchicine ; exclure un épanchement",
+    "Myocarditis": "IRM cardiaque et suivi de la troponine recommandés",
+    "STEMI": "Activer la salle de cathétérisme — délai porte-à-ballon critique",
+    "Posterior MI": "Obtenir les dérivations postérieures (V7-V9) ; envisager cathétérisme en urgence",
+    "Occlusive NSTEMI": "Troponines en série et consultation de cardiologie urgente",
+    "Old MI": "Vérifier avec les ECG antérieurs ; optimiser la prévention secondaire",
+    "Hyperkalaemia": "Ionogramme urgent — gluconate de calcium si sévère",
+    "Hypokalaemia": "Ionogramme à vérifier et supplémentation en potassium",
+    "Hypercalcaemia": "Vérifier la calcémie corrigée et l'hormone parathyroïdienne",
+    "Hypothyroidism": "Bilan thyroïdien recommandé",
+    "Digitalis": "Vérifier la digoxinémie — évaluer les signes de toxicité",
+    "QTc Prolongation": "Réviser les médicaments allongeant le QT ; vérifier les électrolytes"
+  },
+
+  "languageSelector": {
+    "label": "Langue",
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "sw": "Kiswahili"
+  }
+}

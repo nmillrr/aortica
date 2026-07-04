@@ -2203,3 +2203,39 @@ Implement admin dashboard with user management, API key management, system healt
 - Activity log bounded deque naturally handles FIFO eviction without explicit cleanup
 - Role-based access control as a dependency factory (closure over user_store) keeps the pattern reusable
 ---
+
+## Iteration US-107 - Multi-Language Internationalization for Web UI
+### Goal
+Integrate react-i18next into the React frontend with en/fr/es/sw locales, a header language selector with runtime switching + localStorage persistence, RTL stub, Intl-based formatting, and localized condition names.
+
+### Files Created
+- frontend/src/components/LanguageSelector.tsx — header dropdown; changes i18n language at runtime, persisted via LanguageDetector
+- frontend/src/components/LanguageSelector.css — dark-theme select styling, RTL-aware arrow position
+- .claude/launch.json — preview dev server config (npm --prefix frontend run dev, port 5173)
+
+### Files Modified
+- frontend/src/main.tsx — import './i18n' to bootstrap i18next before render
+- frontend/src/i18n.ts — added supportedLngs, applyDocumentLanguage() syncing <html> lang+dir on languageChanged (RTL stub)
+- frontend/src/components/Header.tsx — localized page titles + search placeholder + user-menu aria; mounted LanguageSelector
+- frontend/src/components/Sidebar.tsx — localized nav labels + brand via t(); stable id keys
+- frontend/src/pages/Dashboard.tsx — localized hero (Trans with <accent>), stats, tasks, recent findings via conditions.* ; Intl.NumberFormat for patient IDs
+- frontend/src/pages/Login.tsx — localized all labels, buttons, errors, footer
+- frontend/src/components/CopilotPanel.tsx — localized title/count/critical badge/disclaimer/empty state, severity + urgency labels, condition names (conditions.*) and suggestion text (suggestions.*) with fallbacks
+- frontend/src/components/AdverseEventForm.tsx — localized full form incl. severity options and success state
+- PRD.md — marked US-107 complete
+
+### Test Results
+- Pre-existing complete locale files (en/fr/es/sw, 303/303/303/266 lines) — no changes needed
+- tsc -b: clean (exit 0)
+- npm run build: success (103 modules, PWA precache generated)
+- Browser verify: login page en→fr via localStorage+reload; dashboard fully French after login (nav, stats, task heads, localized condition names, Intl number "4 821"); selector switch fr→en updated header/hero/nav with NO reload; <html lang> updated; localStorage 'aortica_language' persisted; zero console errors
+
+### Learnings
+- i18n.ts and locale JSON were pre-scaffolded (deps installed) but NOT wired: main.tsx wasn't importing './i18n' and no component used useTranslation — that was the whole gap
+- react-i18next v17 t() supports t(key, defaultValue, options) 3-arg form for inline fallbacks (used for condition names not in the conditions map)
+- Use <Trans i18nKey=... components={{ accent: <span/> }} /> for strings with embedded markup like "Welcome to <accent>Aortica</accent>"
+- LanguageDetector with caches:['localStorage'] + lookupLocalStorage handles persistence automatically; changeLanguage() alone triggers the languageChanged listener that sets <html dir> for the RTL stub
+- Model findings use abbreviation keys (AF, LBBB) which match the conditions.* map; full names fall back to themselves
+- Preview launch.json runs from repo root — needed npm --prefix frontend since package.json is in frontend/
+- preview_fill sets input .value but doesn't fire React's synthetic onChange, so form-driven login state stays empty; seed auth via localStorage (aortica_auth_tokens/user) + navigate to reach protected routes
+---

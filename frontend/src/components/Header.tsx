@@ -1,18 +1,23 @@
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LanguageSelector } from './LanguageSelector';
 import './Header.css';
 
-const PAGE_TITLES: Record<string, string> = {
-  '/':       'Dashboard',
-  '/upload': 'Upload ECG',
-  '/batch':  'Batch Analysis',
+const PAGE_TITLE_KEYS: Record<string, string> = {
+  '/':       'header.dashboard',
+  '/upload': 'header.uploadEcg',
+  '/batch':  'header.batchAnalysis',
 };
 
 export function Header() {
   const { pathname } = useLocation();
+  const { t } = useTranslation();
 
-  const title = pathname.startsWith('/results/')
-    ? 'Analysis Results'
-    : PAGE_TITLES[pathname] ?? 'Aortica';
+  const titleKey = pathname.startsWith('/results/')
+    ? 'header.analysisResults'
+    : PAGE_TITLE_KEYS[pathname];
+
+  const title = titleKey ? t(titleKey) : t('common.appName');
 
   return (
     <header className="header glass" id="app-header">
@@ -25,11 +30,12 @@ export function Header() {
           <input
             type="text"
             className="header-search-input"
-            placeholder="Search patients, ECGs..."
+            placeholder={t('common.search')}
             id="global-search"
           />
         </div>
-        <button className="header-avatar btn-ghost" id="user-menu-btn" aria-label="User menu">
+        <LanguageSelector />
+        <button className="header-avatar btn-ghost" id="user-menu-btn" aria-label={t('header.userMenu')}>
           <span className="header-avatar-initials">A</span>
         </button>
       </div>

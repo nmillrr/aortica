@@ -1,0 +1,303 @@
+{
+  "common": {
+    "appName": "Aortica",
+    "version": "v0.2.0",
+    "loading": "Loading…",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close",
+    "viewAll": "View all",
+    "search": "Search patients, ECGs…",
+    "noData": "No data available",
+    "error": "Error",
+    "success": "Success",
+    "required": "*",
+    "optional": "(optional)",
+    "footer": "Self-hosted · No data leaves your deployment"
+  },
+
+  "nav": {
+    "dashboard": "Dashboard",
+    "uploadEcg": "Upload ECG",
+    "ecgHistory": "ECG History",
+    "batchAnalysis": "Batch Analysis",
+    "reportEvent": "Report Event",
+    "admin": "Admin"
+  },
+
+  "header": {
+    "dashboard": "Dashboard",
+    "uploadEcg": "Upload ECG",
+    "batchAnalysis": "Batch Analysis",
+    "analysisResults": "Analysis Results",
+    "userMenu": "User menu"
+  },
+
+  "dashboard": {
+    "heroTitle": "Welcome to <accent>Aortica</accent>",
+    "heroSubtitle": "AI-powered ECG analysis platform — multi-task deep learning with explainable predictions.",
+    "uploadBtn": "↑ Upload ECG",
+    "recentEcgs": "Recent ECGs",
+    "multiTaskEngine": "Multi-Task Engine",
+    "modelBadge": "Model v0.2.0 — full precision",
+    "classes": "{{count}} classes",
+    "stats": {
+      "ecgsAnalyzed": "ECGs Analyzed",
+      "flaggedFindings": "Flagged Findings",
+      "edgeInferences": "Edge Inferences",
+      "avgConfidence": "Avg Confidence"
+    },
+    "tasks": {
+      "rhythm": "Rhythm",
+      "structural": "Structural",
+      "ischaemia": "Ischaemia",
+      "risk": "Risk"
+    }
+  },
+
+  "login": {
+    "title": "Aortica",
+    "subtitle": "AI-Powered ECG Analysis Platform",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "signingIn": "Signing in…",
+    "orContinueWith": "or continue with",
+    "useApiKey": "Use API Key",
+    "authenticate": "Authenticate",
+    "invalidEmail": "Invalid email or password",
+    "loginFailed": "Login failed. Please try again.",
+    "invalidApiKey": "Invalid API key",
+    "apiKeyFailed": "API key validation failed",
+    "enterApiKey": "Please enter an API key"
+  },
+
+  "upload": {
+    "title": "Upload ECG File",
+    "subtitle": "Drag & drop your ECG file here, or click to browse",
+    "browseFiles": "Browse Files",
+    "analyzeEcg": "Analyze ECG",
+    "supportedFormats": "Supported Formats",
+    "analyzingEcg": "Analyzing ECG",
+    "formatWarning": "⚠ Unrecognized format — analysis will attempt auto-detection",
+    "errorTitle": "Analysis Error",
+    "unsupportedFormat": "Unsupported file format. Please upload a file in one of the supported ECG formats.",
+    "fileTooLarge": "File too large. Please upload a smaller ECG file.",
+    "analysisFailed": "Analysis failed: {{message}}. Please check your connection and try again.",
+    "pipeline": {
+      "readingFile": "Reading ECG file",
+      "denoising": "Signal denoising",
+      "qualityAssessment": "Quality assessment",
+      "aiInference": "AI multi-task inference",
+      "generatingReport": "Generating report"
+    }
+  },
+
+  "copilot": {
+    "title": "AI Copilot",
+    "findingsCount": "{{count}} finding",
+    "findingsCount_other": "{{count}} findings",
+    "critical": "Critical",
+    "criticalCount": "⚠ {{count}} Critical",
+    "warning": "Warning",
+    "info": "Info",
+    "disclaimer": "Decision support only — requires clinician judgment",
+    "noFindings": "No significant findings detected",
+    "noFindingsSub": "All task heads report sub-threshold predictions. Continue routine clinical assessment.",
+    "viewOnWaveform": "Click to view {{name}} on waveform with XAI explanation",
+    "urgency": {
+      "routine": "Routine",
+      "prompt": "Prompt",
+      "urgent": "Urgent",
+      "emergent": "Emergent"
+    }
+  },
+
+  "connection": {
+    "server": "Server — Full Model",
+    "serverDetail": "Connected to local server",
+    "offline": "Offline Mode — Edge Model",
+    "offlineDetail": "Using in-browser WASM inference",
+    "checking": "Checking connection…",
+    "checkingDetail": "Attempting server contact"
+  },
+
+  "feedback": {
+    "accepted": "✓ Accepted",
+    "rejected": "✗ Rejected",
+    "modified": "✎ Modified",
+    "changeFeedback": "Change feedback",
+    "modifyPlaceholder": "Describe your modification…",
+    "acceptTitle": "Accept this finding",
+    "rejectTitle": "Reject this finding",
+    "modifyTitle": "Modify this finding"
+  },
+
+  "adverseEvent": {
+    "title": "⚠ Adverse Event Report",
+    "description": "Report an adverse event where AI findings may have contributed to a patient safety concern. All reports are stored in an immutable audit trail for post-market surveillance.",
+    "reporterId": "Reporter ID",
+    "reporterPlaceholder": "e.g. dr_smith, clinician_042",
+    "ecgReference": "ECG Reference",
+    "ecgRefPlaceholder": "ECG recording ID or hash",
+    "severity": "Severity",
+    "aiFinding": "AI Finding That Contributed",
+    "aiFindingPlaceholder": "e.g. normal_sinus_rhythm, AF",
+    "eventDescription": "Event Description",
+    "eventDescPlaceholder": "Describe the adverse event, including relevant clinical context…",
+    "patientOutcome": "Patient Outcome",
+    "outcomePlaceholder": "Describe the patient outcome (optional)",
+    "disclaimer": "This report is voluntary and confidential. All submitted events are stored in an append-only audit trail and cannot be modified or deleted. Reports help improve AI safety and are reviewed as part of post-market surveillance.",
+    "submitReport": "Submit Report",
+    "submitting": "Submitting…",
+    "submitted": "Report Submitted",
+    "submittedMessage": "Your adverse event report has been recorded.\nThis information helps improve AI safety.",
+    "eventId": "Event ID: {{id}}",
+    "submitAnother": "Submit Another Report",
+    "severityOptions": {
+      "minor": "Minor",
+      "moderate": "Moderate",
+      "serious": "Serious",
+      "critical": "Critical"
+    }
+  },
+
+  "results": {
+    "title": "Analysis Results"
+  },
+
+  "batch": {
+    "title": "Batch Analysis"
+  },
+
+  "history": {
+    "title": "ECG History"
+  },
+
+  "admin": {
+    "title": "Admin Dashboard",
+    "tabs": {
+      "users": "Users",
+      "apiKeys": "API Keys",
+      "systemHealth": "System Health",
+      "activityLog": "Activity Log"
+    }
+  },
+
+  "conditions": {
+    "AF": "Atrial Fibrillation",
+    "AFL": "Atrial Flutter",
+    "SVT": "Supraventricular Tachycardia",
+    "AVNRT": "AV Nodal Re-entrant Tachycardia",
+    "AVRT": "AV Re-entrant Tachycardia",
+    "VT": "Ventricular Tachycardia",
+    "VF": "Ventricular Fibrillation",
+    "Idioventricular": "Idioventricular Rhythm",
+    "Sinus Brady": "Sinus Bradycardia",
+    "Sinus Tachy": "Sinus Tachycardia",
+    "Sinus Tachycardia": "Sinus Tachycardia",
+    "PAC": "Premature Atrial Complex",
+    "PVC": "Premature Ventricular Complex",
+    "1st AVB": "1st Degree AV Block",
+    "2nd AVB": "2nd Degree AV Block",
+    "3rd AVB": "3rd Degree AV Block",
+    "LBBB": "Left Bundle Branch Block",
+    "RBBB": "Right Bundle Branch Block",
+    "LAFB": "Left Anterior Fascicular Block",
+    "LPFB": "Left Posterior Fascicular Block",
+    "WPW": "Wolff-Parkinson-White Syndrome",
+    "Pacemaker": "Pacemaker Rhythm",
+    "Normal Sinus": "Normal Sinus Rhythm",
+    "Normal Sinus Rhythm": "Normal Sinus Rhythm",
+    "LVH": "Left Ventricular Hypertrophy",
+    "RVH": "Right Ventricular Hypertrophy",
+    "LVSD": "Left Ventricular Systolic Dysfunction",
+    "HFpEF Risk": "HFpEF Risk",
+    "DCM": "Dilated Cardiomyopathy",
+    "HCM": "Hypertrophic Cardiomyopathy",
+    "ARVC": "Arrhythmogenic Right Ventricular Cardiomyopathy",
+    "Amyloidosis": "Cardiac Amyloidosis",
+    "Aortic Stenosis": "Aortic Stenosis",
+    "Mitral Regurgitation": "Mitral Regurgitation",
+    "Pulmonary HTN": "Pulmonary Hypertension",
+    "LA Enlargement": "Left Atrial Enlargement",
+    "RA Enlargement": "Right Atrial Enlargement",
+    "Pericarditis": "Pericarditis",
+    "Pericarditis Pattern": "Pericarditis Pattern",
+    "Myocarditis": "Myocarditis",
+    "Myocarditis Pattern": "Myocarditis Pattern",
+    "STEMI": "ST-Elevation Myocardial Infarction",
+    "Posterior MI": "Posterior Myocardial Infarction",
+    "Occlusive NSTEMI": "Occlusive NSTEMI",
+    "Old MI": "Old Myocardial Infarction",
+    "Hyperkalaemia": "Hyperkalaemia",
+    "Hypokalaemia": "Hypokalaemia",
+    "Hypercalcaemia": "Hypercalcaemia",
+    "Hypothyroidism": "Hypothyroidism",
+    "Hypothyroidism Pattern": "Hypothyroidism Pattern",
+    "Digitalis": "Digitalis Effect",
+    "Digitalis Effect": "Digitalis Effect",
+    "QTc Prolongation": "QTc Prolongation"
+  },
+
+  "suggestions": {
+    "AF": "Evaluate stroke risk (CHA₂DS₂-VASc) and consider anticoagulation",
+    "AFL": "Cardiology referral recommended for rate/rhythm control",
+    "SVT": "If symptomatic, consider vagal manoeuvres or adenosine",
+    "AVNRT": "Electrophysiology referral for ablation consideration",
+    "AVRT": "Electrophysiology referral — assess for accessory pathway",
+    "VT": "Urgent cardiology review — assess hemodynamic stability",
+    "VF": "Immediate defibrillation and ACLS protocol",
+    "Idioventricular": "Monitor — usually self-limiting post-reperfusion",
+    "Sinus Brady": "Assess for symptoms; consider reversible causes",
+    "Sinus Tachy": "Evaluate underlying cause (fever, pain, volume status)",
+    "PAC": "Usually benign — reassurance unless highly symptomatic",
+    "PVC": "If frequent (>10%), consider echocardiography",
+    "1st AVB": "Monitor — usually benign unless progressive",
+    "2nd AVB": "Differentiate Mobitz I vs II — cardiology input if Mobitz II",
+    "3rd AVB": "Urgent cardiology — temporary pacing may be required",
+    "LBBB": "New LBBB warrants acute coronary syndrome workup",
+    "RBBB": "Evaluate for right heart strain if new onset",
+    "LAFB": "Usually benign — note for trend monitoring",
+    "LPFB": "Rare — consider structural heart disease evaluation",
+    "WPW": "Electrophysiology referral — risk stratification for SCD",
+    "Pacemaker": "Verify appropriate pacing capture and sensing",
+    "Normal Sinus": "Normal sinus rhythm — no specific action needed",
+    "LVH": "Blood pressure optimisation and echo assessment",
+    "RVH": "Evaluate for pulmonary hypertension or right heart strain",
+    "LVSD": "Echocardiography and HF workup recommended",
+    "HFpEF Risk": "NT-proBNP and exercise testing may clarify diagnosis",
+    "DCM": "Cardiology referral for comprehensive imaging",
+    "HCM": "Family screening and SCD risk assessment",
+    "ARVC": "Cardiac MRI and genetic testing recommended",
+    "Amyloidosis": "Consider Tc-PYP scan and haematology referral",
+    "Aortic Stenosis": "Echocardiography for valve assessment",
+    "Mitral Regurgitation": "Echo assessment for severity grading",
+    "Pulmonary HTN": "Right heart catheterisation may be needed",
+    "LA Enlargement": "Evaluate atrial fibrillation risk and valvular disease",
+    "RA Enlargement": "Assess for right-sided volume/pressure overload",
+    "Pericarditis": "NSAIDs ± colchicine; rule out effusion",
+    "Myocarditis": "Cardiac MRI and troponin trend recommended",
+    "STEMI": "Activate cath lab — door-to-balloon time critical",
+    "Posterior MI": "Obtain posterior leads (V7-V9); emergent cath consideration",
+    "Occlusive NSTEMI": "Serial troponins and urgent cardiology consultation",
+    "Old MI": "Verify with prior ECGs; optimise secondary prevention",
+    "Hyperkalaemia": "Urgent electrolytes — calcium gluconate if severe",
+    "Hypokalaemia": "Electrolytes warrant checking and potassium replacement",
+    "Hypercalcaemia": "Check corrected calcium and parathyroid hormone",
+    "Hypothyroidism": "Thyroid function tests recommended",
+    "Digitalis": "Check digoxin level — assess for toxicity signs",
+    "QTc Prolongation": "Review QT-prolonging medications; electrolytes check"
+  },
+
+  "languageSelector": {
+    "label": "Language",
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "sw": "Kiswahili"
+  }
+}

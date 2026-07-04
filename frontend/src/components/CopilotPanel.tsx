@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import './CopilotPanel.css';
 
 /* ── Types ──────────────────────────────────────────── */
@@ -121,13 +122,6 @@ function classifyCopilotSeverity(
   return 'info';
 }
 
-const URGENCY_LABELS: Record<string, string> = {
-  routine:  'Routine',
-  prompt:   'Prompt',
-  urgent:   'Urgent',
-  emergent: 'Emergent',
-};
-
 /* ── Component props ─────────────────────────────────── */
 
 interface CopilotPanelProps {
@@ -149,6 +143,13 @@ export function CopilotPanel({
   onFindingClick,
   activeFinding,
 }: CopilotPanelProps) {
+  const { t } = useTranslation();
+  // Localized condition display name, falling back to the raw name from the model.
+  const conditionName = (name: string) => t(`conditions.${name}`, { defaultValue: name });
+  // Localized clinical suggestion text, falling back to the guideline default.
+  const suggestionText = (name: string, fallback: string) =>
+    t(`suggestions.${name}`, { defaultValue: fallback });
+
   // Filter positive findings above threshold and rank by confidence
   const posFindings = useMemo(() => {
     return findings
@@ -175,15 +176,14 @@ export function CopilotPanel({
         <div className="copilot-header">
           <div className="copilot-header-title">
             <span className="copilot-icon">🤖</span>
-            <h3>AI Copilot</h3>
+            <h3>{t('copilot.title')}</h3>
           </div>
         </div>
         <div className="copilot-empty" id="copilot-empty-state">
           <div className="copilot-empty-icon">✓</div>
-          <p className="copilot-empty-text">No significant findings detected</p>
+          <p className="copilot-empty-text">{t('copilot.noFindings')}</p>
           <p className="copilot-empty-sub">
-            All task heads report sub-threshold predictions.
-            Continue routine clinical assessment.
+            {t('copilot.noFindingsSub')}
           </p>
         </div>
       </div>
@@ -196,12 +196,12 @@ export function CopilotPanel({
       <div className="copilot-header">
         <div className="copilot-header-title">
           <span className="copilot-icon">🤖</span>
-          <h3>AI Copilot</h3>
-          <span className="copilot-count">{posFindings.length} finding{posFindings.length > 1 ? 's' : ''}</span>
+          <h3>{t('copilot.title')}</h3>
+          <span className="copilot-count">{t('copilot.findingsCount', { count: posFindings.length })}</span>
         </div>
         {hasCritical && (
           <span className="copilot-critical-badge" id="copilot-critical-badge">
-            ⚠ {criticalFindings.length} Critical
+            {t('copilot.criticalCount', { count: criticalFindings.length })}
           </span>
         )}
       </div>
@@ -212,7 +212,7 @@ export function CopilotPanel({
           <circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.2" />
           <path d="M7 4v3.5M7 9.5v.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
         </svg>
-        Decision support only — requires clinician judgment
+        {t('copilot.disclaimer')}
       </div>
 
       {/* Findings list */}
@@ -227,7 +227,7 @@ export function CopilotPanel({
               className={`copilot-finding ${isActive ? 'copilot-finding--active' : ''} ${isCritical ? 'copilot-finding--critical' : ''}`}
               onClick={() => onFindingClick?.(f.name, f.task)}
               id={`copilot-finding-${idx}`}
-              title={`Click to view ${f.name} on waveform with XAI explanation`}
+              title={t('copilot.viewOnWaveform', { name: conditionName(f.name) })}
             >
               {/* Rank + severity indicator */}
               <div className="copilot-finding-rank">
@@ -238,9 +238,9 @@ export function CopilotPanel({
               {/* Condition info */}
               <div className="copilot-finding-body">
                 <div className="copilot-finding-top">
-                  <span className="copilot-finding-name">{f.name}</span>
+                  <span className="copilot-finding-name">{conditionName(f.name)}</span>
                   <span className={`copilot-severity-badge copilot-severity-badge--${f.severity}`}>
-                    {f.severity === 'critical' ? 'Critical' : f.severity === 'warning' ? 'Warning' : 'Info'}
+                    {t(`copilot.${f.severity}`)}
                   </span>
                 </div>
 
@@ -261,9 +261,11 @@ export function CopilotPanel({
                 {f.suggestion && (
                   <div className="copilot-suggestion">
                     <span className={`copilot-urgency-tag copilot-urgency-tag--${f.suggestion.urgency}`}>
-                      {URGENCY_LABELS[f.suggestion.urgency] || f.suggestion.urgency}
+                      {t(`copilot.urgency.${f.suggestion.urgency}`, { defaultValue: f.suggestion.urgency })}
                     </span>
-                    <span className="copilot-suggestion-text">{f.suggestion.prompt}</span>
+                    <span className="copilot-suggestion-text">
+                      {suggestionText(f.name, f.suggestion.prompt)}
+                    </span>
                   </div>
                 )}
               </div>

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
 export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
   const { loginWithOAuth, loginWithApiKey, loginWithCredentials, isAuthenticated } = useAuth();
 
   const [email, setEmail] = useState('');
@@ -32,10 +34,10 @@ export function Login() {
       if (success) {
         navigate(from, { replace: true });
       } else {
-        setError('Invalid email or password');
+        setError(t('login.invalidEmail'));
       }
     } catch {
-      setError('Login failed. Please try again.');
+      setError(t('login.loginFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -47,7 +49,7 @@ export function Login() {
 
   const handleApiKey = async () => {
     if (!apiKey.trim()) {
-      setError('Please enter an API key');
+      setError(t('login.enterApiKey'));
       return;
     }
     setError('');
@@ -57,10 +59,10 @@ export function Login() {
       if (success) {
         navigate(from, { replace: true });
       } else {
-        setError('Invalid API key');
+        setError(t('login.invalidApiKey'));
       }
     } catch {
-      setError('API key validation failed');
+      setError(t('login.apiKeyFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -77,8 +79,8 @@ export function Login() {
           <div className="login-logo">
             <span className="login-logo-icon">♥</span>
           </div>
-          <h1 className="login-title">Aortica</h1>
-          <p className="login-subtitle">AI-Powered ECG Analysis Platform</p>
+          <h1 className="login-title">{t('login.title')}</h1>
+          <p className="login-subtitle">{t('login.subtitle')}</p>
         </div>
 
         {/* Login card */}
@@ -91,7 +93,7 @@ export function Login() {
 
           <form onSubmit={handleLogin} className="login-form">
             <div className="form-group">
-              <label htmlFor="email-input" className="form-label">Email</label>
+              <label htmlFor="email-input" className="form-label">{t('login.email')}</label>
               <input
                 type="email"
                 id="email-input"
@@ -104,7 +106,7 @@ export function Login() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="password-input" className="form-label">Password</label>
+              <label htmlFor="password-input" className="form-label">{t('login.password')}</label>
               <input
                 type="password"
                 id="password-input"
@@ -122,12 +124,12 @@ export function Login() {
               id="login-submit-btn"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Signing in…' : 'Sign In'}
+              {isSubmitting ? t('login.signingIn') : t('login.signIn')}
             </button>
           </form>
 
           <div className="login-divider">
-            <span>or continue with</span>
+            <span>{t('login.orContinueWith')}</span>
           </div>
 
           <div className="login-oauth">
@@ -154,7 +156,7 @@ export function Login() {
           {/* API key */}
           <div className="login-apikey">
             <details className="login-apikey-details">
-              <summary className="login-apikey-summary">Use API Key</summary>
+              <summary className="login-apikey-summary">{t('login.useApiKey')}</summary>
               <div className="form-group" style={{ marginTop: 'var(--space-3)' }}>
                 <input
                   type="text"
@@ -171,7 +173,7 @@ export function Login() {
                   onClick={handleApiKey}
                   disabled={isSubmitting}
                 >
-                  Authenticate
+                  {t('login.authenticate')}
                 </button>
               </div>
             </details>
@@ -179,7 +181,7 @@ export function Login() {
         </div>
 
         <p className="login-footer">
-          Self-hosted · No data leaves your deployment
+          {t('common.footer')}
         </p>
       </div>
     </div>

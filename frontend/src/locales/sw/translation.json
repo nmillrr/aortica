@@ -1,0 +1,266 @@
+{
+  "common": {
+    "appName": "Aortica",
+    "version": "v0.2.0",
+    "loading": "Inapakia…",
+    "cancel": "Ghairi",
+    "submit": "Wasilisha",
+    "save": "Hifadhi",
+    "delete": "Futa",
+    "confirm": "Thibitisha",
+    "close": "Funga",
+    "viewAll": "Tazama zote",
+    "search": "Tafuta wagonjwa, ECG…",
+    "noData": "Hakuna data inayopatikana",
+    "error": "Kosa",
+    "success": "Mafanikio",
+    "required": "*",
+    "optional": "(si lazima)",
+    "footer": "Inajihifadhi · Hakuna data inayoondoka kwenye mfumo wako"
+  },
+
+  "nav": {
+    "dashboard": "Dashibodi",
+    "uploadEcg": "Pakia ECG",
+    "ecgHistory": "Historia ya ECG",
+    "batchAnalysis": "Uchambuzi wa Kundi",
+    "reportEvent": "Ripoti Tukio",
+    "admin": "Usimamizi"
+  },
+
+  "header": {
+    "dashboard": "Dashibodi",
+    "uploadEcg": "Pakia ECG",
+    "batchAnalysis": "Uchambuzi wa Kundi",
+    "analysisResults": "Matokeo ya Uchambuzi",
+    "userMenu": "Menyu ya mtumiaji"
+  },
+
+  "dashboard": {
+    "heroTitle": "Karibu kwenye <accent>Aortica</accent>",
+    "heroSubtitle": "Jukwaa la uchambuzi wa ECG linalotumia AI — kujifunza kwa kina kwa kazi nyingi na utabiri unaofafanuliwa.",
+    "uploadBtn": "↑ Pakia ECG",
+    "recentEcgs": "ECG za Hivi Karibuni",
+    "multiTaskEngine": "Injini ya Kazi Nyingi",
+    "modelBadge": "Modeli v0.2.0 — usahihi kamili",
+    "classes": "madarasa {{count}}",
+    "stats": {
+      "ecgsAnalyzed": "ECG Zilizochambuliwa",
+      "flaggedFindings": "Matokeo Yaliyoonya",
+      "edgeInferences": "Makisio ya Ukingoni",
+      "avgConfidence": "Uhakika wa Wastani"
+    },
+    "tasks": {
+      "rhythm": "Mdundo",
+      "structural": "Muundo",
+      "ischaemia": "Iskemia",
+      "risk": "Hatari"
+    }
+  },
+
+  "login": {
+    "title": "Aortica",
+    "subtitle": "Jukwaa la Uchambuzi wa ECG linalotumia AI",
+    "email": "Barua pepe",
+    "password": "Nenosiri",
+    "signIn": "Ingia",
+    "signingIn": "Inaingia…",
+    "orContinueWith": "au endelea na",
+    "useApiKey": "Tumia Ufunguo wa API",
+    "authenticate": "Thibitisha",
+    "invalidEmail": "Barua pepe au nenosiri si sahihi",
+    "loginFailed": "Kuingia kumeshindikana. Tafadhali jaribu tena.",
+    "invalidApiKey": "Ufunguo wa API si sahihi",
+    "apiKeyFailed": "Uthibitishaji wa ufunguo wa API umeshindikana",
+    "enterApiKey": "Tafadhali weka ufunguo wa API"
+  },
+
+  "upload": {
+    "title": "Pakia Faili ya ECG",
+    "subtitle": "Buruta na udondoshe faili yako ya ECG hapa, au bofya kuvinjari",
+    "browseFiles": "Vinjari Faili",
+    "analyzeEcg": "Chambua ECG",
+    "supportedFormats": "Miundo Inayoungwa Mkono",
+    "analyzingEcg": "Inachambua ECG",
+    "formatWarning": "⚠ Muundo haujatambuliwa — utambuzi wa kiotomatiki utajaribiwa",
+    "errorTitle": "Kosa la Uchambuzi",
+    "unsupportedFormat": "Muundo wa faili haujaungwa mkono. Tafadhali pakia faili katika muundo mmoja wa ECG unaounga mkono.",
+    "fileTooLarge": "Faili ni kubwa sana. Tafadhali pakia faili ndogo zaidi ya ECG.",
+    "analysisFailed": "Uchambuzi umeshindikana: {{message}}. Tafadhali angalia muunganisho wako na jaribu tena.",
+    "pipeline": {
+      "readingFile": "Inasoma faili ya ECG",
+      "denoising": "Kupunguza kelele za ishara",
+      "qualityAssessment": "Tathmini ya ubora",
+      "aiInference": "Makisio ya AI ya kazi nyingi",
+      "generatingReport": "Inaunda ripoti"
+    }
+  },
+
+  "copilot": {
+    "title": "Msaidizi wa AI",
+    "findingsCount": "matokeo {{count}}",
+    "findingsCount_other": "matokeo {{count}}",
+    "critical": "Muhimu Sana",
+    "criticalCount": "⚠ {{count}} Muhimu Sana",
+    "warning": "Onyo",
+    "info": "Taarifa",
+    "disclaimer": "Msaada wa maamuzi tu — inahitaji uamuzi wa daktari",
+    "noFindings": "Hakuna matokeo muhimu yaliyogunduliwa",
+    "noFindingsSub": "Vichwa vyote vya kazi vinaripoti utabiri chini ya kizingiti. Endelea na tathmini ya kawaida ya kimatibabu.",
+    "viewOnWaveform": "Bofya kutazama {{name}} kwenye wimbi na maelezo ya XAI",
+    "urgency": {
+      "routine": "Kawaida",
+      "prompt": "Haraka",
+      "urgent": "Ya Dharura",
+      "emergent": "Ya Hatari"
+    }
+  },
+
+  "connection": {
+    "server": "Seva — Modeli Kamili",
+    "serverDetail": "Imeunganishwa na seva ya ndani",
+    "offline": "Hali ya Nje ya Mtandao — Modeli wa Ukingoni",
+    "offlineDetail": "Inatumia makisio ya WASM ndani ya kivinjari",
+    "checking": "Inakagua muunganisho…",
+    "checkingDetail": "Inajaribu kuwasiliana na seva"
+  },
+
+  "feedback": {
+    "accepted": "✓ Imekubaliwa",
+    "rejected": "✗ Imekataliwa",
+    "modified": "✎ Imerekebishwa",
+    "changeFeedback": "Badilisha maoni",
+    "modifyPlaceholder": "Eleza marekebisho yako…",
+    "acceptTitle": "Kubali tokeo hili",
+    "rejectTitle": "Kataa tokeo hili",
+    "modifyTitle": "Rekebisha tokeo hili"
+  },
+
+  "adverseEvent": {
+    "title": "⚠ Ripoti ya Tukio Baya",
+    "description": "Ripoti tukio baya ambapo matokeo ya AI yanaweza kuwa yamechangia wasiwasi wa usalama wa mgonjwa. Ripoti zote zinahifadhiwa katika rekodi ya ukaguzi isiyobadilika kwa ufuatiliaji baada ya soko.",
+    "reporterId": "Kitambulisho cha Mripoti",
+    "reporterPlaceholder": "mf. dk_juma, daktari_042",
+    "ecgReference": "Rejeleo la ECG",
+    "ecgRefPlaceholder": "Kitambulisho au hash ya rekodi ya ECG",
+    "severity": "Ukali",
+    "aiFinding": "Tokeo la AI Lililochangia",
+    "aiFindingPlaceholder": "mf. mdundo_wa_kawaida, AF",
+    "eventDescription": "Maelezo ya Tukio",
+    "eventDescPlaceholder": "Eleza tukio baya, ikiwemo muktadha wa kimatibabu husika…",
+    "patientOutcome": "Matokeo ya Mgonjwa",
+    "outcomePlaceholder": "Eleza matokeo ya mgonjwa (si lazima)",
+    "disclaimer": "Ripoti hii ni ya hiari na ya siri. Matukio yote yaliyowasilishwa yanahifadhiwa katika rekodi ya ukaguzi ya kuongeza tu na hayawezi kubadilishwa au kufutwa. Ripoti husaidia kuboresha usalama wa AI na zinakaguliwa kama sehemu ya ufuatiliaji baada ya soko.",
+    "submitReport": "Wasilisha Ripoti",
+    "submitting": "Inawasilisha…",
+    "submitted": "Ripoti Imewasilishwa",
+    "submittedMessage": "Ripoti yako ya tukio baya imerekodiwa.\nTaarifa hii husaidia kuboresha usalama wa AI.",
+    "eventId": "Kitambulisho cha Tukio: {{id}}",
+    "submitAnother": "Wasilisha Ripoti Nyingine",
+    "severityOptions": {
+      "minor": "Kidogo",
+      "moderate": "Wastani",
+      "serious": "Kubwa",
+      "critical": "Muhimu Sana"
+    }
+  },
+
+  "results": {
+    "title": "Matokeo ya Uchambuzi"
+  },
+
+  "batch": {
+    "title": "Uchambuzi wa Kundi"
+  },
+
+  "history": {
+    "title": "Historia ya ECG"
+  },
+
+  "admin": {
+    "title": "Dashibodi ya Usimamizi",
+    "tabs": {
+      "users": "Watumiaji",
+      "apiKeys": "Funguo za API",
+      "systemHealth": "Afya ya Mfumo",
+      "activityLog": "Kumbukumbu ya Shughuli"
+    }
+  },
+
+  "conditions": {
+    "AF": "Fibrilesheni ya Atriamu",
+    "AFL": "Flateri ya Atriamu",
+    "SVT": "Takikardia Supraventrikula",
+    "AVNRT": "Takikardia ya Kuingia Tena kwa Nodi ya AV",
+    "AVRT": "Takikardia ya Kuingia Tena kwa AV",
+    "VT": "Takikardia ya Ventrikali",
+    "VF": "Fibrilesheni ya Ventrikali",
+    "Idioventricular": "Mdundo wa Idioventrikula",
+    "Sinus Brady": "Bradikardia ya Sinus",
+    "Sinus Tachy": "Takikardia ya Sinus",
+    "Sinus Tachycardia": "Takikardia ya Sinus",
+    "PAC": "Mapigo ya Mapema ya Atriamu",
+    "PVC": "Mapigo ya Mapema ya Ventrikali",
+    "1st AVB": "Kizuizi cha AV cha Daraja la 1",
+    "2nd AVB": "Kizuizi cha AV cha Daraja la 2",
+    "3rd AVB": "Kizuizi cha AV cha Daraja la 3",
+    "LBBB": "Kizuizi cha Tawi la Kushoto",
+    "RBBB": "Kizuizi cha Tawi la Kulia",
+    "LAFB": "Kizuizi cha Fascikula ya Mbele ya Kushoto",
+    "LPFB": "Kizuizi cha Fascikula ya Nyuma ya Kushoto",
+    "WPW": "Ugonjwa wa Wolff-Parkinson-White",
+    "Pacemaker": "Mdundo wa Pacemaker",
+    "Normal Sinus": "Mdundo wa Kawaida wa Sinus",
+    "Normal Sinus Rhythm": "Mdundo wa Kawaida wa Sinus",
+    "LVH": "Hypertrophy ya Ventrikali ya Kushoto",
+    "RVH": "Hypertrophy ya Ventrikali ya Kulia",
+    "LVSD": "Udhaifu wa Sistoli ya Ventrikali ya Kushoto",
+    "HFpEF Risk": "Hatari ya HFpEF",
+    "DCM": "Kardiomyopathi Iliyopanuka",
+    "HCM": "Kardiomyopathi ya Hypertrofiki",
+    "ARVC": "Kardiomyopathi ya Aritmojeni ya Ventrikali ya Kulia",
+    "Amyloidosis": "Amyloidosi ya Moyo",
+    "Aortic Stenosis": "Stenosis ya Aota",
+    "Mitral Regurgitation": "Kurudi kwa Damu ya Mitral",
+    "Pulmonary HTN": "Shinikizo la Juu la Mapafu",
+    "LA Enlargement": "Kupanuka kwa Atriamu ya Kushoto",
+    "RA Enlargement": "Kupanuka kwa Atriamu ya Kulia",
+    "Pericarditis": "Perikaditi",
+    "Pericarditis Pattern": "Mfumo wa Perikaditi",
+    "Myocarditis": "Myokaditi",
+    "Myocarditis Pattern": "Mfumo wa Myokaditi",
+    "STEMI": "Mshtuko wa Moyo na Kuinuka kwa ST",
+    "Posterior MI": "Mshtuko wa Moyo wa Nyuma",
+    "Occlusive NSTEMI": "NSTEMI Inayoziba",
+    "Old MI": "Mshtuko wa Moyo wa Zamani",
+    "Hyperkalaemia": "Potasiamu Kupita Kiasi",
+    "Hypokalaemia": "Upungufu wa Potasiamu",
+    "Hypercalcaemia": "Kalsiamu Kupita Kiasi",
+    "Hypothyroidism": "Upungufu wa Thyroidi",
+    "Hypothyroidism Pattern": "Mfumo wa Upungufu wa Thyroidi",
+    "Digitalis": "Athari ya Digitali",
+    "Digitalis Effect": "Athari ya Digitali",
+    "QTc Prolongation": "Kurefuka kwa QTc"
+  },
+
+  "suggestions": {
+    "AF": "Tathmini hatari ya kiharusi (CHA₂DS₂-VASc) na uzingatie kuzuia damu kuganda",
+    "AFL": "Rufaa ya moyo inapendekezwa kwa udhibiti wa mdundo/mapigo",
+    "SVT": "Kama una dalili, zingatia mbinu za vagal au adenosine",
+    "VT": "Mapitio ya dharura ya moyo — tathmini uthabiti wa hemodynamiki",
+    "VF": "Defibrillation ya haraka na itifaki ya ACLS",
+    "3rd AVB": "Moyo wa dharura — pacing ya muda inaweza kuhitajika",
+    "LBBB": "LBBB mpya inahitaji uchunguzi wa ugonjwa wa moyo wa papo hapo",
+    "STEMI": "Anzisha chumba cha catheter — muda wa mlango-hadi-puto ni muhimu",
+    "Hyperkalaemia": "Elektroliti za dharura — kalsiamu gluconate ikiwa ni kali",
+    "Normal Sinus": "Mdundo wa kawaida wa sinus — hakuna hatua maalum inayohitajika"
+  },
+
+  "languageSelector": {
+    "label": "Lugha",
+    "en": "English",
+    "fr": "Français",
+    "es": "Español",
+    "sw": "Kiswahili"
+  }
+}

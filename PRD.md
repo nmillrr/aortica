@@ -938,17 +938,17 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-060 provides localization for simplified CHW output, and US-061b/US-061c provide localization for deployment guides and the Android app. But the main React web UI — which clinicians interact with daily — has no i18n support. For LMIC deployment success, the web UI must support at minimum French, Spanish, and Swahili alongside English.
 
 **Acceptance Criteria:**
-- [ ] `react-i18next` library integrated into the React frontend
-- [ ] All user-facing strings extracted to JSON locale files in `frontend/src/locales/{lang}/translation.json`
-- [ ] Locale files provided: English (en, complete), French (fr, complete), Spanish (es, complete), Swahili (sw, template stub with high-priority strings translated)
-- [ ] Language selector in the header/settings allowing runtime language switching without page reload
-- [ ] Selected language persisted in `localStorage` and applied on next visit
-- [ ] Clinical terminology follows locale-appropriate medical conventions (e.g., "ischaemia" vs. "ischemia" for en-GB vs. en-US)
-- [ ] RTL layout support stubbed for future Arabic/Hebrew localization (CSS logical properties used throughout)
-- [ ] Date and number formatting follows locale conventions via `Intl` API
-- [ ] All condition names in the copilot panel, results panels, and explanation cards use localized display names from the locale files
-- [ ] Verify changes work in browser with at least English and French
-- [ ] Typecheck passes
+- [x] `react-i18next` library integrated into the React frontend
+- [x] All user-facing strings extracted to JSON locale files in `frontend/src/locales/{lang}/translation.json`
+- [x] Locale files provided: English (en, complete), French (fr, complete), Spanish (es, complete), Swahili (sw, template stub with high-priority strings translated)
+- [x] Language selector in the header/settings allowing runtime language switching without page reload
+- [x] Selected language persisted in `localStorage` and applied on next visit
+- [x] Clinical terminology follows locale-appropriate medical conventions (e.g., "ischaemia" vs. "ischemia" for en-GB vs. en-US)
+- [x] RTL layout support stubbed for future Arabic/Hebrew localization (CSS logical properties used throughout)
+- [x] Date and number formatting follows locale conventions via `Intl` API
+- [x] All condition names in the copilot panel, results panels, and explanation cards use localized display names from the locale files
+- [x] Verify changes work in browser with at least English and French
+- [x] Typecheck passes
 
 ---
 
