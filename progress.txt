@@ -2284,3 +2284,44 @@ Makefile with `make dev`/`make prod`, an nginx TLS reverse proxy for prod, a
 - `docker compose config` renders volumes/networks alongside services, so grep for service names, not a bare service count.
 - run pytest via `.venv/bin/activate` then `python -m pytest` (`python` alone isn't on PATH without the venv).
 ---
+
+## Iteration US-109 - aortica.io Landing Page and Distribution Portal
+### Goal
+Static landing page (public face of the project) deployable to GitHub Pages:
+hero with animated ECG background, 6 feature cards, clinical mission, demo,
+download portal, docs link, footer, full SEO, mobile-responsive + a combined
+Pages deploy workflow (landing at root, MkDocs docs under /docs/).
+
+### Files Created
+- landing/index.html — full single-page site; SEO (meta description/keywords, canonical, OG + Twitter cards), Schema.org SoftwareApplication JSON-LD; sections: hero, features(6), mission(4 cards), demo, download(4)
+- landing/styles.css — brand-consistent dark theme (matches web UI: #0b0e14 bg, #e63946 accent, Inter); responsive breakpoints at 860/620px; prefers-reduced-motion support
+- landing/main.js — canvas ECG animations (hero scrolling PQRST waveform + demo strip with XAI attribution overlay), dependency-free, DPR-aware
+- landing/favicon.svg, landing/og-image.svg (1200x630) — ECG-glyph brand assets
+- landing/robots.txt, landing/sitemap.xml — SEO
+- .github/workflows/pages.yml — combined Pages deploy: builds MkDocs (--strict), assembles _site/ with landing at root + site/ under _site/docs/, uploads + deploy-pages
+
+### Files Modified
+- .github/workflows/docs.yml — REMOVED (superseded; two deploy-pages workflows would race for the single Pages artifact/root)
+- mkdocs.yml — site_url -> https://nmillrr.github.io/aortica/docs/ (docs now served at /docs subpath)
+- .claude/launch.json — added "aortica-landing" static preview server (python3 -m http.server 4173 --directory landing)
+- PRD.md — marked US-109 complete
+
+### Verification
+- Live browser (preview): hero renders with animated red ECG waveform bg, full nav, gradient title "AI ECG Copilot — Open Source", CTAs, pip install pill; features grid = 3 cols desktop / 1 col mobile; both canvases painting; primary btn = rgb(230,57,70) brand accent; docs link href ./docs/
+- Mobile (375px): features/mission/demo/footer all collapse to 1 column, NO horizontal overflow
+- Zero console logs/errors
+- node --check main.js OK; HTML well-formed (no unclosed tags); JSON-LD parses as SoftwareApplication w/ license; 6 feature + 4 download + 4 mission cards; all distribution links present (pypi/dockerhub/gh releases/HF); pages.yml + launch.json valid
+- Regression: tests/deployment 29/29, test_packaging 33/33 (no Python touched)
+
+### Design Decisions
+- Chose plain HTML/CSS/JS (no build step, no TS) → "Typecheck passes (if using TS)" is N/A and Pages serves files directly.
+- GitHub Pages serves ONE artifact at the site root. Since docs.yml already owned the root via actions/deploy-pages, I consolidated to a single pages.yml that deploys BOTH (landing root + docs /docs/) to avoid two workflows racing on the "pages" concurrency group. This required moving docs to the /docs/ subpath (mkdocs site_url updated).
+- Feature cards link to REAL doc nav paths (api/models, api/xai, api/edge, federated/ONBOARDING, api/rest, regulatory/FDA_SAMD_PRESUB) using MkDocs directory URLs.
+
+### Learnings for future iterations
+- Preview harness port-probe is SLOW to flip python http.server from "starting"->"running" (tens of seconds). Do NOT manually set window.location.href to localhost:PORT — the preview browser reaches the server via the harness proxy, not localhost; hijacking navigation lands on chrome-error://. Just wait for status "running" (poll preview_list) and let the harness auto-load, then snapshot/screenshot.
+- Bash sandbox CANNOT curl the preview port (returns 000) — it's network-isolated from the preview. Verify via preview_eval/preview_snapshot, or validate files structurally with node --check / a Python HTMLParser instead.
+- preview_screenshot captures the viewport TOP after a resize (scroll resets); use preview_eval getComputedStyle/getBoundingClientRect to verify below-the-fold sections rather than scroll+screenshot.
+- launch.json supports multiple configs; a static site preview = {runtimeExecutable:"python3", runtimeArgs:["-m","http.server","<port>","--directory","<dir>"], port:<port>}.
+- Two actions/deploy-pages workflows on the same repo conflict — there must be exactly ONE Pages deployer; combine artifacts in one workflow.
+---

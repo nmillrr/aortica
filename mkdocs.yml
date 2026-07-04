@@ -1,6 +1,6 @@
 site_name: Aortica Documentation
 site_description: Open-source AI ECG analysis platform — documentation, API reference, and deployment guides.
-site_url: https://nmillrr.github.io/aortica/
+site_url: https://nmillrr.github.io/aortica/docs/
 repo_url: https://github.com/nmillrr/aortica
 repo_name: nmillrr/aortica
 

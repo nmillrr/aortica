@@ -1,13 +1,19 @@
-name: Deploy Documentation
+name: Deploy Site (Landing + Docs)
+
+# Publishes the aortica.io landing page at the Pages root and the MkDocs
+# documentation site under /docs/. Single deployer for GitHub Pages so the two
+# artifacts never race for the site root.
 
 on:
   push:
     branches:
       - main
     paths:
+      - 'landing/**'
       - 'docs/**'
       - 'mkdocs.yml'
       - 'aortica/**'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -40,10 +46,18 @@ jobs:
       - name: Build documentation
         run: mkdocs build --strict
 
+      - name: Assemble site (landing at root, docs under /docs)
+        run: |
+          rm -rf _site
+          mkdir -p _site
+          cp -r landing/. _site/
+          mkdir -p _site/docs
+          cp -r site/. _site/docs/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site/
+          path: _site/
 
   deploy:
     needs: build

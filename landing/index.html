@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ── Primary meta ─────────────────────────────────────────────── -->
+  <title>Aortica — AI ECG Copilot, Open Source</title>
+  <meta name="description" content="Aortica is an open-source AI ECG copilot for cardiologists. Multi-task deep learning, calibrated uncertainty, clinical-language explainability, and edge deployment — self-hosted and privacy-first." />
+  <meta name="keywords" content="ECG, AI, electrocardiogram, cardiology, copilot, deep learning, open source, edge AI, explainable AI, federated learning" />
+  <meta name="author" content="Aortica" />
+  <meta name="theme-color" content="#0b0e14" />
+  <link rel="canonical" href="https://aortica.io/" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+  <!-- ── Open Graph ───────────────────────────────────────────────── -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Aortica" />
+  <meta property="og:title" content="Aortica — AI ECG Copilot, Open Source" />
+  <meta property="og:description" content="An open-source AI ECG copilot that catches the subtle, edge-case findings most dangerous when missed. Self-hosted, privacy-first, and accessible everywhere cardiologists practice." />
+  <meta property="og:url" content="https://aortica.io/" />
+  <meta property="og:image" content="https://aortica.io/og-image.svg" />
+
+  <!-- ── Twitter card ─────────────────────────────────────────────── -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Aortica — AI ECG Copilot, Open Source" />
+  <meta name="twitter:description" content="An open-source AI ECG copilot for cardiologists — accurate on the hard cases, trustworthy in its confidence, explainable in clinical language." />
+  <meta name="twitter:image" content="https://aortica.io/og-image.svg" />
+
+  <!-- ── Structured data (Schema.org SoftwareApplication) ─────────── -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Aortica",
+    "applicationCategory": "HealthApplication",
+    "applicationSubCategory": "AI ECG Analysis",
+    "operatingSystem": "Linux, macOS, Windows, ARM (Raspberry Pi)",
+    "description": "Open-source AI ECG copilot for cardiologists with multi-task deep learning, calibrated uncertainty, clinical-language explainability, and edge deployment.",
+    "url": "https://aortica.io/",
+    "downloadUrl": "https://pypi.org/project/aortica/",
+    "softwareVersion": "0.2.0",
+    "license": "https://www.apache.org/licenses/LICENSE-2.0",
+    "codeRepository": "https://github.com/nmillrr/aortica",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "Aortica"
+    }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ── Navigation ─────────────────────────────────────────────── -->
+  <header class="nav" id="top">
+    <a class="nav__brand" href="#top" aria-label="Aortica home">
+      <span class="nav__logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+          <path d="M1 16h6l2-7 4 14 3-11 2 4h3l2-3h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="nav__name">Aortica</span>
+    </a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#mission">Mission</a>
+      <a href="#download">Download</a>
+      <a href="#demo">Demo</a>
+      <a href="./docs/">Docs</a>
+      <a class="nav__cta" href="https://github.com/nmillrr/aortica" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ── Hero ─────────────────────────────────────────────────── -->
+    <section class="hero">
+      <canvas class="hero__ecg" id="ecg-canvas" aria-hidden="true"></canvas>
+      <div class="hero__content">
+        <p class="hero__eyebrow">Open Source · Self-Hosted · Privacy-First</p>
+        <h1 class="hero__title">AI ECG Copilot<span class="hero__title-dash">—</span><span class="hero__title-accent">Open Source</span></h1>
+        <p class="hero__subtitle">
+          A decision-support tool that sits alongside cardiologists and catches the subtle,
+          edge-case findings that are most dangerous when missed. Accurate on the hard cases,
+          trustworthy in its confidence, explainable in clinical language.
+        </p>
+        <div class="hero__cta">
+          <a class="btn btn--primary" href="./docs/getting-started/quickstart/">Get Started</a>
+          <a class="btn btn--secondary" href="#download">Download</a>
+          <a class="btn btn--ghost" href="#demo">Live Demo</a>
+        </div>
+        <p class="hero__install"><code>pip install aortica</code></p>
+      </div>
+    </section>
+
+    <!-- ── Features ─────────────────────────────────────────────── -->
+    <section class="section" id="features">
+      <div class="section__head">
+        <h2 class="section__title">Everything a copilot needs</h2>
+        <p class="section__lead">Six pillars, one shared backbone — each built for the mission.</p>
+      </div>
+      <div class="features">
+        <a class="feature" href="./docs/api/models/">
+          <span class="feature__icon" aria-hidden="true">🫀</span>
+          <h3 class="feature__title">Multi-Task AI</h3>
+          <p class="feature__body">Four task heads — rhythm, structural, ischaemia, and risk — share a single ResNet backbone with cross-lead temporal attention.</p>
+          <span class="feature__link">Model reference →</span>
+        </a>
+        <a class="feature" href="./docs/api/xai/">
+          <span class="feature__icon" aria-hidden="true">🔍</span>
+          <h3 class="feature__title">Explainability</h3>
+          <p class="feature__body">Integrated-gradient attribution mapped to named ECG features, plus a VAE latent factor model — explanations in clinical language.</p>
+          <span class="feature__link">XAI reference →</span>
+        </a>
+        <a class="feature" href="./docs/api/edge/">
+          <span class="feature__icon" aria-hidden="true">📟</span>
+          <h3 class="feature__title">Edge Deployment</h3>
+          <p class="feature__body">ONNX export with INT8 quantization runs on ARM hardware — Raspberry Pi and Jetson — for care delivered anywhere.</p>
+          <span class="feature__link">Edge reference →</span>
+        </a>
+        <a class="feature" href="./docs/federated/ONBOARDING/">
+          <span class="feature__icon" aria-hidden="true">🌐</span>
+          <h3 class="feature__title">Federated Learning</h3>
+          <p class="feature__body">Train across sites without moving patient data, with differential privacy and equity-gating CI checks built in.</p>
+          <span class="feature__link">Federated onboarding →</span>
+        </a>
+        <a class="feature" href="./docs/api/rest/">
+          <span class="feature__icon" aria-hidden="true">🔗</span>
+          <h3 class="feature__title">EHR Integration</h3>
+          <p class="feature__body">FHIR R4 / HL7 interoperability, DICOM SR write-back, and worklist prioritization — copilot findings flow into the clinical workflow.</p>
+          <span class="feature__link">REST API →</span>
+        </a>
+        <a class="feature" href="./docs/regulatory/FDA_SAMD_PRESUB/">
+          <span class="feature__icon" aria-hidden="true">📋</span>
+          <h3 class="feature__title">Regulatory Readiness</h3>
+          <p class="feature__body">Document templates for IEC 80601-2-86, FDA SaMD pre-submission, CE-MDR, and TRIPOD/STARD/CONSORT-AI reporting.</p>
+          <span class="feature__link">Regulatory library →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ── Clinical Mission ─────────────────────────────────────── -->
+    <section class="section section--mission" id="mission">
+      <div class="mission">
+        <div class="mission__intro">
+          <p class="section__eyebrow">Clinical Mission</p>
+          <h2 class="section__title">Built for the hard cases</h2>
+          <p class="mission__lead">
+            Cardiologists are highly skilled at routine ECG interpretation — but certain patterns are
+            reliably difficult for even experienced readers. Aortica's identity is an
+            <strong>AI ECG copilot</strong> that catches exactly those.
+          </p>
+          <p class="mission__note">
+            Every feature — from edge deployment to federated learning — serves one goal: a copilot that is
+            <strong>accurate on the hard cases</strong>, <strong>trustworthy in its confidence estimates</strong>,
+            <strong>explainable in clinical language</strong>, and <strong>accessible everywhere cardiologists practice</strong>.
+          </p>
+        </div>
+        <ul class="mission__grid">
+          <li class="mission__card">
+            <h3>Edge-case arrhythmias</h3>
+            <p>Intermittent pre-excitation (WPW), Brugada type 2/3, subtle atrial flutter with variable block, junctional rhythms masquerading as sinus, fascicular VT.</p>
+          </li>
+          <li class="mission__card">
+            <h3>Strain patterns</h3>
+            <p>Early LV strain from hypertension or aortic stenosis, RV strain in PE (S1Q3T3), Takotsubo vs. ACS, and infiltrative cardiomyopathies.</p>
+          </li>
+          <li class="mission__card">
+            <h3>Hiding in plain sight</h3>
+            <p>De Winter T-waves, Wellens syndrome, aVR ST-elevation, subtle QTc prolongation, and Sgarbossa criteria in paced/LBBB rhythms.</p>
+          </li>
+          <li class="mission__card">
+            <h3>Risk signals</h3>
+            <p>ECG-derived markers of future AF onset, subclinical LV dysfunction, and progressive conduction disease before symptomatic block.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── Demo ─────────────────────────────────────────────────── -->
+    <section class="section section--demo" id="demo">
+      <div class="section__head">
+        <h2 class="section__title">See the copilot in action</h2>
+        <p class="section__lead">Multi-task predictions, XAI overlay, and a copilot panel on a sample 12-lead ECG.</p>
+      </div>
+      <div class="demo">
+        <div class="demo__viz">
+          <div class="demo__strip-label">Lead II · 500 Hz · sample record</div>
+          <canvas class="demo__ecg" id="demo-canvas" aria-label="Sample ECG waveform with model attribution overlay"></canvas>
+          <div class="demo__legend">
+            <span><span class="dot dot--trace"></span>ECG trace</span>
+            <span><span class="dot dot--attr"></span>XAI attribution</span>
+          </div>
+        </div>
+        <aside class="demo__panel" aria-label="Copilot findings">
+          <div class="demo__panel-head">
+            <span class="demo__panel-title">Copilot Findings</span>
+            <span class="badge badge--critical">1 critical</span>
+          </div>
+          <ul class="demo__findings">
+            <li class="finding finding--critical">
+              <div class="finding__row"><span class="finding__name">Anterior STEMI pattern</span><span class="finding__conf">0.91</span></div>
+              <div class="finding__bar"><i style="width:91%"></i></div>
+              <p class="finding__why">De Winter–like T-waves in V2–V4; aVR ST-elevation flagged.</p>
+            </li>
+            <li class="finding finding--urgent">
+              <div class="finding__row"><span class="finding__name">Atrial fibrillation</span><span class="finding__conf">0.63</span></div>
+              <div class="finding__bar finding__bar--warn"><i style="width:63%"></i></div>
+            </li>
+            <li class="finding">
+              <div class="finding__row"><span class="finding__name">LV hypertrophy</span><span class="finding__conf">0.38</span></div>
+              <div class="finding__bar finding__bar--ok"><i style="width:38%"></i></div>
+            </li>
+          </ul>
+          <div class="demo__uncertainty">✓ In-distribution · entropy 0.12</div>
+          <p class="demo__disclaimer">Illustrative output. Not for clinical use.</p>
+        </aside>
+      </div>
+      <div class="demo__cta">
+        <a class="btn btn--secondary" href="https://github.com/nmillrr/aortica#quick-start" target="_blank" rel="noopener">Run the live demo locally</a>
+        <span class="demo__cta-note">Spin up the full stack with <code>make dev</code>, then open the web UI.</span>
+      </div>
+    </section>
+
+    <!-- ── Download ─────────────────────────────────────────────── -->
+    <section class="section section--download" id="download">
+      <div class="section__head">
+        <h2 class="section__title">Download &amp; install</h2>
+        <p class="section__lead">Self-hosted everywhere — no data ever leaves your deployment site.</p>
+      </div>
+      <div class="downloads">
+        <a class="download" href="https://pypi.org/project/aortica/" target="_blank" rel="noopener">
+          <span class="download__icon" aria-hidden="true">🐍</span>
+          <h3 class="download__title">PyPI</h3>
+          <code class="download__cmd">pip install aortica</code>
+          <span class="download__link">pypi.org/project/aortica →</span>
+        </a>
+        <a class="download" href="https://hub.docker.com/u/aortica" target="_blank" rel="noopener">
+          <span class="download__icon" aria-hidden="true">🐳</span>
+          <h3 class="download__title">Docker Hub</h3>
+          <code class="download__cmd">docker pull aortica/server</code>
+          <span class="download__link">Server (amd64) &amp; edge (arm64) images →</span>
+        </a>
+        <a class="download" href="https://github.com/nmillrr/aortica/releases" target="_blank" rel="noopener">
+          <span class="download__icon" aria-hidden="true">📦</span>
+          <h3 class="download__title">GitHub Releases</h3>
+          <code class="download__cmd">Android APK · ONNX models</code>
+          <span class="download__link">github.com/nmillrr/aortica/releases →</span>
+        </a>
+        <a class="download" href="https://huggingface.co/nmillrr/aortica" target="_blank" rel="noopener">
+          <span class="download__icon" aria-hidden="true">🤗</span>
+          <h3 class="download__title">HuggingFace Hub</h3>
+          <code class="download__cmd">Pre-trained checkpoints</code>
+          <span class="download__link">huggingface.co/nmillrr/aortica →</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Footer ─────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <span class="nav__logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="24" height="24" fill="none">
+            <path d="M1 16h6l2-7 4 14 3-11 2 4h3l2-3h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="footer__name">Aortica</span>
+        <p class="footer__tagline">AI ECG Copilot — Open Source</p>
+      </div>
+      <nav class="footer__col" aria-label="Project">
+        <h4>Project</h4>
+        <a href="https://github.com/nmillrr/aortica" target="_blank" rel="noopener">GitHub Repository</a>
+        <a href="./docs/">Documentation</a>
+        <a href="https://github.com/nmillrr/aortica/issues" target="_blank" rel="noopener">Issue Tracker</a>
+        <a href="https://github.com/nmillrr/aortica/blob/main/LICENSE" target="_blank" rel="noopener">License (Apache 2.0)</a>
+      </nav>
+      <nav class="footer__col" aria-label="Community">
+        <h4>Community</h4>
+        <a href="https://github.com/nmillrr/aortica/discussions" target="_blank" rel="noopener">Discussions</a>
+        <a href="./docs/contributing/setup/">Contributing</a>
+        <a href="https://github.com/nmillrr/aortica/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noopener">Code of Conduct</a>
+      </nav>
+      <div class="footer__col footer__cite">
+        <h4>Cite Aortica</h4>
+        <p class="footer__citation">Aortica: An Open-Source AI ECG Copilot. 2026. Apache-2.0. <br />github.com/nmillrr/aortica</p>
+      </div>
+    </div>
+    <div class="footer__bar">
+      <span>© 2026 Aortica · Licensed under Apache 2.0</span>
+      <span class="footer__disclaimer">Research and decision-support use. Not a substitute for clinical judgment.</span>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>

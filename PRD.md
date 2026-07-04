@@ -1151,18 +1151,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** The PRD introduction states Aortica is "distributed via aortica.io" with "download links, documentation, and demo assets." This story delivers that landing page as a static site (deployable to GitHub Pages, Netlify, or Vercel) that serves as the public face of the project.
 
 **Acceptance Criteria:**
-- [ ] `landing/` directory with static site (HTML/CSS/JS or lightweight framework like Astro/11ty)
-- [ ] Hero section: project name, tagline ("AI ECG Copilot — Open Source"), animated ECG waveform background, prominent CTA buttons: "Get Started" → docs, "Download" → releases, "Live Demo" → hosted demo
-- [ ] Features section: 6 feature cards covering multi-task AI, explainability, edge deployment, federated learning, EHR integration, and regulatory readiness — each linking to relevant docs
-- [ ] Clinical mission section: adapted from PRD Clinical Mission content, emphasizing the copilot identity and hard-case detection capability
-- [ ] Download section: links to PyPI (`pip install aortica`), Docker Hub images, GitHub releases (APK, ONNX models), and HuggingFace Hub (pre-trained checkpoints)
-- [ ] Demo section: embedded or linked interactive demo with a sample ECG showing multi-task predictions, XAI overlay, and copilot panel (can use static screenshot + link to hosted instance initially)
-- [ ] Documentation link: routes to MkDocs site (US-058)
-- [ ] Footer: GitHub repo link, license (Apache 2.0), citation info, community links
-- [ ] SEO: proper meta tags, Open Graph tags for social sharing, structured data (Schema.org SoftwareApplication)
-- [ ] Mobile-responsive design
-- [ ] GitHub Actions deployment to GitHub Pages on push to `main`
-- [ ] Typecheck passes (if using TypeScript framework)
+- [x] `landing/` directory with static site (HTML/CSS/JS or lightweight framework like Astro/11ty)
+- [x] Hero section: project name, tagline ("AI ECG Copilot — Open Source"), animated ECG waveform background, prominent CTA buttons: "Get Started" → docs, "Download" → releases, "Live Demo" → hosted demo
+- [x] Features section: 6 feature cards covering multi-task AI, explainability, edge deployment, federated learning, EHR integration, and regulatory readiness — each linking to relevant docs
+- [x] Clinical mission section: adapted from PRD Clinical Mission content, emphasizing the copilot identity and hard-case detection capability
+- [x] Download section: links to PyPI (`pip install aortica`), Docker Hub images, GitHub releases (APK, ONNX models), and HuggingFace Hub (pre-trained checkpoints)
+- [x] Demo section: embedded or linked interactive demo with a sample ECG showing multi-task predictions, XAI overlay, and copilot panel (can use static screenshot + link to hosted instance initially)
+- [x] Documentation link: routes to MkDocs site (US-058)
+- [x] Footer: GitHub repo link, license (Apache 2.0), citation info, community links
+- [x] SEO: proper meta tags, Open Graph tags for social sharing, structured data (Schema.org SoftwareApplication)
+- [x] Mobile-responsive design
+- [x] GitHub Actions deployment to GitHub Pages on push to `main`
+- [x] Typecheck passes (if using TypeScript framework)
 
 ---
 

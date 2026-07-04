@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0e14"/>
+      <stop offset="1" stop-color="#161b28"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="12%" r="70%">
+      <stop offset="0" stop-color="#e63946" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#e63946" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <path d="M60 340h120l40-150 70 300 55-230 40 90h70l35-60h545"
+        fill="none" stroke="#e63946" stroke-width="6"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+  <text x="80" y="200" fill="#e8ecf4" font-family="Inter, sans-serif"
+        font-size="88" font-weight="800" letter-spacing="-2">Aortica</text>
+  <text x="82" y="470" fill="#e8ecf4" font-family="Inter, sans-serif"
+        font-size="52" font-weight="700">AI ECG Copilot</text>
+  <text x="82" y="470" dx="430" fill="#e63946" font-family="Inter, sans-serif"
+        font-size="52" font-weight="700"> — Open Source</text>
+  <text x="82" y="540" fill="#8b95b0" font-family="Inter, sans-serif"
+        font-size="30" font-weight="500">Accurate on the hard cases · Self-hosted · Privacy-first</text>
+</svg>
