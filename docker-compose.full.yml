@@ -1,0 +1,167 @@
+# docker-compose.full.yml — Aortica full-stack development environment
+#
+# Brings up the complete Aortica stack with a single command:
+#
+#     make dev          # API + frontend (Vite) + docs + edge   (dev profile)
+#     make prod         # API + docs + edge + nginx TLS proxy   (prod profile)
+#
+# Or directly:
+#
+#     docker compose -f docker-compose.full.yml --profile dev up --build
+#
+# Service ports (host):
+#   api      → http://localhost:8000        (FastAPI + ONNX Runtime)
+#   frontend → http://localhost:5173        (React / Vite dev server, dev profile)
+#   docs     → http://localhost:8001        (MkDocs Material)
+#   proxy    → https://localhost:8443       (nginx reverse proxy + TLS, prod profile)
+#
+# Shared host directories (create automatically on first run):
+#   ./data    SQLite result databases
+#   ./models  model checkpoints (.pt / .onnx)
+#   ./logs    application logs
+
+services:
+  # ── FastAPI backend + ONNX Runtime ──────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+      target: runtime
+    image: aortica-server:latest
+    ports:
+      - "${AORTICA_API_PORT:-8000}:8000"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - aortica-cache:/home/aortica/.cache/aortica
+    environment:
+      AORTICA_ENV: development
+      AORTICA_LOG_LEVEL: ${AORTICA_LOG_LEVEL:-info}
+      AORTICA_MODEL_PATH: ${AORTICA_MODEL_PATH:-}
+      AORTICA_JWT_SECRET: ${AORTICA_JWT_SECRET:-aortica-dev-secret-change-me}
+      AORTICA_SYNC_URL: ${AORTICA_SYNC_URL:-}
+      AORTICA_DATA_DIR: /app/data
+      AORTICA_LOG_DIR: /app/logs
+      AORTICA_RATE_LIMIT_ENABLED: ${AORTICA_RATE_LIMIT_ENABLED:-true}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+
+  # ── React frontend (Vite dev server) ────────────────────────────────
+  # Development profile only. Production serves the built app via `proxy`.
+  frontend:
+    profiles: ["dev"]
+    image: node:22-slim
+    working_dir: /app
+    ports:
+      - "${AORTICA_FRONTEND_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend-node-modules:/app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_API_URL: http://localhost:${AORTICA_API_PORT:-8000}
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:5173',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── MkDocs documentation site ───────────────────────────────────────
+  # Reuses the server image (aortica already importable for API reference)
+  # and layers MkDocs on top, then serves the live docs.
+  docs:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+      target: runtime
+    image: aortica-server:latest
+    ports:
+      - "${AORTICA_DOCS_PORT:-8001}:8001"
+    volumes:
+      - ./docs:/app/docs:ro
+      - ./mkdocs.yml:/app/mkdocs.yml:ro
+      - docs-cache:/home/aortica/.local
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      pip install --no-cache-dir --user mkdocs-material 'mkdocstrings[python]' &&
+      python -m mkdocs serve -a 0.0.0.0:8001 -f /app/mkdocs.yml
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # ── Edge inference container (arm64 image, ONNX Runtime) ────────────
+  # Models load on-demand per request to minimise idle power draw.
+  # Built natively by default; set `platform: linux/arm64` (with qemu/buildx)
+  # to exercise arm64 emulation.
+  edge:
+    build:
+      context: .
+      dockerfile: Dockerfile.edge
+    image: aortica-edge:latest
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    environment:
+      AORTICA_LOG_LEVEL: ${AORTICA_LOG_LEVEL:-info}
+      AORTICA_MODEL_PATH: ${AORTICA_MODEL_PATH:-}
+      AORTICA_SYNC_URL: ${AORTICA_SYNC_URL:-}
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      aortica info &&
+      echo 'Edge inference container ready — models load on-demand per request' &&
+      tail -f /dev/null
+    healthcheck:
+      test: ["CMD", "aortica", "info"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # ── nginx reverse proxy + TLS termination ───────────────────────────
+  # Production profile only. Builds the frontend production bundle, serves
+  # it as static assets, and reverse-proxies /api and /docs. Terminates TLS
+  # with a self-signed certificate (see `make certs`).
+  proxy:
+    profiles: ["prod"]
+    build:
+      context: .
+      dockerfile: deploy/nginx/Dockerfile.proxy
+    image: aortica-proxy:latest
+    ports:
+      - "${AORTICA_HTTPS_PORT:-8443}:443"
+      - "${AORTICA_HTTP_PORT:-8080}:80"
+    volumes:
+      - ./deploy/nginx/certs:/etc/nginx/certs:ro
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:443/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      api:
+        condition: service_healthy
+      docs:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  aortica-cache:
+  frontend-node-modules:
+  docs-cache:

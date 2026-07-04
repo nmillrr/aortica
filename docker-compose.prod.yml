@@ -1,0 +1,36 @@
+# docker-compose.prod.yml — production overlay for docker-compose.full.yml
+#
+# Applied on top of the base file to run a production-like stack behind an
+# nginx reverse proxy with TLS termination:
+#
+#     make prod
+#
+# equivalent to:
+#
+#     docker compose -f docker-compose.full.yml -f docker-compose.prod.yml \
+#         --profile prod up --build
+#
+# The `proxy` service (defined in the base file under the `prod` profile) is the
+# single entry point. The Vite dev `frontend` service (dev profile) does NOT run.
+
+services:
+  api:
+    environment:
+      AORTICA_ENV: production
+      AORTICA_LOG_LEVEL: ${AORTICA_LOG_LEVEL:-warning}
+    restart: always
+
+  docs:
+    restart: always
+
+  edge:
+    environment:
+      AORTICA_ENV: production
+    restart: always
+
+  proxy:
+    environment:
+      # Upstream service names/ports the nginx config proxies to.
+      AORTICA_API_UPSTREAM: api:8000
+      AORTICA_DOCS_UPSTREAM: docs:8001
+    restart: always

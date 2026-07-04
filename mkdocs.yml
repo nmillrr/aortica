@@ -85,6 +85,7 @@ nav:
       - Commands: cli/commands.md
   - Deployment Guide:
       - Docker: deployment/docker.md
+      - Docker Compose Quickstart: deployment/DOCKER_QUICKSTART.md
       - Raspberry Pi: deployment/raspberry-pi.md
       - Offline / PWA: deployment/offline.md
   - Clinical Background:

@@ -67,3 +67,12 @@ runs/
 
 # MkDocs build output
 site/
+
+# Docker / deployment
+.env
+deploy/nginx/certs/*
+!deploy/nginx/certs/.gitkeep
+models/*
+!models/.gitkeep
+logs/*
+!logs/.gitkeep

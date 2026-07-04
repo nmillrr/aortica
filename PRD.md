@@ -1118,16 +1118,16 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-057 defines individual Dockerfiles for server (amd64) and edge (arm64), and a basic `docker-compose.yml` for local development. But the full Aortica stack involves: FastAPI backend, React frontend (dev or production), ONNX edge model serving, documentation site, and SQLite result storage. A comprehensive Docker Compose configuration ensures reproducible development environments and simplifies production-like local testing.
 
 **Acceptance Criteria:**
-- [ ] `docker-compose.full.yml` defining services: `api` (FastAPI backend with ONNX Runtime), `frontend` (React dev server or nginx-served production build), `docs` (MkDocs serve), `edge` (edge model ONNX Runtime server on arm64 emulation or native)
-- [ ] Shared volumes: `./data/` for SQLite databases, `./models/` for model checkpoints, `./logs/` for application logs
-- [ ] Environment file template (`.env.example`) with all configurable variables: `AORTICA_MODEL_PATH`, `AORTICA_SECRET_KEY`, `AORTICA_OAUTH_CLIENT_ID`, `AORTICA_SYNC_URL`, `AORTICA_LOG_LEVEL`
-- [ ] Health check configuration for all services (Docker `HEALTHCHECK` instructions)
-- [ ] `make dev` Makefile target that runs `docker-compose -f docker-compose.full.yml up --build` with sensible defaults
-- [ ] `make prod` target that builds production images and runs with nginx reverse proxy and TLS termination (self-signed cert for local testing)
-- [ ] Service dependency ordering: API starts before frontend, model download completes before API accepts requests
-- [ ] Documentation in `docs/deployment/DOCKER_QUICKSTART.md` covering: prerequisites, first-run setup, service architecture diagram, common troubleshooting
-- [ ] Unit tests: Dockerfile lint via hadolint, compose config validation via `docker-compose config`
-- [ ] Typecheck passes
+- [x] `docker-compose.full.yml` defining services: `api` (FastAPI backend with ONNX Runtime), `frontend` (React dev server or nginx-served production build), `docs` (MkDocs serve), `edge` (edge model ONNX Runtime server on arm64 emulation or native)
+- [x] Shared volumes: `./data/` for SQLite databases, `./models/` for model checkpoints, `./logs/` for application logs
+- [x] Environment file template (`.env.example`) with all configurable variables: `AORTICA_MODEL_PATH`, `AORTICA_SECRET_KEY`, `AORTICA_OAUTH_CLIENT_ID`, `AORTICA_SYNC_URL`, `AORTICA_LOG_LEVEL`
+- [x] Health check configuration for all services (Docker `HEALTHCHECK` instructions)
+- [x] `make dev` Makefile target that runs `docker-compose -f docker-compose.full.yml up --build` with sensible defaults
+- [x] `make prod` target that builds production images and runs with nginx reverse proxy and TLS termination (self-signed cert for local testing)
+- [x] Service dependency ordering: API starts before frontend, model download completes before API accepts requests
+- [x] Documentation in `docs/deployment/DOCKER_QUICKSTART.md` covering: prerequisites, first-run setup, service architecture diagram, common troubleshooting
+- [x] Unit tests: Dockerfile lint via hadolint, compose config validation via `docker-compose config`
+- [x] Typecheck passes
 
 ---
 

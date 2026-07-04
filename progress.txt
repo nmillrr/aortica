@@ -2239,3 +2239,48 @@ Integrate react-i18next into the React frontend with en/fr/es/sw locales, a head
 - Preview launch.json runs from repo root — needed npm --prefix frontend since package.json is in frontend/
 - preview_fill sets input .value but doesn't fire React's synthetic onChange, so form-driven login state stays empty; seed auth via localStorage (aortica_auth_tokens/user) + navigate to reach protected routes
 ---
+
+## Iteration US-108 - Docker Compose Full-Stack Development Environment
+### Goal
+Single-command full-stack Docker environment (api + frontend + docs + edge), a
+Makefile with `make dev`/`make prod`, an nginx TLS reverse proxy for prod, a
+`.env.example` template, a quickstart doc, and compose/hadolint validation tests.
+
+### Files Created
+- docker-compose.full.yml — 5 services (api, frontend[dev profile], docs, edge, proxy[prod profile]); bind mounts ./data ./models ./logs; healthchecks on all; depends_on api service_healthy gating
+- docker-compose.prod.yml — prod overlay flipping AORTICA_ENV=production, restart: always, proxy upstreams
+- .env.example — all required vars (AORTICA_MODEL_PATH/SECRET_KEY/OAUTH_CLIENT_ID/SYNC_URL/LOG_LEVEL) + real code vars (JWT_SECRET, GOOGLE/GITHUB client ids, DATA_DIR, LOG_DIR, rate limit) + host port overrides + COMPOSE_PROFILES
+- Makefile — help/dev/prod/down/logs/ps/certs/config/clean targets
+- deploy/nginx/Dockerfile.proxy — multi-stage: node build frontend (VITE_API_URL=/api) -> nginx:1.27-alpine static + reverse proxy, HEALTHCHECK curl -fk
+- deploy/nginx/nginx.conf — TLS 443, HTTP->HTTPS redirect, SPA fallback, /api/->api:8000, /docs/->docs:8001, /healthz
+- deploy/nginx/gen-cert.sh — idempotent self-signed cert generator (openssl, localhost SAN)
+- deploy/nginx/certs/.gitkeep, data/.gitkeep, models/.gitkeep, logs/.gitkeep
+- docs/deployment/DOCKER_QUICKSTART.md — prerequisites, first-run, ASCII architecture diagram (dev+prod), config reference table, troubleshooting
+- tests/deployment/__init__.py, tests/deployment/test_docker_compose.py — 29 tests
+
+### Files Modified
+- .gitignore — ignore .env, deploy/nginx/certs/* (keep .gitkeep), models/*, logs/*
+- mkdocs.yml — added Docker Compose Quickstart to Deployment nav
+- PRD.md — marked US-108 complete
+
+### Design Decisions
+- Compose profiles: core services (api/docs/edge) have NO profile (start in both); frontend=["dev"], proxy=["prod"]. `make dev` uses --profile dev, `make prod` uses -f prod overlay --profile prod. This cleanly excludes the Vite dev server from prod and the nginx proxy from dev without needing to "remove" services (compose can't remove via overlay merge).
+- docs service reuses the api image (aortica already importable for mkdocstrings) + pip install --user mkdocs-material mkdocstrings[python], runs `python -m mkdocs serve`.
+- edge service: Dockerfile.edge has no HTTP server (cli+edge extras only), so entrypoint overridden to `aortica info && tail -f /dev/null`; healthcheck is `aortica info` (exits 0 with no model cached). Truthful: it's a long-lived edge container, models load on-demand.
+- prod frontend build uses VITE_API_URL=/api for same-origin proxying. NOTE: current frontend hardcodes API_BASE='http://localhost:8000' in AuthContext/ResultBrowser/AdminDashboard and does NOT read VITE_API_URL — left unchanged (out of scope). Same-origin proxy is forward-looking infra.
+
+### Test Results
+- 29/29 passed in tests/deployment/test_docker_compose.py (includes live `docker compose config` validation of dev+prod and hadolint --failure-threshold error on all 3 Dockerfiles — both tools present locally; tests skip gracefully if absent)
+- mypy: clean on the new test file
+- ruff: clean
+- hadolint: all 3 Dockerfiles pass at full (0 warnings)
+- make config -> "compose config OK"; make certs -> generated valid self-signed cert
+
+### Learnings for future iterations
+- hadolint IS installed locally (/usr/local/bin/hadolint), as are docker + docker-compose — infra tests actually execute rather than skip.
+- Compose overlay files CANNOT remove a base service's `ports`/`volumes` (sequences merge by append). Use `profiles` to gate services on/off between dev and prod instead of trying to unset fields.
+- yaml import must carry `# type: ignore[import-untyped]` (repo convention; types-PyYAML not installed) and yaml.safe_load returns Any (assign to a typed local to satisfy warn_return_any).
+- PRE-EXISTING FAILURE (not US-108): tests/test_scaffolding.py::test_version asserts __version__=="0.1.0" but aortica/__init__.py is now "0.2.0". Unrelated to this story; flagged as a separate task. Do not treat as an US-108 regression.
+- `docker compose config` renders volumes/networks alongside services, so grep for service names, not a bare service count.
+- run pytest via `.venv/bin/activate` then `python -m pytest` (`python` alone isn't on PATH without the venv).
+---
