@@ -34,7 +34,7 @@ from aortica.cli.federated_cmd import (  # noqa: E402
 @pytest.fixture()
 def runner() -> CliRunner:
     """Click CliRunner for isolated CLI testing."""
-    return CliRunner(mix_stderr=False)
+    return CliRunner()
 
 
 # ---------------------------------------------------------------------------
