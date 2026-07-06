@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "language": "English",
+    "code": "en",
+    "status": "complete"
+  },
+  "tiers": {
+    "low_risk": {
+      "label": "Low risk",
+      "colour": "green",
+      "guidance": "No immediate action required. Continue routine care."
+    },
+    "refer": {
+      "label": "Refer for assessment",
+      "colour": "amber",
+      "guidance": "Schedule a follow-up assessment with a clinician."
+    },
+    "urgent": {
+      "label": "Urgent referral recommended",
+      "colour": "red",
+      "guidance": "Seek immediate medical care. Refer without delay."
+    }
+  },
+  "chw_steps": {
+    "power_on": "Press and hold the power button for 3 seconds. Wait for the green light.",
+    "acquire": "Attach the electrodes as shown, ask the patient to stay still, and start the recording.",
+    "interpret": "Read the colour tier shown on screen: green, amber, or red.",
+    "refer_when": "Refer any amber or red result following your site referral protocol.",
+    "sync_verify": "Check that the sync icon shows a recent successful upload before ending your shift."
+  },
+  "guide": {
+    "prerequisites_title": "Site prerequisites",
+    "power_note": "A stable power source or a battery/UPS that covers daily clinic hours.",
+    "connectivity_note": "Intermittent connectivity is acceptable; results sync when a connection is available.",
+    "hardware_note": "Raspberry Pi 4 (4 GB), a compatible ECG capture device, and an SD card of 32 GB or more."
+  },
+  "troubleshooting": {
+    "power_loss": "After a power loss the device restarts automatically; stored results are preserved and re-sync when power returns.",
+    "sd_corruption": "If the device fails to boot, re-flash the SD card using the preparation script and restore from the last backup.",
+    "serial_timeout": "If ECG capture times out, check the cable, re-seat the connector, and retry the recording."
+  }
+}

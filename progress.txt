@@ -2325,3 +2325,42 @@ Pages deploy workflow (landing at root, MkDocs docs under /docs/).
 - launch.json supports multiple configs; a static site preview = {runtimeExecutable:"python3", runtimeArgs:["-m","http.server","<port>","--directory","<dir>"], port:<port>}.
 - Two actions/deploy-pages workflows on the same repo conflict — there must be exactly ONE Pages deployer; combine artifacts in one workflow.
 ---
+
+## Iteration US-061b - LMIC Pilot Deployment Package
+### Goal
+Assemble the edge components into a deployable pilot kit: sustained-power
+validation, duty-cycled on-demand inference, a SiteMonitor + GET /edge/status
+endpoint, an `aortica edge site-report` CLI, LMIC/CHW/checklist docs, and
+JSON-locale-based localization (en/fr complete, es/sw stubs).
+
+### Files Created
+- aortica/edge/power_validation.py — validate_power_consumption(model_path, hardware_profile, n_inferences=50) + compute_sustained_power() pure helper + PowerValidationReport; asserts sustained mW < 200 (TDP × duty_cycle). Reuses profile_inference() for latency; auto-generates input from ONNX input shape (dynamic dims resolved to 1/12/5000).
+- aortica/edge/site_monitor.py — SiteMonitor (stdlib sqlite3, thread-safe) + SiteStatus: daily inference count, error rate, sync status (duck-typed sync_engine.pending_count()), storage (shutil.disk_usage), last-sync ts; status()/daily_report().
+- aortica/api/edge_endpoints.py — create_edge_router(site_monitor) → GET /edge/status (EdgeStatusResponse).
+- aortica/cli/edge_cmd.py — `aortica edge site-report` (--data-dir/--site-id/--format table|json).
+- docs/deployment/LMIC_PILOT_GUIDE.md, CHW_TRAINING.md, PILOT_CHECKLIST.md
+- docs/deployment/locales/{en,fr}.json (complete), {es,sw}.json (stubs, mirror en keys)
+- tests/edge/test_power_validation.py, test_site_monitor.py, test_duty_cycle.py; tests/api/test_edge_endpoints.py; tests/cli/test_edge_cmd.py; tests/deployment/test_lmic_locales.py
+
+### Files Modified
+- aortica/edge/deploy_profiles.py — added duty_cycle_enabled/inference_interval_seconds/model_unload_after_seconds fields (+validation, +summary); added DutyCycledModelLoader (lazy load on-demand, release after idle, context manager, injectable clock).
+- aortica/edge/__init__.py — export DutyCycledModelLoader, PowerValidationReport, compute_sustained_power, validate_power_consumption, SiteMonitor, SiteStatus.
+- aortica/api/app.py — register edge router + SiteMonitor(AORTICA_DATA_DIR) on app.state; added module-level `import os, tempfile` (removed now-redundant local re-imports in predict handler).
+- aortica/cli/__init__.py — register edge_group.
+- mkdocs.yml — nav entries for the 3 new deployment guides.
+- PRD.md — marked US-061b complete.
+
+### Test Results
+- 60 new tests pass; 261 pass across affected suites (deploy_profiles, simplified_output, app, + all new).
+- mypy --follow-imports=silent on the 4 new source files: clean.
+- ruff clean on all new/modified files (2 remaining app.py warnings — UserInfo F401 + one E501 — are PRE-EXISTING at HEAD, not mine).
+
+### Learnings for future iterations
+- PRE-EXISTING BREAKAGE (not US-061b): tests/cli/test_predict.py fails to collect (76 errors) — fixture uses CliRunner(mix_stderr=False), a param removed in the installed Click. Flagged as a separate task. Use plain CliRunner() (as test_edge_cmd.py does).
+- SiteMonitor backs a threaded FastAPI server → sqlite3 must use check_same_thread=False + a threading.Lock around every execute/commit, or you get "SQLite objects created in a thread can only be used in that same thread".
+- Running the FULL tests/edge suite hangs (a torch-heavy test — distillation/mobilenet — blocks); run targeted files instead. `timeout` is not available on this macOS shell.
+- mypy follows imports and reports ~80 pre-existing errors across 19 files (fl_client.py union-attr, etc.); use `mypy --follow-imports=silent <files>` to check only your own files.
+- Power model: sustained_power_mw = TDP × duty_cycle × 1000, duty_cycle = latency_s / inference_interval_s (capped at 1.0). With on-demand loading + a ~5-min ECG cadence an RPi4 (4W) sits at single-digit mW — well under the 200 mW budget. A tiny interval (continuous inference) correctly fails.
+- Pattern for auto-input from an ONNX model: read session.get_inputs()[0].shape, replace dynamic/symbolic dims (batch→1, leads→12, samples→5000).
+- app.py already had module-level need for os/tempfile duplicated as local imports inside the predict handler; adding them at module scope let me delete the redundant locals (also cleared an isort I001).
+---

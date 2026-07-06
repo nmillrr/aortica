@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "language": "Kiswahili",
+    "code": "sw",
+    "status": "stub",
+    "note": "Template stub — translate each empty value. Keys mirror en.json."
+  },
+  "tiers": {
+    "low_risk": {
+      "label": "",
+      "colour": "green",
+      "guidance": ""
+    },
+    "refer": {
+      "label": "",
+      "colour": "amber",
+      "guidance": ""
+    },
+    "urgent": {
+      "label": "",
+      "colour": "red",
+      "guidance": ""
+    }
+  },
+  "chw_steps": {
+    "power_on": "",
+    "acquire": "",
+    "interpret": "",
+    "refer_when": "",
+    "sync_verify": ""
+  },
+  "guide": {
+    "prerequisites_title": "",
+    "power_note": "",
+    "connectivity_note": "",
+    "hardware_note": ""
+  },
+  "troubleshooting": {
+    "power_loss": "",
+    "sd_corruption": "",
+    "serial_timeout": ""
+  }
+}

@@ -20,10 +20,10 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import asdict, dataclass, field
+import time
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Optional
-
+from typing import Any, Callable, Optional
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -86,6 +86,12 @@ class RaspberryPiProfile:
     service_user: str = "aortica"
     service_group: str = "aortica"
     watchdog_timeout_sec: int = 60
+    # ---- Duty-cycling / power optimisation (US-061b) ----
+    # When enabled, the ONNX session is loaded on-demand per ECG rather than
+    # kept resident, so the device returns to idle draw between acquisitions.
+    duty_cycle_enabled: bool = True
+    inference_interval_seconds: int = 300
+    model_unload_after_seconds: int = 30
 
     def __post_init__(self) -> None:
         """Validate profile fields on construction."""
@@ -113,6 +119,16 @@ class RaspberryPiProfile:
         if self.watchdog_timeout_sec <= 0:
             raise ValueError(
                 f"watchdog_timeout_sec must be positive, got {self.watchdog_timeout_sec}"
+            )
+        if self.inference_interval_seconds <= 0:
+            raise ValueError(
+                f"inference_interval_seconds must be positive, "
+                f"got {self.inference_interval_seconds}"
+            )
+        if self.model_unload_after_seconds < 0:
+            raise ValueError(
+                f"model_unload_after_seconds must be non-negative, "
+                f"got {self.model_unload_after_seconds}"
             )
 
     # ---- Serialisation ----
@@ -185,6 +201,9 @@ class RaspberryPiProfile:
             f"  Log directory:    {self.log_dir}",
             f"  Service user:     {self.service_user}",
             f"  Watchdog timeout: {self.watchdog_timeout_sec} s",
+            f"  Duty cycling:     {self.duty_cycle_enabled}",
+            f"  ECG interval:     {self.inference_interval_seconds} s",
+            f"  Unload after:     {self.model_unload_after_seconds} s idle",
         ]
         return "\n".join(lines)
 
@@ -378,3 +397,107 @@ def write_pi_image_script(
     path.write_text(generate_pi_image_script(profile))
     path.chmod(0o755)
     return path.resolve()
+
+
+# ---------------------------------------------------------------------------
+# Duty-cycled on-demand model loader (US-061b power optimisation)
+# ---------------------------------------------------------------------------
+
+
+class DutyCycledModelLoader:
+    """Load an edge model on-demand and release it after idle to save power.
+
+    Rather than keeping an ONNX session resident (which holds memory and keeps
+    the device from returning to its lowest idle state), the loader materialises
+    the model only when an ECG needs inference and releases it after
+    ``unload_after_seconds`` of inactivity.  This implements the duty-cycling
+    power optimisation for rural / battery-constrained deployments.
+
+    The loader is backend-agnostic: it takes a ``loader`` callable that returns
+    a model/session object, so it can wrap ``onnxruntime.InferenceSession`` in
+    production and a stub in tests.
+
+    Example::
+
+        import onnxruntime as ort
+        loader = DutyCycledModelLoader(lambda: ort.InferenceSession("m.onnx"))
+        with loader.session() as sess:
+            sess.run(None, {...})
+        # session released here; reloaded lazily on next use
+
+    Args:
+        loader: Zero-argument callable returning the loaded model/session.
+        unload_after_seconds: Idle seconds after which :meth:`maybe_unload`
+            releases the session.  ``0`` releases immediately when the context
+            manager exits.
+        time_fn: Injectable clock (defaults to :func:`time.monotonic`) for tests.
+    """
+
+    def __init__(
+        self,
+        loader: Callable[[], Any],
+        unload_after_seconds: float = 30.0,
+        time_fn: Callable[[], float] = time.monotonic,
+    ) -> None:
+        if unload_after_seconds < 0:
+            raise ValueError(
+                f"unload_after_seconds must be non-negative, got {unload_after_seconds}"
+            )
+        self._loader = loader
+        self._unload_after_seconds = unload_after_seconds
+        self._time_fn = time_fn
+        self._model: Optional[Any] = None
+        self._last_used: float = 0.0
+        self.load_count: int = 0
+
+    @property
+    def is_loaded(self) -> bool:
+        """Whether the model is currently resident in memory."""
+        return self._model is not None
+
+    def load(self) -> Any:
+        """Load the model if not already resident and return it."""
+        if self._model is None:
+            self._model = self._loader()
+            self.load_count += 1
+        self._last_used = self._time_fn()
+        return self._model
+
+    def release(self) -> None:
+        """Release the resident model, allowing the device to return to idle."""
+        self._model = None
+
+    def maybe_unload(self) -> bool:
+        """Release the model if it has been idle beyond the unload threshold.
+
+        Returns:
+            ``True`` if the model was released, ``False`` otherwise.
+        """
+        if self._model is None:
+            return False
+        idle = self._time_fn() - self._last_used
+        if idle >= self._unload_after_seconds:
+            self.release()
+            return True
+        return False
+
+    def session(self) -> "_LoadedModelContext":
+        """Context manager that loads the model on entry and unloads on exit."""
+        return _LoadedModelContext(self)
+
+
+class _LoadedModelContext:
+    """Context manager returned by :meth:`DutyCycledModelLoader.session`."""
+
+    def __init__(self, loader: DutyCycledModelLoader) -> None:
+        self._loader = loader
+
+    def __enter__(self) -> Any:
+        return self._loader.load()
+
+    def __exit__(self, *exc: Any) -> None:
+        # Immediate unload when threshold is 0; otherwise defer to maybe_unload.
+        if self._loader._unload_after_seconds == 0:
+            self._loader.release()
+        else:
+            self._loader.maybe_unload()

@@ -1218,16 +1218,16 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** The edge model and Raspberry Pi profile (US-038–US-041, US-059) provide the inference engine, and the CHW-facing simplified output (US-060) provides the user-facing output layer. This story packages those components into a deployable, field-tested pilot kit — including site-specific deployment guides, power consumption validation, training materials for community health workers, and monitoring infrastructure. Without this story, individual edge components exist but are not assembled into a deployable whole.
 
 **Acceptance Criteria:**
-- [ ] `docs/deployment/LMIC_PILOT_GUIDE.md` covering: site prerequisites (power, connectivity, hardware), SD card image preparation (reuses US-059 `create_pi_image_script.sh`), first-boot walkthrough with screenshots, daily operational procedures, troubleshooting guide for common failure modes (power loss, SD card corruption, serial capture timeout)
-- [ ] `docs/deployment/CHW_TRAINING.md` with plain-language, image-heavy training guide for community health workers covering: device power-on, ECG acquisition, result interpretation (three-tier output from US-060), when to refer, and data sync verification
-- [ ] Localization support: deployment guide and CHW training materials translatable via JSON locale files (English and French provided; Spanish and Swahili as template stubs)
-- [ ] `aortica.edge.validate_power_consumption(model_path, hardware_profile, n_inferences=50)` function measuring per-inference energy consumption; asserts < 200 mW sustained on ARM hardware profiles (RPi4 at 4W TDP × duty cycle)
-- [ ] Power optimization: inference duty-cycling configuration in `deploy_profiles.py` — model loads on-demand per ECG rather than keeping ONNX session resident, reducing idle power draw
-- [ ] `aortica.edge.SiteMonitor` class providing: daily inference count, error rate, sync status, storage utilization, and last-sync timestamp; exposes `GET /edge/status` endpoint on the local edge server
-- [ ] `aortica edge site-report` CLI command generating a daily site activity summary (inferences, errors, sync status) for remote monitoring
-- [ ] `docs/deployment/PILOT_CHECKLIST.md` — pre-deployment checklist covering: hardware verification, network connectivity test, edge model validation (reuses US-041), CHW competency sign-off, ethics/IRB documentation
-- [ ] Unit tests for power consumption validation, site monitor, and site report generation
-- [ ] Typecheck passes
+- [x] `docs/deployment/LMIC_PILOT_GUIDE.md` covering: site prerequisites (power, connectivity, hardware), SD card image preparation (reuses US-059 `create_pi_image_script.sh`), first-boot walkthrough with screenshots, daily operational procedures, troubleshooting guide for common failure modes (power loss, SD card corruption, serial capture timeout)
+- [x] `docs/deployment/CHW_TRAINING.md` with plain-language, image-heavy training guide for community health workers covering: device power-on, ECG acquisition, result interpretation (three-tier output from US-060), when to refer, and data sync verification
+- [x] Localization support: deployment guide and CHW training materials translatable via JSON locale files (English and French provided; Spanish and Swahili as template stubs)
+- [x] `aortica.edge.validate_power_consumption(model_path, hardware_profile, n_inferences=50)` function measuring per-inference energy consumption; asserts < 200 mW sustained on ARM hardware profiles (RPi4 at 4W TDP × duty cycle)
+- [x] Power optimization: inference duty-cycling configuration in `deploy_profiles.py` — model loads on-demand per ECG rather than keeping ONNX session resident, reducing idle power draw
+- [x] `aortica.edge.SiteMonitor` class providing: daily inference count, error rate, sync status, storage utilization, and last-sync timestamp; exposes `GET /edge/status` endpoint on the local edge server
+- [x] `aortica edge site-report` CLI command generating a daily site activity summary (inferences, errors, sync status) for remote monitoring
+- [x] `docs/deployment/PILOT_CHECKLIST.md` — pre-deployment checklist covering: hardware verification, network connectivity test, edge model validation (reuses US-041), CHW competency sign-off, ethics/IRB documentation
+- [x] Unit tests for power consumption validation, site monitor, and site report generation
+- [x] Typecheck passes
 
 ---
 

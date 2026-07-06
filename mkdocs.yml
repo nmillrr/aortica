@@ -88,6 +88,9 @@ nav:
       - Docker Compose Quickstart: deployment/DOCKER_QUICKSTART.md
       - Raspberry Pi: deployment/raspberry-pi.md
       - Offline / PWA: deployment/offline.md
+      - LMIC Pilot Guide: deployment/LMIC_PILOT_GUIDE.md
+      - CHW Training: deployment/CHW_TRAINING.md
+      - Pilot Checklist: deployment/PILOT_CHECKLIST.md
   - Clinical Background:
       - ECG Primer: clinical/ecg-primer.md
       - AI Findings Guide: clinical/ai-findings.md

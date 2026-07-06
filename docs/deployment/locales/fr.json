@@ -1,0 +1,42 @@
+{
+  "_meta": {
+    "language": "Français",
+    "code": "fr",
+    "status": "complete"
+  },
+  "tiers": {
+    "low_risk": {
+      "label": "Risque faible",
+      "colour": "green",
+      "guidance": "Aucune action immédiate requise. Poursuivre les soins habituels."
+    },
+    "refer": {
+      "label": "Orienter pour évaluation",
+      "colour": "amber",
+      "guidance": "Planifier une évaluation de suivi avec un clinicien."
+    },
+    "urgent": {
+      "label": "Orientation urgente recommandée",
+      "colour": "red",
+      "guidance": "Consulter immédiatement. Orienter sans délai."
+    }
+  },
+  "chw_steps": {
+    "power_on": "Maintenez le bouton d'alimentation pendant 3 secondes. Attendez le voyant vert.",
+    "acquire": "Placez les électrodes comme indiqué, demandez au patient de rester immobile, puis démarrez l'enregistrement.",
+    "interpret": "Lisez le niveau de couleur affiché à l'écran : vert, orange ou rouge.",
+    "refer_when": "Orientez tout résultat orange ou rouge selon le protocole d'orientation de votre site.",
+    "sync_verify": "Vérifiez que l'icône de synchronisation indique un envoi récent réussi avant de terminer votre service."
+  },
+  "guide": {
+    "prerequisites_title": "Prérequis du site",
+    "power_note": "Une source d'alimentation stable ou une batterie/onduleur couvrant les heures d'ouverture de la clinique.",
+    "connectivity_note": "Une connectivité intermittente est acceptable ; les résultats se synchronisent lorsqu'une connexion est disponible.",
+    "hardware_note": "Raspberry Pi 4 (4 Go), un appareil de capture ECG compatible et une carte SD de 32 Go ou plus."
+  },
+  "troubleshooting": {
+    "power_loss": "Après une coupure de courant, l'appareil redémarre automatiquement ; les résultats enregistrés sont conservés et se resynchronisent au retour du courant.",
+    "sd_corruption": "Si l'appareil ne démarre pas, reflashez la carte SD avec le script de préparation et restaurez la dernière sauvegarde.",
+    "serial_timeout": "Si la capture ECG expire, vérifiez le câble, rebranchez le connecteur et relancez l'enregistrement."
+  }
+}

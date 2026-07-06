@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+import tempfile
 from typing import Any, List, Optional, Sequence
 
 from pydantic import BaseModel, Field
@@ -227,6 +229,15 @@ def create_app(
     app.state.user_store = user_store  # type: ignore[attr-defined]
     app.state.activity_log = activity_log  # type: ignore[attr-defined]
     app.include_router(admin_router)
+
+    # Mount edge site-monitoring router (GET /edge/status)
+    from aortica.api.edge_endpoints import create_edge_router
+    from aortica.edge.site_monitor import SiteMonitor
+
+    _edge_data_dir = os.environ.get("AORTICA_DATA_DIR", tempfile.gettempdir())
+    site_monitor = SiteMonitor(_edge_data_dir)
+    app.state.site_monitor = site_monitor  # type: ignore[attr-defined]
+    app.include_router(create_edge_router(site_monitor))
 
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
@@ -607,8 +618,6 @@ def create_app(
 
         try:
             from aortica.io.dispatcher import read_ecg
-            import tempfile
-            import os
 
             # Write to temp file for read_ecg
             suffix = os.path.splitext(filename)[1] or ".dat"
