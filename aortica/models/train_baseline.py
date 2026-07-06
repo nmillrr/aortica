@@ -145,7 +145,6 @@ def train_one_epoch(
     return avg_loss
 
 
-@torch.no_grad()
 def evaluate(
     model: nn.Module,
     dataloader: DataLoader,  # type: ignore[type-arg]
@@ -163,17 +162,18 @@ def evaluate(
     all_preds: list[np.ndarray] = []
     all_targets: list[np.ndarray] = []
 
-    for batch_x, batch_y in dataloader:
-        batch_x = batch_x.to(device)
-        batch_y = batch_y.to(device).float()
+    with torch.no_grad():
+        for batch_x, batch_y in dataloader:
+            batch_x = batch_x.to(device)
+            batch_y = batch_y.to(device).float()
 
-        outputs = model(batch_x)
-        loss = criterion(outputs, batch_y)
+            outputs = model(batch_x)
+            loss = criterion(outputs, batch_y)
 
-        running_loss += loss.item()
-        num_batches += 1
-        all_preds.append(outputs.cpu().numpy())
-        all_targets.append(batch_y.cpu().numpy())
+            running_loss += loss.item()
+            num_batches += 1
+            all_preds.append(outputs.cpu().numpy())
+            all_targets.append(batch_y.cpu().numpy())
 
     avg_loss = running_loss / max(num_batches, 1)
     preds = np.concatenate(all_preds, axis=0)

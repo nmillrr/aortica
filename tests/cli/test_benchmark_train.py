@@ -69,7 +69,7 @@ def _make_mock_report() -> Dict[str, Any]:
 @pytest.fixture()
 def runner() -> CliRunner:
     """Click CliRunner for isolated CLI testing."""
-    return CliRunner(mix_stderr=False)
+    return CliRunner()
 
 
 @pytest.fixture()

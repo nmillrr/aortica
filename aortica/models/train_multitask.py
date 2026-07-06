@@ -460,7 +460,6 @@ def train_one_epoch(
     return avg_loss, avg_per_task
 
 
-@torch.no_grad()
 def evaluate(
     model: "nn.Module",
     dataloader: "DataLoader[Any]",
@@ -483,34 +482,35 @@ def evaluate(
         t: {"preds": [], "targets": []} for t in config.enabled_tasks
     }
 
-    for batch_x, batch_y in dataloader:
-        batch_x = batch_x.to(device)
-        batch_y = batch_y.to(device).float()
+    with torch.no_grad():
+        for batch_x, batch_y in dataloader:
+            batch_x = batch_x.to(device)
+            batch_y = batch_y.to(device).float()
 
-        features = model.backbone(batch_x)
-        features = model.attention(features)
+            features = model.backbone(batch_x)
+            features = model.attention(features)
 
-        task_labels = _split_labels(batch_y, config.enabled_tasks)
-        total_loss, per_task = _compute_multitask_loss(
-            model, features, task_labels, config.loss_weights,
-            structural_focal=config.structural_focal,
-            per_class_weights=config.per_class_weights,
-        )
+            task_labels = _split_labels(batch_y, config.enabled_tasks)
+            total_loss, per_task = _compute_multitask_loss(
+                model, features, task_labels, config.loss_weights,
+                structural_focal=config.structural_focal,
+                per_class_weights=config.per_class_weights,
+            )
 
-        running_loss += total_loss.item()
-        for k, v in per_task.items():
-            running_per_task[k] = running_per_task.get(k, 0.0) + v
-        num_batches += 1
+            running_loss += total_loss.item()
+            for k, v in per_task.items():
+                running_per_task[k] = running_per_task.get(k, 0.0) + v
+            num_batches += 1
 
-        # Collect predictions for metrics
-        for task in config.enabled_tasks:
-            head = getattr(model, f"{task}_head", None)
-            if head is not None:
-                preds = head(features)
-                collectors[task]["preds"].append(preds.cpu().numpy())
-                collectors[task]["targets"].append(
-                    task_labels[task].cpu().numpy()
-                )
+            # Collect predictions for metrics
+            for task in config.enabled_tasks:
+                head = getattr(model, f"{task}_head", None)
+                if head is not None:
+                    preds = head(features)
+                    collectors[task]["preds"].append(preds.cpu().numpy())
+                    collectors[task]["targets"].append(
+                        task_labels[task].cpu().numpy()
+                    )
 
     n = max(num_batches, 1)
     avg_loss = running_loss / n
