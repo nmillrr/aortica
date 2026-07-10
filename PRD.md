@@ -1237,21 +1237,21 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** While the PWA (US-042b) provides browser-based offline inference via WASM, a native Android app using ONNX Runtime Mobile delivers lower latency, better battery efficiency, and a more reliable offline experience on low-end Android devices (Snapdragon 660+) common in LMIC settings. The app complements the Raspberry Pi deployment path — providing a zero-infrastructure alternative when a dedicated edge device is unavailable. Single-lead input support is critical for low-cost, handheld ECG devices (e.g., AliveCor KardiaMobile) prevalent in rural settings.
 
 **Acceptance Criteria:**
-- [ ] `mobile/android/` directory with Android Studio project (Kotlin, min SDK 26 / Android 8.0)
-- [ ] ONNX Runtime Mobile (`onnxruntime-android`) integrated for local inference using the INT8 quantized edge model (from US-040)
-- [ ] ECG input support: single-lead (Lead I or Lead II) and 6-lead (limb leads) via file import (CSV, WFDB) or direct Bluetooth LE capture from compatible devices (AliveCor protocol stub, extensible interface)
-- [ ] Inference pipeline: signal preprocessing (resampling to 500 Hz, zero-padding missing leads) → ONNX edge model → multi-task output → simplified output mapping (reuses US-060 tier logic)
-- [ ] Plain-language output tiers displayed prominently: **'Low risk'** (green), **'Refer for assessment'** (amber), **'Urgent referral recommended'** (red) with 1–2 sentence finding summary and recommended actions
-- [ ] Inference latency < 200 ms on Snapdragon 660+ (single-lead input, edge model)
-- [ ] **Fully offline operation:** app functions with no network connectivity after initial install; model bundled in APK (or downloaded on first launch with progress indicator)
-- [ ] Anonymized audit log: stores each inference (timestamp, input hash, tier result, inference latency) in local SQLite; auto-syncs to configured remote endpoint when connectivity detected (reuses sync protocol from US-055/US-056)
-- [ ] Audit log sync strips all patient-identifiable metadata before upload (reuses anonymization function from US-056)
-- [ ] Settings screen: configurable remote sync URL, device ID, sync frequency, language selection
-- [ ] Localization: UI strings externalized to `res/values-*/strings.xml`; English default, locale stubs for French, Spanish, Swahili matching LMIC deployment guide (US-061b)
-- [ ] Accessibility: high-contrast mode for outdoor/bright-light use, large touch targets (≥48dp), screen reader support via Android content descriptions
-- [ ] `aortica.edge.export_mobile_model(model_path, output_path)` Python utility that packages the INT8 ONNX model with Android-specific metadata (input/output names, shape expectations, version tag)
-- [ ] Unit tests (Android instrumentation tests via Espresso/JUnit4): model loading, inference pipeline with synthetic ECG, tier mapping, audit log CRUD, sync queue behavior
-- [ ] Typecheck passes (Kotlin)
+- [x] `mobile/android/` directory with Android Studio project (Kotlin, min SDK 26 / Android 8.0)
+- [x] ONNX Runtime Mobile (`onnxruntime-android`) integrated for local inference using the INT8 quantized edge model (from US-040)
+- [x] ECG input support: single-lead (Lead I or Lead II) and 6-lead (limb leads) via file import (CSV, WFDB) or direct Bluetooth LE capture from compatible devices (AliveCor protocol stub, extensible interface)
+- [x] Inference pipeline: signal preprocessing (resampling to 500 Hz, zero-padding missing leads) → ONNX edge model → multi-task output → simplified output mapping (reuses US-060 tier logic)
+- [x] Plain-language output tiers displayed prominently: **'Low risk'** (green), **'Refer for assessment'** (amber), **'Urgent referral recommended'** (red) with 1–2 sentence finding summary and recommended actions
+- [x] Inference latency < 200 ms on Snapdragon 660+ (single-lead input, edge model)
+- [x] **Fully offline operation:** app functions with no network connectivity after initial install; model bundled in APK (or downloaded on first launch with progress indicator)
+- [x] Anonymized audit log: stores each inference (timestamp, input hash, tier result, inference latency) in local SQLite; auto-syncs to configured remote endpoint when connectivity detected (reuses sync protocol from US-055/US-056)
+- [x] Audit log sync strips all patient-identifiable metadata before upload (reuses anonymization function from US-056)
+- [x] Settings screen: configurable remote sync URL, device ID, sync frequency, language selection
+- [x] Localization: UI strings externalized to `res/values-*/strings.xml`; English default, locale stubs for French, Spanish, Swahili matching LMIC deployment guide (US-061b)
+- [x] Accessibility: high-contrast mode for outdoor/bright-light use, large touch targets (≥48dp), screen reader support via Android content descriptions
+- [x] `aortica.edge.export_mobile_model(model_path, output_path)` Python utility that packages the INT8 ONNX model with Android-specific metadata (input/output names, shape expectations, version tag)
+- [x] Unit tests (Android instrumentation tests via Espresso/JUnit4): model loading, inference pipeline with synthetic ECG, tier mapping, audit log CRUD, sync queue behavior
+- [x] Typecheck passes (Kotlin)
 
 ---
 

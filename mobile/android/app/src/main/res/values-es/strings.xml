@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Aortica ECG</string>
+    <string name="app_subtitle">Copiloto ECG con IA — Análisis sin conexión</string>
+    <string name="btn_import_ecg">Importar archivo ECG</string>
+    <string name="status_initializing">Inicializando…</string>
+    <string name="status_loading_model">Cargando modelo de IA…</string>
+    <string name="status_ready">Listo — importe un archivo ECG para comenzar</string>
+    <string name="status_model_error">Error al cargar: %1$s</string>
+    <string name="status_analyzing">Analizando ECG…</string>
+    <string name="status_complete">Análisis completado</string>
+    <string name="error_empty_file">Error: el archivo no contiene datos ECG</string>
+    <string name="error_inference">Error: %1$s</string>
+    <string name="latency_label">Tiempo de análisis: %.0f ms</string>
+    <string name="tier_low">Riesgo bajo</string>
+    <string name="tier_refer">Derivar para evaluación</string>
+    <string name="tier_urgent">Derivación urgente recomendada</string>
+    <string name="settings_title">Configuración</string>
+    <string name="settings_sync_url">URL de sincronización</string>
+    <string name="settings_device_id">ID del dispositivo</string>
+    <string name="settings_sync_freq">Frecuencia de sincronización</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_high_contrast">Modo alto contraste</string>
+    <string name="settings_saved">Configuración guardada</string>
+    <string name="btn_save">Guardar</string>
+    <string name="btn_sync_now">Sincronizar ahora</string>
+    <string name="sync_no_url">No se configuró URL de sincronización</string>
+    <string name="sync_in_progress">Sincronizando…</string>
+    <string name="sync_success">%1$d entradas sincronizadas. %2$d pendientes.</string>
+    <string name="sync_error">Error de sincronización: %1$s</string>
+    <string name="audit_stats">Total: %1$d | Pendientes: %2$d</string>
+    <string name="action_settings">Configuración</string>
+</resources>

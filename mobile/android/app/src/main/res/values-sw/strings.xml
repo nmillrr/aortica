@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Aortica ECG</string>
+    <string name="app_subtitle">Msaidizi wa ECG wa AI — Uchambuzi bila mtandao</string>
+    <string name="btn_import_ecg">Ingiza faili la ECG</string>
+    <string name="status_initializing">Inaanza…</string>
+    <string name="status_loading_model">Kupakia modeli ya AI…</string>
+    <string name="status_ready">Tayari — ingiza faili la ECG ili kuanza</string>
+    <string name="status_model_error">Hitilafu ya kupakia: %1$s</string>
+    <string name="status_analyzing">Inachambua ECG…</string>
+    <string name="status_complete">Uchambuzi umekamilika</string>
+    <string name="error_empty_file">Hitilafu: faili halina data ya ECG</string>
+    <string name="error_inference">Hitilafu: %1$s</string>
+    <string name="latency_label">Muda wa uchambuzi: %.0f ms</string>
+    <string name="tier_low">Hatari ndogo</string>
+    <string name="tier_refer">Peleka kwa tathmini</string>
+    <string name="tier_urgent">Rufaa ya dharura inapendekezwa</string>
+    <string name="settings_title">Mipangilio</string>
+    <string name="settings_sync_url">URL ya usawazishaji</string>
+    <string name="settings_device_id">Kitambulisho cha kifaa</string>
+    <string name="settings_sync_freq">Mara ngapi ya usawazishaji</string>
+    <string name="settings_language">Lugha</string>
+    <string name="settings_high_contrast">Hali ya utofautishaji wa juu</string>
+    <string name="settings_saved">Mipangilio imehifadhiwa</string>
+    <string name="btn_save">Hifadhi</string>
+    <string name="btn_sync_now">Sawazisha sasa</string>
+    <string name="sync_no_url">Hakuna URL ya usawazishaji iliyowekwa</string>
+    <string name="sync_in_progress">Inasawazisha…</string>
+    <string name="sync_success">Maingizo %1$d yamesawazishwa. %2$d yanasubiri.</string>
+    <string name="sync_error">Usawazishaji umeshindwa: %1$s</string>
+    <string name="audit_stats">Jumla: %1$d | Inasubiri: %2$d</string>
+    <string name="action_settings">Mipangilio</string>
+</resources>

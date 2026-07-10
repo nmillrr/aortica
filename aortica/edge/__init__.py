@@ -26,6 +26,11 @@ from aortica.edge.hardware_benchmark import (
     hardware_benchmark,
     load_platform_profiles,
 )
+from aortica.edge.mobile_export import (
+    MobileExportResult,
+    MobileModelMetadata,
+    export_mobile_model,
+)
 from aortica.edge.mobilenet_backbone import MobileNetBackbone1D
 from aortica.edge.onnx_export import export_onnx, validate_onnx
 from aortica.edge.power_validation import (
@@ -69,6 +74,8 @@ __all__ = [
     "InferenceProfile",
     "KeyFinding",
     "MetricResult",
+    "MobileExportResult",
+    "MobileModelMetadata",
     "MobileNetBackbone1D",
     "PlatformProfile",
     "QuantizationReport",
@@ -81,6 +88,7 @@ __all__ = [
     "consolidated_markdown_table",
     "distillation_loss_classification",
     "distillation_loss_regression",
+    "export_mobile_model",
     "export_onnx",
     "generate_pi_image_script",
     "generate_systemd_service",

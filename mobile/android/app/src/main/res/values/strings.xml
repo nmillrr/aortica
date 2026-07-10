@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App -->
+    <string name="app_name">Aortica ECG</string>
+    <string name="app_subtitle">AI ECG Copilot — Offline Analysis</string>
+
+    <!-- Main Screen -->
+    <string name="btn_import_ecg">Import ECG File</string>
+    <string name="status_initializing">Initializing…</string>
+    <string name="status_loading_model">Loading AI model…</string>
+    <string name="status_ready">Ready — import an ECG file to begin</string>
+    <string name="status_model_error">Model loading failed: %1$s</string>
+    <string name="status_analyzing">Analyzing ECG…</string>
+    <string name="status_complete">Analysis complete</string>
+    <string name="error_empty_file">Error: File contains no ECG data</string>
+    <string name="error_inference">Error: %1$s</string>
+    <string name="latency_label">Analysis time: %.0f ms</string>
+
+    <!-- Tier Labels -->
+    <string name="tier_low">Low risk</string>
+    <string name="tier_refer">Refer for assessment</string>
+    <string name="tier_urgent">Urgent referral recommended</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_sync_url">Remote Sync URL</string>
+    <string name="settings_sync_url_hint">https://your-server.com/api/v1/sync</string>
+    <string name="settings_device_id">Device ID</string>
+    <string name="settings_device_id_hint">e.g., clinic-01-phone</string>
+    <string name="settings_sync_freq">Sync Frequency</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_high_contrast">High Contrast Mode</string>
+    <string name="settings_saved">Settings saved</string>
+
+    <!-- Sync -->
+    <string name="btn_save">Save Settings</string>
+    <string name="btn_sync_now">Sync Now</string>
+    <string name="sync_no_url">No sync URL configured</string>
+    <string name="sync_in_progress">Syncing…</string>
+    <string name="sync_success">Synced %1$d entries. %2$d pending.</string>
+    <string name="sync_error">Sync failed: %1$s</string>
+    <string name="audit_stats">Total records: %1$d | Pending sync: %2$d</string>
+
+    <!-- Menu -->
+    <string name="action_settings">Settings</string>
+
+    <!-- Content Descriptions (Accessibility) -->
+    <string name="cd_status">Current status</string>
+    <string name="cd_import_ecg">Import ECG file for analysis</string>
+    <string name="cd_tier_result">Risk assessment result</string>
+    <string name="cd_sync_url">Remote sync server URL</string>
+    <string name="cd_device_id">Device identifier</string>
+    <string name="cd_sync_freq">Sync frequency selector</string>
+    <string name="cd_language">Language selector</string>
+    <string name="cd_high_contrast">Toggle high contrast mode for outdoor use</string>
+</resources>

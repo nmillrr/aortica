@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Aortica ECG</string>
+    <string name="app_subtitle">Copilote ECG IA — Analyse hors ligne</string>
+    <string name="btn_import_ecg">Importer un fichier ECG</string>
+    <string name="status_initializing">Initialisation…</string>
+    <string name="status_loading_model">Chargement du modèle IA…</string>
+    <string name="status_ready">Prêt — importez un fichier ECG pour commencer</string>
+    <string name="status_model_error">Échec du chargement : %1$s</string>
+    <string name="status_analyzing">Analyse de l\'ECG…</string>
+    <string name="status_complete">Analyse terminée</string>
+    <string name="error_empty_file">Erreur : le fichier ne contient aucune donnée ECG</string>
+    <string name="error_inference">Erreur : %1$s</string>
+    <string name="latency_label">Temps d\'analyse : %.0f ms</string>
+    <string name="tier_low">Risque faible</string>
+    <string name="tier_refer">Orientation pour évaluation</string>
+    <string name="tier_urgent">Orientation urgente recommandée</string>
+    <string name="settings_title">Paramètres</string>
+    <string name="settings_sync_url">URL de synchronisation</string>
+    <string name="settings_device_id">Identifiant de l\'appareil</string>
+    <string name="settings_sync_freq">Fréquence de synchronisation</string>
+    <string name="settings_language">Langue</string>
+    <string name="settings_high_contrast">Mode contraste élevé</string>
+    <string name="settings_saved">Paramètres enregistrés</string>
+    <string name="btn_save">Enregistrer</string>
+    <string name="btn_sync_now">Synchroniser maintenant</string>
+    <string name="sync_no_url">Aucune URL de synchronisation configurée</string>
+    <string name="sync_in_progress">Synchronisation…</string>
+    <string name="sync_success">%1$d entrées synchronisées. %2$d en attente.</string>
+    <string name="sync_error">Échec de la synchronisation : %1$s</string>
+    <string name="audit_stats">Total : %1$d | En attente : %2$d</string>
+    <string name="action_settings">Paramètres</string>
+</resources>
