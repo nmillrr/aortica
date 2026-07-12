@@ -76,3 +76,12 @@ models/*
 !models/.gitkeep
 logs/*
 !logs/.gitkeep
+
+# Android / Gradle
+.gradle/
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/build/
+local.properties
+*.apk
+*.aab
