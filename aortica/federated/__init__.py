@@ -16,6 +16,12 @@ from aortica.federated.fl_server import (
     FLServerConfig,
     RoundMetrics,
 )
+from aortica.federated.release_pipeline import (
+    FederatedReleaseConfig,
+    PipelineStepResult,
+    ReleasePipelineResult,
+    release_pipeline,
+)
 from aortica.federated.secure_agg import (
     EncryptedWeights,
     SecureAggConfig,
@@ -34,10 +40,15 @@ __all__ = [
     "FLClientConfig",
     "FLServer",
     "FLServerConfig",
+    "FederatedReleaseConfig",
     "FedProxStrategy",
+    "PipelineStepResult",
     "PrivacyBudgetTracker",
+    "ReleasePipelineResult",
     "RoundMetrics",
     "SCAFFOLDStrategy",
     "SecureAggConfig",
     "SecureAggregator",
+    "release_pipeline",
 ]
+

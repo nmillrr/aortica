@@ -4,6 +4,7 @@ Provides:
 - ``aortica federated test-connection <server_url>`` — verify FL server reachability
 - ``aortica federated server <config.yaml>`` — start the FL server
 - ``aortica federated client <config.yaml>`` — start the FL client
+- ``aortica federated release --weights <path> --version <v>`` — run the release pipeline
 """
 
 from __future__ import annotations
@@ -513,3 +514,201 @@ def client_cmd(
 
     client = AorticaFlowerClient(config)
     client.start()
+
+
+# ---------------------------------------------------------------------------
+# release
+# ---------------------------------------------------------------------------
+
+
+@federated_group.command(name="release")
+@click.option(
+    "--weights",
+    required=True,
+    type=click.Path(exists=False),
+    help="Path to aggregated FL weights file (PyTorch checkpoint).",
+)
+@click.option(
+    "--version",
+    "base_version",
+    required=True,
+    help="Semantic version string (e.g. '0.3.0').",
+)
+@click.option(
+    "--round",
+    "fl_round",
+    type=int,
+    default=0,
+    show_default=True,
+    help="FL round number for this release.",
+)
+@click.option(
+    "--output-dir",
+    type=click.Path(),
+    default=None,
+    help="Directory for output artifacts. Default: auto-generated temp dir.",
+)
+@click.option(
+    "--site-count",
+    type=int,
+    default=0,
+    show_default=True,
+    help="Number of participating sites (for model card).",
+)
+@click.option(
+    "--total-samples",
+    type=int,
+    default=0,
+    show_default=True,
+    help="Total training samples contributed (for model card).",
+)
+@click.option(
+    "--strategy",
+    "aggregation_strategy",
+    type=click.Choice(["fedavg", "fedprox", "scaffold"], case_sensitive=False),
+    default="fedavg",
+    show_default=True,
+    help="Aggregation strategy used.",
+)
+@click.option(
+    "--dp-epsilon",
+    type=float,
+    default=0.0,
+    show_default=True,
+    help="Total differential privacy ε budget spent.",
+)
+@click.option(
+    "--push-to-hub",
+    is_flag=True,
+    default=False,
+    help="Upload artifacts to HuggingFace Hub.",
+)
+@click.option(
+    "--skip-onnx",
+    is_flag=True,
+    default=False,
+    help="Skip ONNX export and INT8 quantization.",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"], case_sensitive=False),
+    default="text",
+    show_default=True,
+    help="Output format.",
+)
+def release_cmd(
+    weights: str,
+    base_version: str,
+    fl_round: int,
+    output_dir: Optional[str],
+    site_count: int,
+    total_samples: int,
+    aggregation_strategy: str,
+    dp_epsilon: float,
+    push_to_hub: bool,
+    skip_onnx: bool,
+    output_format: str,
+) -> None:
+    """Run the federated model release pipeline.
+
+    Validates, benchmarks, and packages a federated-trained model for
+    distribution.  Produces a versioned checkpoint, ONNX edge model,
+    performance card, and model card.
+
+    \b
+    Pipeline steps:
+      1. Load aggregated weights into AorticaModel
+      2. Run benchmark suite (if dataset available)
+      3. Run equity gate
+      4. Run regulatory gate
+      5. Export ONNX + INT8 edge model
+      6. Generate performance card + model card
+      7. Push to HuggingFace Hub (if --push-to-hub)
+
+    The pipeline aborts on gate failures.
+
+    Example:
+
+        aortica federated release --weights aggregated.pt --version 0.3.0 --round 50
+
+        aortica federated release --weights agg.pt --version 0.3.0 --push-to-hub
+    """
+    from aortica.federated.release_pipeline import (
+        FederatedReleaseConfig,
+        release_pipeline,
+    )
+
+    # Validate weights path
+    weights_path = Path(weights)
+    if not weights_path.exists():
+        raise click.ClickException(f"Weights file not found: {weights}")
+
+    config = FederatedReleaseConfig(
+        fl_round=fl_round,
+        site_count=site_count,
+        total_samples=total_samples,
+        aggregation_strategy=aggregation_strategy,
+        dp_epsilon_spent=dp_epsilon,
+        output_dir=output_dir,
+        push_to_hub=push_to_hub,
+        skip_onnx_export=skip_onnx,
+        skip_hub_push=not push_to_hub,
+    )
+
+    if HAS_RICH and output_format == "text":
+        console = Console()
+        console.print(
+            f"[bold cyan]Starting federated release pipeline "
+            f"for v{base_version}-r{fl_round}…[/bold cyan]"
+        )
+    elif output_format == "text":
+        click.echo(
+            f"Starting federated release pipeline "
+            f"for v{base_version}-r{fl_round}…"
+        )
+
+    result = release_pipeline(
+        aggregated_weights_path=weights,
+        base_version=base_version,
+        config=config,
+    )
+
+    if output_format == "json":
+        # Output machine-readable JSON
+        out = {
+            "success": result.success,
+            "version_string": result.version_string,
+            "checkpoint_filename": result.checkpoint_filename,
+            "onnx_filename": result.onnx_filename,
+            "int8_filename": result.int8_filename,
+            "output_dir": result.output_dir,
+            "sha256": result.sha256,
+            "abort_reason": result.abort_reason,
+            "steps": [
+                {
+                    "name": s.name,
+                    "passed": s.passed,
+                    "skipped": s.skipped,
+                    "error": s.error,
+                }
+                for s in result.steps
+            ],
+        }
+        click.echo(json.dumps(out, indent=2))
+    else:
+        # Human-readable summary
+        summary = result.summary()
+        if HAS_RICH:
+            console = Console()
+            if result.success:
+                console.print(f"[bold green]{summary}[/bold green]")
+            else:
+                console.print(f"[bold red]{summary}[/bold red]")
+        else:
+            click.echo(summary)
+
+
+    if not result.success:
+        sys.exit(1)
+

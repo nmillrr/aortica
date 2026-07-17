@@ -1,0 +1,133 @@
+# Federated Model Release workflow.
+# Triggered manually or on completion of an FL server campaign.
+# Runs the full federated release pipeline: load aggregated weights,
+# benchmark, equity gate, regulatory gate, ONNX export, INT8 quantization,
+# performance card, and push to HuggingFace Hub.
+
+name: Federated Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      weights_artifact:
+        description: 'Path to aggregated FL weights file'
+        required: true
+        type: string
+      base_version:
+        description: 'Semantic version (e.g. 0.3.0)'
+        required: true
+        type: string
+      fl_round:
+        description: 'FL round number'
+        required: true
+        type: number
+      site_count:
+        description: 'Number of participating sites'
+        required: false
+        default: '0'
+        type: string
+      total_samples:
+        description: 'Total training samples contributed'
+        required: false
+        default: '0'
+        type: string
+      aggregation_strategy:
+        description: 'Aggregation strategy used'
+        required: false
+        default: 'fedavg'
+        type: choice
+        options:
+          - fedavg
+          - fedprox
+          - scaffold
+      push_to_hub:
+        description: 'Push artifacts to HuggingFace Hub'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  federated-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,torch,cli,edge,hub]"
+
+      - name: Validate weights file
+        run: |
+          if [ ! -f "${{ inputs.weights_artifact }}" ]; then
+            echo "Error: Weights file not found: ${{ inputs.weights_artifact }}"
+            exit 1
+          fi
+          echo "Weights file found: $(ls -lh ${{ inputs.weights_artifact }})"
+
+      - name: Run federated release pipeline
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -c "
+          from aortica.federated.release_pipeline import (
+              FederatedReleaseConfig,
+              release_pipeline,
+          )
+
+          config = FederatedReleaseConfig(
+              fl_round=${{ inputs.fl_round }},
+              site_count=${{ inputs.site_count }},
+              total_samples=${{ inputs.total_samples }},
+              aggregation_strategy='${{ inputs.aggregation_strategy }}',
+              output_dir='release_artifacts',
+              push_to_hub=${{ inputs.push_to_hub }},
+              skip_hub_push=not ${{ inputs.push_to_hub }},
+          )
+
+          result = release_pipeline(
+              aggregated_weights_path='${{ inputs.weights_artifact }}',
+              base_version='${{ inputs.base_version }}',
+              config=config,
+          )
+
+          print(result.summary())
+          if not result.success:
+              raise SystemExit(f'Pipeline failed: {result.abort_reason}')
+          "
+
+      - name: Upload release artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: federated-release-v${{ inputs.base_version }}-r${{ inputs.fl_round }}
+          path: release_artifacts/
+          retention-days: 90
+
+      - name: Create GitHub release
+        if: success() && inputs.push_to_hub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: federated-v${{ inputs.base_version }}-r${{ inputs.fl_round }}
+          name: "Federated Release v${{ inputs.base_version }}-r${{ inputs.fl_round }}"
+          body: |
+            ## Federated Model Release
+
+            - **Version:** v${{ inputs.base_version }}-r${{ inputs.fl_round }}
+            - **Strategy:** ${{ inputs.aggregation_strategy }}
+            - **Sites:** ${{ inputs.site_count }}
+            - **Samples:** ${{ inputs.total_samples }}
+
+            See release artifacts for performance card and model card.
+          files: release_artifacts/*
+          draft: false
+          prerelease: true

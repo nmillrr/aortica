@@ -43,6 +43,7 @@ DEFAULT_CACHE_DIR = os.path.join(os.path.expanduser("~"), ".cache", "aortica")
 _VARIANT_FILENAME: Dict[str, str] = {
     "full": "aortica_full_v{version}.pt",
     "edge": "aortica_edge_int8_v{version}.onnx",
+    "federated": "aortica-federated-v{version}.pt",
 }
 
 # Mapping from version tags to SHA-256 checksums.
@@ -204,7 +205,11 @@ def _build_download_url(
 ) -> str:
     """Construct the HuggingFace Hub download URL for a checkpoint."""
     filename = _VARIANT_FILENAME[variant].format(version=version)
-    revision = f"v{version}"
+    # Federated versions may include round info (e.g. "0.3.0-r50")
+    if variant == "federated":
+        revision = f"federated-v{version}"
+    else:
+        revision = f"v{version}"
     return HUB_DOWNLOAD_URL.format(
         repo=repo_id,
         revision=revision,
