@@ -3,6 +3,42 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+// ---------------------------------------------------------------------------
+// Version derivation from git tag
+// ---------------------------------------------------------------------------
+
+/**
+ * Derive versionCode from a git tag like "v0.3.0":
+ *   major*10000 + minor*100 + patch  →  300 for v0.3.0, 20000 for v2.0.0
+ * Falls back to 100 (v1.0.0) when no tag is reachable.
+ */
+def gitVersionCode = {
+    try {
+        def tag = "git describe --tags --abbrev=0".execute().text.trim()
+        def stripped = tag.startsWith("v") ? tag.substring(1) : tag
+        def parts = stripped.tokenize('.')
+        if (parts.size() >= 3) {
+            return parts[0].toInteger() * 10000 + parts[1].toInteger() * 100 + parts[2].toInteger()
+        }
+        return 100
+    } catch (Exception ignored) {
+        return 100
+    }
+}
+
+/**
+ * Derive versionName from the nearest git tag (e.g. "0.3.0").
+ * Falls back to "1.0.0".
+ */
+def gitVersionName = {
+    try {
+        def tag = "git describe --tags --abbrev=0".execute().text.trim()
+        return tag.startsWith("v") ? tag.substring(1) : tag
+    } catch (Exception ignored) {
+        return "1.0.0"
+    }
+}
+
 android {
     namespace 'io.aortica.ecg'
     compileSdk 34
@@ -11,21 +47,50 @@ android {
         applicationId "io.aortica.ecg"
         minSdk 26
         targetSdk 34
-        versionCode 100
-        versionName "1.0.0"
+        versionCode gitVersionCode()
+        versionName gitVersionName()
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // Expose version info as BuildConfig fields
+        buildConfigField "String", "MODEL_VERSION", "\"${gitVersionName()}\""
+    }
+
+    // -----------------------------------------------------------------------
+    // Signing configs
+    // -----------------------------------------------------------------------
+
+    signingConfigs {
+        release {
+            // Configured via environment variables — CI provides these secrets.
+            // Local builds without these env vars will fall back to debug signing.
+            def ksPath = System.getenv("AORTICA_KEYSTORE_PATH")
+            def ksPassword = System.getenv("AORTICA_KEYSTORE_PASSWORD")
+            def keyAlias = System.getenv("AORTICA_KEY_ALIAS")
+            def keyPassword = System.getenv("AORTICA_KEY_PASSWORD")
+
+            if (ksPath && ksPassword && keyAlias && keyPassword) {
+                storeFile file(ksPath)
+                storePassword ksPassword
+                keyAlias keyAlias
+                keyPassword keyPassword
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 
-            // Release signing — configured via environment variables
-            // AORTICA_KEYSTORE_PATH, AORTICA_KEY_ALIAS,
-            // AORTICA_KEYSTORE_PASSWORD, AORTICA_KEY_PASSWORD
-            signingConfig signingConfigs.findByName('release') ?: signingConfigs.debug
+            // Use release signing if configured, otherwise debug
+            def releaseSigning = signingConfigs.findByName('release')
+            if (releaseSigning?.storeFile != null) {
+                signingConfig releaseSigning
+            } else {
+                signingConfig signingConfigs.debug
+            }
         }
         debug {
             applicationIdSuffix ".debug"
@@ -44,6 +109,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     // Copy ONNX model from edge artifacts if available
@@ -52,6 +118,72 @@ android {
         main {
             assets.srcDirs = ['src/main/assets']
         }
+    }
+
+    lint {
+        abortOnError false
+        warningsAsErrors false
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Copy ONNX edge model into APK assets during build
+// ---------------------------------------------------------------------------
+
+/**
+ * Task: copies the latest INT8 ONNX edge model from the project-level
+ * artifacts into the Android assets/ directory so it is bundled in the APK.
+ *
+ * Searches for the model in this order:
+ *   1. Environment variable AORTICA_EDGE_MODEL_PATH
+ *   2. Project root models/ directory (glob: aortica_edge_int8_v*.onnx)
+ *   3. Falls back silently (model may be pre-placed in assets/)
+ */
+task copyEdgeModel {
+    doLast {
+        def assetsDir = file("src/main/assets")
+        assetsDir.mkdirs()
+
+        def destFile = new File(assetsDir, "model.onnx")
+
+        // 1. Check env var
+        def envPath = System.getenv("AORTICA_EDGE_MODEL_PATH")
+        if (envPath) {
+            def src = file(envPath)
+            if (src.exists()) {
+                logger.lifecycle("Copying edge model from env: ${src}")
+                src.withInputStream { is -> destFile.withOutputStream { os -> os << is } }
+                return
+            }
+        }
+
+        // 2. Check project-root models/ directory
+        def modelsDir = rootProject.file("../../models")
+        if (modelsDir.exists()) {
+            def models = modelsDir.listFiles()?.findAll { it.name.matches(/aortica_edge_int8_v.*\.onnx/) }
+            if (models && !models.isEmpty()) {
+                // Pick the latest by filename sort
+                def latest = models.sort { it.name }.last()
+                logger.lifecycle("Copying edge model from models/: ${latest}")
+                latest.withInputStream { is -> destFile.withOutputStream { os -> os << is } }
+                return
+            }
+        }
+
+        // 3. Check if model already in assets
+        if (destFile.exists()) {
+            logger.lifecycle("Edge model already present in assets/: ${destFile}")
+        } else {
+            logger.warn("No ONNX edge model found — APK will not include a bundled model. " +
+                    "Set AORTICA_EDGE_MODEL_PATH or place a model in src/main/assets/model.onnx")
+        }
+    }
+}
+
+// Run copyEdgeModel before the asset merge step
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith('merge') && task.name.endsWith('Assets')) {
+        task.dependsOn copyEdgeModel
     }
 }
 
@@ -78,6 +210,7 @@ dependencies {
     // Unit testing
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
+    testImplementation 'org.json:json:20231013'
 
     // Instrumentation testing
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

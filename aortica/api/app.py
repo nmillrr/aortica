@@ -239,6 +239,12 @@ def create_app(
     app.state.site_monitor = site_monitor  # type: ignore[attr-defined]
     app.include_router(create_edge_router(site_monitor))
 
+    # Mount mobile manifest router (POST /api/v1/mobile/model-manifest)
+    from aortica.api.mobile_manifest import create_mobile_router
+
+    mobile_router = create_mobile_router()
+    app.include_router(mobile_router)
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:

@@ -317,6 +317,15 @@ code { font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; }
   word-break: break-word;
 }
 .download__link { color: var(--accent); font-size: 0.82rem; font-weight: 600; margin-top: auto; }
+.download__qr {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+.download--android { text-align: center; align-items: center; }
+.download--android:hover .download__qr svg {
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
 
 /* ── Footer ─────────────────────────────────────────────────────── */
 .footer {

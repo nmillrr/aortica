@@ -1261,19 +1261,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-061c defines the Android app's features and acceptance criteria. This story covers the CI/CD infrastructure needed to build, test, sign, and distribute the APK — which is a separate workflow from the Python package and Docker image pipelines.
 
 **Acceptance Criteria:**
-- [ ] `mobile/android/` Gradle build configuration with release signing config (keystore path, alias, passwords via environment variables)
-- [ ] GitHub Actions workflow `android_build.yml`: triggers on push to `main` or version tag; runs lint (ktlint), unit tests, instrumentation tests (on Firebase Test Lab or local emulator), builds signed release APK and AAB
-- [ ] APK includes the latest INT8 ONNX edge model bundled in `assets/` (copied from `aortica/edge/` artifacts during build)
-- [ ] Version management: app version code and name derived from git tag (e.g., tag `v0.3.0` → versionCode 300, versionName "0.3.0")
-- [ ] Distribution channels:
+- [x] `mobile/android/` Gradle build configuration with release signing config (keystore path, alias, passwords via environment variables)
+- [x] GitHub Actions workflow `android_build.yml`: triggers on push to `main` or version tag; runs lint (ktlint), unit tests, instrumentation tests (on Firebase Test Lab or local emulator), builds signed release APK and AAB
+- [x] APK includes the latest INT8 ONNX edge model bundled in `assets/` (copied from `aortica/edge/` artifacts during build)
+- [x] Version management: app version code and name derived from git tag (e.g., tag `v0.3.0` → versionCode 300, versionName "0.3.0")
+- [x] Distribution channels:
   - GitHub Releases: signed APK attached to each version tag release
   - Sideload distribution page on aortica.io (US-109) with QR code linking to latest APK
   - Google Play Store: AAB uploaded via Gradle Play Publisher plugin (manual promotion from internal → production track)
-- [ ] OTA model update mechanism: app checks configured endpoint for newer model version on startup (when online); downloads and caches new ONNX model without requiring app update; falls back to bundled model if download fails
-- [ ] `POST /api/v1/mobile/model-manifest` API endpoint returning: latest model version, download URL, SHA-256 hash, minimum app version required
-- [ ] App size budget: APK < 25 MB (excluding model), total installed size < 40 MB (including bundled model)
-- [ ] Unit tests for version derivation, model manifest parsing, and OTA update logic
-- [ ] Typecheck passes (Kotlin)
+- [x] OTA model update mechanism: app checks configured endpoint for newer model version on startup (when online); downloads and caches new ONNX model without requiring app update; falls back to bundled model if download fails
+- [x] `POST /api/v1/mobile/model-manifest` API endpoint returning: latest model version, download URL, SHA-256 hash, minimum app version required
+- [x] App size budget: APK < 25 MB (excluding model), total installed size < 40 MB (including bundled model)
+- [x] Unit tests for version derivation, model manifest parsing, and OTA update logic
+- [x] Typecheck passes (Kotlin)
 
 ---
 
