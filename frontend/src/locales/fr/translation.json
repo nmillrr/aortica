@@ -25,7 +25,8 @@
     "ecgHistory": "Historique ECG",
     "batchAnalysis": "Analyse par lots",
     "reportEvent": "Signaler un événement",
-    "admin": "Administration"
+    "admin": "Administration",
+    "federated": "Apprentissage fédéré"
   },
 
   "header": {

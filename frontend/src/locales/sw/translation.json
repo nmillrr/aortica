@@ -25,7 +25,8 @@
     "ecgHistory": "Historia ya ECG",
     "batchAnalysis": "Uchambuzi wa Kundi",
     "reportEvent": "Ripoti Tukio",
-    "admin": "Usimamizi"
+    "admin": "Usimamizi",
+    "federated": "Kujifunza kwa ushirikiano"
   },
 
   "header": {

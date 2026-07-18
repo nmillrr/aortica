@@ -1383,16 +1383,16 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-036b covers centrally-trained model distribution via HuggingFace Hub. But federated models emerge from a different workflow: FL rounds produce aggregated weights that must be validated against the equity gate (US-069), benchmarked (US-028/US-079), and published as a distinct model variant. Without this story, there's no defined process for going from FL aggregation output to a released, trustworthy model.
 
 **Acceptance Criteria:**
-- [ ] `aortica.federated.release_pipeline(aggregated_weights_path, base_version, config)` function orchestrating the full release workflow
-- [ ] Pipeline steps: (1) load aggregated weights into AorticaModel, (2) run full benchmark suite (US-028), (3) run equity gate (US-069), (4) run regulatory gate (US-097), (5) export ONNX + INT8 edge model (US-037/US-040), (6) generate performance card (US-070), (7) push to HuggingFace Hub with `federated-` version prefix
-- [ ] Federated models versioned as `aortica-federated-v{version}-r{round}.pt` (e.g., `aortica-federated-v0.3.0-r50.pt`) to distinguish from centrally-trained models
-- [ ] Model card for federated releases includes: participating site count (anonymized), total training samples contributed, aggregation strategy used, differential privacy parameters (ε spent), equity gate results per site region
-- [ ] `load_pretrained(variant='federated')` fetches the latest federated model; `load_pretrained(variant='federated', version='v0.3.0-r50')` fetches a specific federated release
-- [ ] CLI command `aortica federated release --weights <path> --version <v>` runs the full release pipeline
-- [ ] Abort-on-failure: pipeline halts and reports if any gate (equity, regulatory, benchmark threshold) fails
-- [ ] GitHub Actions workflow `federated_release.yml` triggered manually or on completion of FL server run
-- [ ] Unit tests with synthetic aggregated weights verifying pipeline orchestration, gating logic, and version naming
-- [ ] Typecheck passes
+- [x] `aortica.federated.release_pipeline(aggregated_weights_path, base_version, config)` function orchestrating the full release workflow
+- [x] Pipeline steps: (1) load aggregated weights into AorticaModel, (2) run full benchmark suite (US-028), (3) run equity gate (US-069), (4) run regulatory gate (US-097), (5) export ONNX + INT8 edge model (US-037/US-040), (6) generate performance card (US-070), (7) push to HuggingFace Hub with `federated-` version prefix
+- [x] Federated models versioned as `aortica-federated-v{version}-r{round}.pt` (e.g., `aortica-federated-v0.3.0-r50.pt`) to distinguish from centrally-trained models
+- [x] Model card for federated releases includes: participating site count (anonymized), total training samples contributed, aggregation strategy used, differential privacy parameters (ε spent), equity gate results per site region
+- [x] `load_pretrained(variant='federated')` fetches the latest federated model; `load_pretrained(variant='federated', version='v0.3.0-r50')` fetches a specific federated release
+- [x] CLI command `aortica federated release --weights <path> --version <v>` runs the full release pipeline
+- [x] Abort-on-failure: pipeline halts and reports if any gate (equity, regulatory, benchmark threshold) fails
+- [x] GitHub Actions workflow `federated_release.yml` triggered manually or on completion of FL server run
+- [x] Unit tests with synthetic aggregated weights verifying pipeline orchestration, gating logic, and version naming
+- [x] Typecheck passes
 
 ---
 
@@ -1400,19 +1400,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As an FL campaign coordinator, I want a web dashboard showing federated training progress so that I can monitor round completion, per-site contributions, convergence, and privacy budget consumption in real time.
 
 **Acceptance Criteria:**
-- [ ] `FLDashboard` React page at route `/federated` (protected: requires admin role)
-- [ ] **Campaign overview panel:** active FL campaign name, current round number, total rounds configured, aggregation strategy, start timestamp, elapsed time
-- [ ] **Per-round metrics chart:** line chart showing aggregated loss and per-task F1 across rounds (updates after each round completion)
-- [ ] **Site participation panel:** table of connected sites (anonymized site IDs) with: connection status (online/offline), samples contributed, last communication timestamp, local training time
-- [ ] **Privacy budget panel:** cumulative ε spent per site, projected ε at campaign end, visual warning when any site approaches budget exhaustion (> 80% of configured ε)
-- [ ] **Convergence indicators:** gradient norm trend, loss plateau detection, early stopping recommendation
-- [ ] `GET /api/v1/federated/status` API endpoint returning current FL campaign state
-- [ ] `GET /api/v1/federated/rounds` API endpoint returning per-round aggregated metrics
-- [ ] `GET /api/v1/federated/sites` API endpoint returning anonymized site participation stats
-- [ ] FL server (US-062) updated to persist per-round metrics to SQLite for dashboard consumption
-- [ ] WebSocket or polling-based live update (configurable interval, default 30s)
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `FLDashboard` React page at route `/federated` (protected: requires admin role)
+- [x] **Campaign overview panel:** active FL campaign name, current round number, total rounds configured, aggregation strategy, start timestamp, elapsed time
+- [x] **Per-round metrics chart:** line chart showing aggregated loss and per-task F1 across rounds (updates after each round completion)
+- [x] **Site participation panel:** table of connected sites (anonymized site IDs) with: connection status (online/offline), samples contributed, last communication timestamp, local training time
+- [x] **Privacy budget panel:** cumulative ε spent per site, projected ε at campaign end, visual warning when any site approaches budget exhaustion (> 80% of configured ε)
+- [x] **Convergence indicators:** gradient norm trend, loss plateau detection, early stopping recommendation
+- [x] `GET /api/v1/federated/status` API endpoint returning current FL campaign state
+- [x] `GET /api/v1/federated/rounds` API endpoint returning per-round aggregated metrics
+- [x] `GET /api/v1/federated/sites` API endpoint returning anonymized site participation stats
+- [x] FL server (US-062) updated to persist per-round metrics to SQLite for dashboard consumption
+- [x] WebSocket or polling-based live update (configurable interval, default 30s)
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

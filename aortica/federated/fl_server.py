@@ -247,10 +247,14 @@ class FLServer:
     - FedAvg strategy out of the box.
     - Per-round metric logging to structured ``RoundMetrics`` objects.
     - Optional JSON metric file logging.
+    - Optional SQLite persistence via :class:`FLMetricsStore` for
+      dashboard consumption (US-113).
 
     Args:
         config: Server configuration. Defaults to ``FLServerConfig()`` with
             sensible defaults (5 rounds, 2 min clients, FedAvg, port 8080).
+        metrics_store: Optional :class:`FLMetricsStore` for persisting
+            per-round metrics to SQLite for the monitoring dashboard.
 
     Example::
 
@@ -260,10 +264,15 @@ class FLServer:
             print(rm.round_number, rm.loss)
     """
 
-    def __init__(self, config: Optional[FLServerConfig] = None) -> None:
+    def __init__(
+        self,
+        config: Optional[FLServerConfig] = None,
+        metrics_store: Any = None,
+    ) -> None:
         self._config = config or FLServerConfig()
         self._round_metrics: list[RoundMetrics] = []
         self._history: Any = None
+        self._metrics_store = metrics_store
 
     # -- Properties ----------------------------------------------------------
 
@@ -355,6 +364,14 @@ class FLServer:
             num_rounds=self._config.num_rounds,
         )
 
+        # Start campaign in metrics store if available
+        if self._metrics_store is not None:
+            self._metrics_store.start_campaign(
+                name=f"FL-{self._config.strategy}",
+                total_rounds=self._config.num_rounds,
+                strategy=self._config.strategy,
+            )
+
         history = fl.server.start_server(
             server_address=self._config.server_address,
             config=server_config,
@@ -363,6 +380,17 @@ class FLServer:
 
         self._history = history
         self._round_metrics = self._extract_round_metrics(history)
+
+        # Persist rounds to metrics store for dashboard consumption
+        if self._metrics_store is not None:
+            for rm in self._round_metrics:
+                self._metrics_store.record_round(
+                    round_number=rm.round_number,
+                    loss=rm.loss,
+                    metrics=rm.metrics,
+                    num_clients=rm.num_clients,
+                )
+            self._metrics_store.complete_campaign()
 
         # Log metrics to files if configured
         if self._config.log_dir:

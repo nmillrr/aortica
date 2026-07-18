@@ -9,6 +9,7 @@ import { Batch } from './pages/Batch';
 import { Login } from './pages/Login';
 import { ReportEvent } from './pages/ReportEvent';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { FLDashboard } from './pages/FLDashboard';
 
 export function App() {
   return (
@@ -28,6 +29,7 @@ export function App() {
         <Route path="/batch" element={<Batch />} />
         <Route path="/report-event" element={<ReportEvent />} />
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/federated" element={<FLDashboard />} />
       </Route>
     </Routes>
   );

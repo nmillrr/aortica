@@ -245,6 +245,16 @@ def create_app(
     mobile_router = create_mobile_router()
     app.include_router(mobile_router)
 
+    # Mount federated learning monitoring router (GET /api/v1/federated/*)
+    from aortica.api.federated_endpoints import create_federated_router
+    from aortica.federated.fl_metrics_store import FLMetricsStore
+
+    _fl_data_dir = os.environ.get("AORTICA_DATA_DIR", tempfile.gettempdir())
+    _fl_db_path = os.path.join(_fl_data_dir, "fl_metrics.db")
+    fl_metrics_store = FLMetricsStore(_fl_db_path)
+    app.state.fl_metrics_store = fl_metrics_store  # type: ignore[attr-defined]
+    app.include_router(create_federated_router(fl_metrics_store))
+
     # Optional OAuth providers (best-effort — only if authlib installed
     # and env vars are set)
     try:

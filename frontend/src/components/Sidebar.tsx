@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/batch',         icon: '⊞', id: 'batch',        labelKey: 'nav.batchAnalysis' },
   { to: '/report-event',  icon: '⚠', id: 'report-event', labelKey: 'nav.reportEvent' },
   { to: '/admin',         icon: '⚙', id: 'admin',        labelKey: 'nav.admin' },
+  { to: '/federated',     icon: '🌐', id: 'federated',    labelKey: 'nav.federated' },
 ] as const;
 
 export function Sidebar() {

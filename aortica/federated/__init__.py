@@ -11,6 +11,12 @@ from aortica.federated.fl_client import (
     AorticaFlowerClient,
     FLClientConfig,
 )
+from aortica.federated.fl_metrics_store import (
+    CampaignStatus,
+    FLMetricsStore,
+    RoundRecord,
+    SiteRecord,
+)
 from aortica.federated.fl_server import (
     FLServer,
     FLServerConfig,
@@ -34,10 +40,12 @@ from aortica.federated.strategies import (
 
 __all__ = [
     "AorticaFlowerClient",
+    "CampaignStatus",
     "DPConfig",
     "DPWrapper",
     "EncryptedWeights",
     "FLClientConfig",
+    "FLMetricsStore",
     "FLServer",
     "FLServerConfig",
     "FederatedReleaseConfig",
@@ -46,9 +54,11 @@ __all__ = [
     "PrivacyBudgetTracker",
     "ReleasePipelineResult",
     "RoundMetrics",
+    "RoundRecord",
     "SCAFFOLDStrategy",
     "SecureAggConfig",
     "SecureAggregator",
+    "SiteRecord",
     "release_pipeline",
 ]
 

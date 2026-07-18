@@ -25,7 +25,8 @@
     "ecgHistory": "ECG History",
     "batchAnalysis": "Batch Analysis",
     "reportEvent": "Report Event",
-    "admin": "Admin"
+    "admin": "Admin",
+    "federated": "Federated Learning"
   },
 
   "header": {
@@ -299,5 +300,15 @@
     "fr": "Français",
     "es": "Español",
     "sw": "Kiswahili"
+  },
+
+  "federated": {
+    "title": "Federated Learning",
+    "campaign": "Campaign",
+    "rounds": "Rounds",
+    "sites": "Sites",
+    "privacy": "Privacy Budget",
+    "convergence": "Convergence",
+    "noData": "No campaign data available"
   }
 }

@@ -1,0 +1,682 @@
+/* ============================================================
+   FLDashboard — Federated Learning Monitoring (US-113)
+   ============================================================ */
+
+.fl-dashboard {
+  padding: var(--space-8);
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: flFadeIn 0.4s ease;
+}
+
+@keyframes flFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Page header ──────────────────────────────────────────── */
+
+.fl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.fl-header h1 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fl-header h1 .page-icon {
+  font-size: 1.3em;
+  opacity: 0.85;
+}
+
+.fl-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fl-poll-select {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-surface-border);
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  outline: none;
+}
+
+.fl-poll-select:focus {
+  border-color: var(--color-accent);
+}
+
+.fl-refresh-btn {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-surface-border);
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fl-refresh-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.fl-refresh-btn.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ── Error banner ─────────────────────────────────────────── */
+
+.fl-error-banner {
+  background: var(--color-danger-muted);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fl-error-icon {
+  font-size: 1.1em;
+}
+
+.fl-error-dismiss {
+  margin-inline-start: auto;
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  padding: 0 var(--space-2);
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.fl-error-dismiss:hover {
+  opacity: 1;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+
+.fl-tabs {
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-6);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+  border: 1px solid var(--color-surface-border);
+  overflow-x: auto;
+}
+
+.fl-tab {
+  flex: 0 0 auto;
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.fl-tab:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-hover);
+}
+
+.fl-tab.active {
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.fl-tab-icon {
+  font-size: 1.1em;
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+
+.fl-card {
+  background: var(--gradient-card);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+}
+
+.fl-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.fl-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.fl-card-header h3 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.fl-card-badge {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-secondary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-surface-border);
+}
+
+/* ── Status badges ────────────────────────────────────────── */
+
+.fl-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-running {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.badge-completed {
+  background: var(--color-info-muted);
+  color: var(--color-info);
+}
+
+.badge-failed {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+}
+
+.badge-idle {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+}
+
+.badge-online {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+}
+
+.badge-offline {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Status dot ───────────────────────────────────────────── */
+
+.fl-status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-inline-end: var(--space-2);
+}
+
+.fl-status-dot.badge-online {
+  background: var(--color-success);
+  box-shadow: 0 0 6px var(--color-success);
+}
+
+.fl-status-dot.badge-offline {
+  background: var(--color-text-muted);
+}
+
+/* ── Stat grid ────────────────────────────────────────────── */
+
+.fl-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.fl-stat {
+  text-align: center;
+  padding: var(--space-3);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-surface-border);
+}
+
+.fl-stat-value {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.fl-stat-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Campaign card specifics ──────────────────────────────── */
+
+.fl-campaign-card {
+  border-left: 3px solid var(--color-accent);
+}
+
+.fl-campaign-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent);
+  margin-bottom: var(--space-4);
+}
+
+/* ── Progress bar ─────────────────────────────────────────── */
+
+.fl-progress-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fl-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--color-surface-border);
+}
+
+.fl-progress-fill {
+  height: 100%;
+  background: var(--gradient-brand);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.fl-progress-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  min-width: 3em;
+  text-align: end;
+}
+
+/* ── Chart ────────────────────────────────────────────────── */
+
+.fl-chart-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.fl-chart-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-2);
+}
+
+.fl-chart-svg {
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+}
+
+.fl-chart-empty {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+
+.fl-table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-surface-border);
+}
+
+.fl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.fl-table thead {
+  background: var(--color-bg-secondary);
+}
+
+.fl-table th {
+  padding: var(--space-3) var(--space-4);
+  text-align: start;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--color-surface-border);
+  white-space: nowrap;
+}
+
+.fl-table td {
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid rgba(42, 50, 80, 0.3);
+  white-space: nowrap;
+}
+
+.fl-table tbody tr:hover {
+  background: var(--color-bg-hover);
+}
+
+.fl-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.fl-td-round {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent);
+}
+
+.fl-td-site-id {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: var(--font-size-xs);
+}
+
+.fl-td-ts {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.fl-td-empty {
+  text-align: center;
+  color: var(--color-text-tertiary);
+  padding: var(--space-8) !important;
+}
+
+/* ── Epsilon bar (in table) ───────────────────────────────── */
+
+.fl-epsilon-bar-container {
+  position: relative;
+  width: 100%;
+  min-width: 80px;
+  height: 18px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--color-surface-border);
+}
+
+.fl-epsilon-bar {
+  height: 100%;
+  background: var(--color-success);
+  border-radius: var(--radius-sm);
+  transition: width var(--transition-base);
+}
+
+.fl-epsilon-bar.warning {
+  background: var(--color-warning);
+}
+
+.fl-epsilon-bar.critical {
+  background: var(--color-danger);
+  animation: epsilonPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes epsilonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.fl-epsilon-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Convergence badges ───────────────────────────────────── */
+
+.fl-convergence-badges {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.fl-conv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.fl-conv-badge.ok {
+  background: var(--color-success-muted);
+  color: var(--color-success);
+  border: 1px solid rgba(46, 204, 113, 0.2);
+}
+
+.fl-conv-badge.warning {
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
+  border: 1px solid rgba(243, 156, 18, 0.2);
+}
+
+/* ── Convergence indicators ───────────────────────────────── */
+
+.fl-convergence-indicators {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fl-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-surface-border);
+}
+
+.fl-indicator.ok {
+  background: var(--color-success-muted);
+  border-color: rgba(46, 204, 113, 0.2);
+}
+
+.fl-indicator.warning {
+  background: var(--color-warning-muted);
+  border-color: rgba(243, 156, 18, 0.2);
+}
+
+.fl-indicator-icon {
+  font-size: 1.5em;
+  flex-shrink: 0;
+}
+
+.fl-indicator-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.fl-indicator-detail {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Privacy panel bars ───────────────────────────────────── */
+
+.fl-privacy-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fl-privacy-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fl-privacy-site-label {
+  min-width: 80px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.fl-privacy-bar-track {
+  flex: 1;
+  position: relative;
+  height: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--color-surface-border);
+}
+
+.fl-privacy-bar-fill {
+  height: 100%;
+  background: var(--color-success);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+
+.fl-privacy-bar-fill.warning {
+  background: var(--color-warning);
+}
+
+.fl-privacy-bar-fill.critical {
+  background: var(--color-danger);
+}
+
+.fl-privacy-threshold {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-danger);
+  opacity: 0.5;
+}
+
+.fl-privacy-value {
+  min-width: 100px;
+  text-align: end;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.fl-privacy-warn {
+  color: var(--color-warning);
+  font-size: 1.1em;
+  cursor: help;
+}
+
+/* ── Overview layout ──────────────────────────────────────── */
+
+.fl-overview {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+/* ── Empty states ─────────────────────────────────────────── */
+
+.fl-empty {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .fl-dashboard {
+    padding: var(--space-4);
+  }
+
+  .fl-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fl-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .fl-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 620px) {
+  .fl-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fl-privacy-row {
+    flex-wrap: wrap;
+  }
+}
