@@ -26,7 +26,8 @@
     "batchAnalysis": "Batch Analysis",
     "reportEvent": "Report Event",
     "admin": "Admin",
-    "federated": "Federated Learning"
+    "federated": "Federated Learning",
+    "validation": "Site Validation"
   },
 
   "header": {

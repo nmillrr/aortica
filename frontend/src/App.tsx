@@ -10,6 +10,7 @@ import { Login } from './pages/Login';
 import { ReportEvent } from './pages/ReportEvent';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { FLDashboard } from './pages/FLDashboard';
+import { SiteValidationPage } from './pages/SiteValidation';
 
 export function App() {
   return (
@@ -30,6 +31,7 @@ export function App() {
         <Route path="/report-event" element={<ReportEvent />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/federated" element={<FLDashboard />} />
+        <Route path="/validation/sites" element={<SiteValidationPage />} />
       </Route>
     </Routes>
   );

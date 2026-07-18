@@ -191,15 +191,86 @@ class AdverseEventSummaryResponse(BaseModel):
     )
 
 
-# ---------------------------------------------------------------------------
-# Router factory
-# ---------------------------------------------------------------------------
+# -- Site validation registry models (US-114) ---------------------------
+
+
+class SiteRegistrationRequest(BaseModel):
+    """Request body for POST /api/v1/validation/sites."""
+
+    site_id: str = Field(
+        ..., description="Unique identifier for the validation site"
+    )
+    region: str = Field(
+        ..., description="Free-text region (e.g. 'South Asia', 'Western Europe')"
+    )
+    benchmark_report: dict = Field(
+        default_factory=dict,
+        description="Benchmark report JSON (from BenchmarkReport.as_dict())",
+    )
+    dataset_size: Optional[int] = Field(
+        default=None,
+        description="Number of samples in the validation dataset",
+    )
+
+
+class SiteRegistrationResponse(BaseModel):
+    """Response body for POST /api/v1/validation/sites."""
+
+    site_id: str = Field(..., description="Registered site ID")
+    region_class: str = Field(
+        ..., description="Computed classification: 'western' or 'non-western'"
+    )
+    status: str = Field(default="registered", description="Registration status")
+
+
+class SiteValidationRecordResponse(BaseModel):
+    """A single site validation record in API responses."""
+
+    site_id: str = Field(..., description="Site identifier")
+    region: str = Field(..., description="Region string")
+    region_class: str = Field(..., description="'western' or 'non-western'")
+    dataset_size: int = Field(default=0, description="Validation dataset size")
+    benchmark_summary: dict = Field(
+        default_factory=dict, description="Benchmark report summary"
+    )
+    timestamp: str = Field(default="", description="ISO-8601 registration time")
+    overall_pass: bool = Field(
+        default=True, description="Overall pass/fail from benchmark"
+    )
+
+
+class SiteValidationListResponse(BaseModel):
+    """Response body for GET /api/v1/validation/sites."""
+
+    sites: List[SiteValidationRecordResponse] = Field(default_factory=list)
+    total: int = 0
+
+
+class ReleaseReadinessResponse(BaseModel):
+    """Response body for GET /api/v1/validation/readiness."""
+
+    ready: bool = Field(
+        default=False, description="Whether v-stable release gate is satisfied"
+    )
+    total_validations: int = Field(default=0, description="Total registered sites")
+    western_count: int = Field(default=0, description="Western site count")
+    non_western_count: int = Field(default=0, description="Non-Western site count")
+    min_non_western: int = Field(
+        default=2, description="Required minimum non-Western validations"
+    )
+    non_western_sites: List[str] = Field(
+        default_factory=list, description="Non-Western site IDs"
+    )
+    western_sites: List[str] = Field(
+        default_factory=list, description="Western site IDs"
+    )
 
 
 def create_validation_router(
     collector: Optional[Any] = None,
     monitor: Optional[Any] = None,
     adverse_event_store: Optional[Any] = None,
+    site_registry: Optional[Any] = None,
 ) -> Any:
     """Create the validation API router.
 
@@ -215,6 +286,10 @@ def create_validation_router(
     adverse_event_store:
         A :class:`~aortica.validation.AdverseEventStore` instance.
         If ``None``, the adverse event endpoints return no-op responses.
+    site_registry:
+        A :class:`~aortica.evaluation.site_validation.SiteValidationRegistry`
+        instance.  If ``None``, the site validation endpoints return
+        no-op responses.
     """
     if not HAS_FASTAPI:
         raise ImportError(
@@ -430,6 +505,101 @@ def create_validation_router(
             ],
         )
 
+    # -- Site validation registry endpoints (US-114) ----------------------
+
+    @router.post(
+        "/sites",
+        response_model=SiteRegistrationResponse,
+        summary="Register a new site validation",
+    )
+    async def register_site_validation(
+        body: SiteRegistrationRequest,
+    ) -> SiteRegistrationResponse:
+        """Register a site validation with benchmark report.
+
+        If a validation for the same site_id already exists, it is
+        replaced (latest result wins).
+        """
+        if site_registry is None:
+            return SiteRegistrationResponse(
+                site_id=body.site_id,
+                region_class="unknown",
+                status="no_registry_configured",
+            )
+
+        from aortica.evaluation.site_validation import classify_region
+
+        record = site_registry.register_validation(
+            site_id=body.site_id,
+            region=body.region,
+            benchmark_report=body.benchmark_report,
+            dataset_size=body.dataset_size,
+        )
+
+        return SiteRegistrationResponse(
+            site_id=record.site_id,
+            region_class=record.region_class,
+            status="registered",
+        )
+
+    @router.get(
+        "/sites",
+        response_model=SiteValidationListResponse,
+        summary="List all registered site validations",
+    )
+    async def list_site_validations() -> SiteValidationListResponse:
+        """Return all registered site validations."""
+        if site_registry is None:
+            return SiteValidationListResponse(sites=[], total=0)
+
+        from dataclasses import asdict
+
+        validations = site_registry.get_validations()
+        items = [
+            SiteValidationRecordResponse(
+                site_id=v.site_id,
+                region=v.region,
+                region_class=v.region_class,
+                dataset_size=v.dataset_size,
+                benchmark_summary=v.benchmark_summary,
+                timestamp=v.timestamp,
+                overall_pass=v.benchmark_summary.get("overall_pass", True),
+            )
+            for v in validations
+        ]
+        return SiteValidationListResponse(sites=items, total=len(items))
+
+    @router.get(
+        "/readiness",
+        response_model=ReleaseReadinessResponse,
+        summary="Check release readiness status",
+    )
+    async def release_readiness() -> ReleaseReadinessResponse:
+        """Check whether the v-stable release gate is satisfied.
+
+        Requires ≥2 non-Western site validations.
+        """
+        if site_registry is None:
+            return ReleaseReadinessResponse(
+                ready=False,
+                total_validations=0,
+                western_count=0,
+                non_western_count=0,
+                min_non_western=2,
+                non_western_sites=[],
+                western_sites=[],
+            )
+
+        readiness = site_registry.check_release_readiness()
+
+        return ReleaseReadinessResponse(
+            ready=readiness.ready,
+            total_validations=readiness.total_validations,
+            western_count=readiness.western_count,
+            non_western_count=readiness.non_western_count,
+            min_non_western=readiness.min_non_western,
+            non_western_sites=readiness.non_western_sites,
+            western_sites=readiness.western_sites,
+        )
+
     return router
-
-

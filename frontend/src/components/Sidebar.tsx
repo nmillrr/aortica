@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/report-event',  icon: '⚠', id: 'report-event', labelKey: 'nav.reportEvent' },
   { to: '/admin',         icon: '⚙', id: 'admin',        labelKey: 'nav.admin' },
   { to: '/federated',     icon: '🌐', id: 'federated',    labelKey: 'nav.federated' },
+  { to: '/validation/sites', icon: '🌍', id: 'validation', labelKey: 'nav.validation' },
 ] as const;
 
 export function Sidebar() {

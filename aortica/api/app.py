@@ -206,8 +206,13 @@ def create_app(
 
     # Mount validation endpoints router
     from aortica.api.validation_endpoints import create_validation_router
+    from aortica.evaluation.site_validation import SiteValidationRegistry
 
-    validation_router = create_validation_router()
+    _validation_data_dir = os.environ.get("AORTICA_DATA_DIR", tempfile.gettempdir())
+    _site_registry_path = os.path.join(_validation_data_dir, "site_validations.json")
+    _site_registry = SiteValidationRegistry(path=_site_registry_path)
+
+    validation_router = create_validation_router(site_registry=_site_registry)
     app.include_router(validation_router)
 
     # Mount result browser router

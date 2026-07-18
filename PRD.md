@@ -1467,16 +1467,16 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a release manager, I want a web interface for the non-Western site validation registry so that I can register validation results, view per-site benchmark reports, and check release readiness without using the Python API directly.
 
 **Acceptance Criteria:**
-- [ ] `SiteValidationPage` React page at route `/validation/sites` (protected: requires admin role)
-- [ ] **Registry table:** list of all registered validation sites with: site ID, region, dataset size, validation date, overall pass/fail, link to full benchmark report
-- [ ] **Add validation form:** site ID, region (dropdown with Western/non-Western auto-classification), upload benchmark report JSON, dataset size
-- [ ] **Release readiness indicator:** prominent badge showing whether v-stable requirements are met (≥2 non-Western validations), with breakdown of which sites satisfy the requirement
-- [ ] **Region map visualization:** world map (lightweight SVG) with markers showing validated site locations, color-coded by region classification
-- [ ] `POST /api/v1/validation/sites` API endpoint for registering a new site validation
-- [ ] `GET /api/v1/validation/sites` API endpoint returning all registered validations
-- [ ] `GET /api/v1/validation/readiness` API endpoint returning release readiness status
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `SiteValidationPage` React page at route `/validation/sites` (protected: requires admin role)
+- [x] **Registry table:** list of all registered validation sites with: site ID, region, dataset size, validation date, overall pass/fail, link to full benchmark report
+- [x] **Add validation form:** site ID, region (dropdown with Western/non-Western auto-classification), upload benchmark report JSON, dataset size
+- [x] **Release readiness indicator:** prominent badge showing whether v-stable requirements are met (≥2 non-Western validations), with breakdown of which sites satisfy the requirement
+- [x] **Region map visualization:** world map (lightweight SVG) with markers showing validated site locations, color-coded by region classification
+- [x] `POST /api/v1/validation/sites` API endpoint for registering a new site validation
+- [x] `GET /api/v1/validation/sites` API endpoint returning all registered validations
+- [x] `GET /api/v1/validation/readiness` API endpoint returning release readiness status
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

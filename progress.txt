@@ -2364,3 +2364,34 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
 - Pattern for auto-input from an ONNX model: read session.get_inputs()[0].shape, replace dynamic/symbolic dims (batch→1, leads→12, samples→5000).
 - app.py already had module-level need for os/tempfile duplicated as local imports inside the predict handler; adding them at module scope let me delete the redundant locals (also cleared an isort I001).
 ---
+
+## Iteration US-113 - Federated Learning Monitoring Dashboard
+- What was implemented:
+  - FLMetricsStore: SQLite-backed persistence layer for FL campaign state, per-round metrics, site participation tracking, privacy budget tracking, and convergence indicators (plateau detection + early stopping recommendation)
+  - 3 FastAPI API endpoints: GET /api/v1/federated/status, /rounds, /sites
+  - FLServer updated to persist per-round metrics to SQLite via optional metrics_store parameter
+  - FLDashboard React page at /federated with 5 tabbed panels: Overview, Round Metrics, Sites, Privacy Budget, Convergence
+  - SVG-based line charts for loss trend, gradient norms, and per-task F1 metrics
+  - Polling-based live updates with configurable interval (10s/30s/60s/5m dropdown)
+  - Sidebar nav item + i18n keys for all 4 locales (en/fr/es/sw)
+- Files created:
+  - aortica/federated/fl_metrics_store.py
+  - aortica/api/federated_endpoints.py
+  - frontend/src/pages/FLDashboard.tsx
+  - frontend/src/pages/FLDashboard.css
+  - tests/federated/test_fl_metrics_store.py
+  - tests/api/test_federated_endpoints.py
+- Files modified:
+  - aortica/federated/__init__.py (exports)
+  - aortica/federated/fl_server.py (metrics_store integration)
+  - aortica/api/app.py (mount federated router)
+  - frontend/src/App.tsx (route)
+  - frontend/src/components/Sidebar.tsx (nav item)
+  - frontend/src/locales/{en,fr,es,sw}/translation.json (i18n keys)
+  - PRD.md (marked US-113 complete)
+- Learnings for future iterations:
+  - SiteMonitor pattern (check_same_thread=False + threading.Lock) reusable for any SQLite store behind a threaded FastAPI server
+  - The FLServer.start() is blocking — metrics persistence happens after all rounds complete. For truly live per-round updates, would need a callback/strategy wrapper that persists after each round (future enhancement)
+  - SVG line charts are lightweight and dependency-free; good enough for dashboard use
+  - Frontend TypeScript typecheck passes cleanly with useTranslation and useAuth patterns
+---

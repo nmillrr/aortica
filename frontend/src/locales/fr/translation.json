@@ -26,7 +26,8 @@
     "batchAnalysis": "Analyse par lots",
     "reportEvent": "Signaler un événement",
     "admin": "Administration",
-    "federated": "Apprentissage fédéré"
+    "federated": "Apprentissage fédéré",
+    "validation": "Validation de sites"
   },
 
   "header": {
