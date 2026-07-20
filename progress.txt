@@ -2414,3 +2414,22 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - Label matrix column layout is rhythm(28)|structural(19)|ischaemia(19)|risk(6) = 72, same order as fl_client._TASK_NUM_OUTPUTS. A record counts as "labeled"/"positive for superclass" if any column in the slice is != 0 (works for continuous risk too).
   - AorticaFlowerClient() constructs WITHOUT torch (guarded imports); check_data_quality only reads dataset.records/.labels, so client integration is testable without torch via a fake loader exposing `.dataset`.
 ---
+
+## Iteration US-116 - Model Version Comparison and A/B Analysis
+- What was implemented:
+  - aortica/evaluation/model_comparison.py — compare_predictions() (torch-free stats core) + compare_models() (torch model-loading wrapper). Per-class ΔF1/ΔAUC/Δsens/Δspec (classification) and ΔC-index (risk), paired-bootstrap two-sided p-values + 95% CIs, demographic subgroup deltas (age decile/sex via benchmark._build_subgroup_masks), regression detection (delta<0 & p<alpha), upgrade/hold/investigate recommendation, to_dict() + to_markdown() (MODEL_COMPARISON.md).
+  - Vectorised _c_index (numpy pairwise) — matches brute force, ~5x faster in bootstrap.
+  - CLI: `aortica compare` with two input modes: --model-a/--model-b/--dataset (torch) and --predictions-a/--predictions-b/--targets (.npz, torch-free/testable). Writes MODEL_COMPARISON.md, exits 1 on regression.
+  - Frontend: frontend/src/pages/ModelCompare.tsx + .css at /compare — uploads two BenchmarkReport JSONs, computes client-side deltas, side-by-side tables with green/red highlighting, recommendation banner, per-task per-class breakdown. Route + Sidebar nav item + i18n keys (en/fr/es/sw).
+- Files created: aortica/evaluation/model_comparison.py, aortica/cli/compare_cmd.py, tests/evaluation/test_model_comparison.py (14), tests/cli/test_compare_cmd.py (4), frontend/src/pages/ModelCompare.{tsx,css}
+- Files modified: aortica/evaluation/__init__.py, aortica/cli/__init__.py, frontend/src/App.tsx, frontend/src/components/Sidebar.tsx, frontend/src/locales/{en,fr,es,sw}/translation.json, frontend/src/pages/{SiteValidation,FLDashboard}.tsx (pre-existing tsc noUnusedLocals fixes), PRD.md.
+- Test results: 18 backend tests pass; mypy --follow-imports=silent clean on both new files; ruff clean; frontend tsc -b clean + vite build succeeds; Playwright browser check confirmed /compare renders UPGRADE with green deltas, 0 page console errors.
+- Learnings for future iterations:
+  - FRONTEND ENV: `npm install --legacy-peer-deps` (plain install hits ERESOLVE). tsc via `npx tsc -b`; full build `npm run build`. node v22 at /opt/node22.
+  - PRE-EXISTING TSC ERRORS at HEAD block `vite build`: SiteValidation.tsx unused `t`/useTranslation (US-114) and FLDashboard.tsx OverviewPanel unused `rounds` param (US-113). noUnusedLocals/Parameters is on. Fixed both minimally to get a green build (needed for browser verification).
+  - PLAYWRIGHT: not in frontend node_modules; global at /opt/node22/lib/node_modules/playwright. ESM ignores NODE_PATH — symlink it in: `ln -s /opt/node22/lib/node_modules/playwright node_modules/playwright` (+ playwright-core). Chromium at /opt/pw-browsers (auto-found). Serve built dist with `npx vite preview --port 4173`.
+  - AUTH BYPASS for protected routes in browser tests: page.addInitScript seeding localStorage 'aortica_auth_tokens' ({accessToken, expiresAt: Date.now()+3600000}) + 'aortica_auth_user' ({sub,email,name,provider}). isAuthenticated = tokens && user && Date.now()<expiresAt.
+  - The sidebar ConnectionStatusBanner polls http://localhost:8000 → expect ERR_CONNECTION_REFUSED console errors in a static preview; filter them out when asserting "no page errors".
+  - BenchmarkReport.as_dict() shape for the frontend: {overall:{task:{macro_f1,ece,c_index,brier_score,per_class:[{name,auc,sensitivity,specificity,f1}]}}, n_samples, tasks_evaluated}.
+  - aortica.data is BROKEN at HEAD: data/__init__.py imports aortica.data.ptbxl which doesn't exist → `import aortica.data` raises ModuleNotFoundError. benchmark CLI's _load_model_and_dataset also imports load_ptbxl, so the torch dataset route is un-runnable here. Kept compare's model+dataset path per AC but tested via the .npz mode. (Candidate cleanup: create data/ptbxl.py or fix the import.)
+---

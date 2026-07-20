@@ -13,6 +13,14 @@ from aortica.evaluation.equity_gate import (
     GroupMetrics,
     equity_gate,
 )
+from aortica.evaluation.model_comparison import (
+    ClassDelta,
+    ModelComparisonReport,
+    SubgroupDelta,
+    TaskDelta,
+    compare_models,
+    compare_predictions,
+)
 from aortica.evaluation.performance_card import (
     PerformanceCardResult,
     generate_performance_card,
@@ -31,9 +39,15 @@ from aortica.evaluation.site_validation import (
 
 __all__ = [
     "BenchmarkReport",
+    "ClassDelta",
     "ClassGateResult",
     "ClassMetrics",
     "ComparisonResult",
+    "ModelComparisonReport",
+    "SubgroupDelta",
+    "TaskDelta",
+    "compare_models",
+    "compare_predictions",
     "EquityGateResult",
     "GroupMetrics",
     "PerformanceCardResult",

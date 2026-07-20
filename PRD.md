@@ -1619,17 +1619,17 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As an ML engineer, I want to compare two model versions side-by-side so that I can quantify the impact of federated training, expanded task heads, or any model update before releasing it.
 
 **Acceptance Criteria:**
-- [ ] `aortica.evaluation.compare_models(model_a_path, model_b_path, dataset, tasks='all')` returns a `ModelComparisonReport`
-- [ ] Per-task delta metrics: ΔAUC, ΔF1, Δsensitivity, Δspecificity, ΔC-index for risk tasks
-- [ ] Statistical significance testing: paired bootstrap test per class, reporting p-values and 95% confidence intervals for each delta
-- [ ] Demographic subgroup comparison: per-group delta metrics (age decile, sex) to detect equity regressions
-- [ ] Regression detection: flags any class where model B performs statistically worse than model A (p < 0.05)
-- [ ] Generates `MODEL_COMPARISON.md` report with: version IDs, summary table of deltas, per-task breakdown, regression warnings, recommendation (upgrade/hold/investigate)
-- [ ] CLI command `aortica compare --model-a <path> --model-b <path> --dataset <path>` generates the comparison report
-- [ ] React page at `/compare` allowing upload of two benchmark reports (JSON) and displaying side-by-side metrics with delta highlighting (green for improvement, red for regression)
-- [ ] Unit tests with synthetic predictions showing improvement, regression, and mixed scenarios
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `aortica.evaluation.compare_models(model_a_path, model_b_path, dataset, tasks='all')` returns a `ModelComparisonReport`
+- [x] Per-task delta metrics: ΔAUC, ΔF1, Δsensitivity, Δspecificity, ΔC-index for risk tasks
+- [x] Statistical significance testing: paired bootstrap test per class, reporting p-values and 95% confidence intervals for each delta
+- [x] Demographic subgroup comparison: per-group delta metrics (age decile, sex) to detect equity regressions
+- [x] Regression detection: flags any class where model B performs statistically worse than model A (p < 0.05)
+- [x] Generates `MODEL_COMPARISON.md` report with: version IDs, summary table of deltas, per-task breakdown, regression warnings, recommendation (upgrade/hold/investigate)
+- [x] CLI command `aortica compare --model-a <path> --model-b <path> --dataset <path>` generates the comparison report
+- [x] React page at `/compare` allowing upload of two benchmark reports (JSON) and displaying side-by-side metrics with delta highlighting (green for improvement, red for regression)
+- [x] Unit tests with synthetic predictions showing improvement, regression, and mixed scenarios
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

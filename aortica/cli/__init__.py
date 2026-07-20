@@ -43,6 +43,7 @@ def _build_cli() -> Any:
 
     from aortica.cli.benchmark import benchmark_cmd
     from aortica.cli.build_index_cmd import build_index_cmd
+    from aortica.cli.compare_cmd import compare_cmd
     from aortica.cli.edge_cmd import edge_group
     from aortica.cli.federated_cmd import federated_group
     from aortica.cli.hardware_benchmark_cmd import benchmark_hardware_cmd
@@ -69,6 +70,7 @@ def _build_cli() -> Any:
     cli.add_command(validation_group)
     cli.add_command(benchmark_hardware_cmd)
     cli.add_command(edge_group)
+    cli.add_command(compare_cmd)
     return cli
 
 

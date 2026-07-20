@@ -11,6 +11,7 @@ import { ReportEvent } from './pages/ReportEvent';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { FLDashboard } from './pages/FLDashboard';
 import { SiteValidationPage } from './pages/SiteValidation';
+import { ModelComparePage } from './pages/ModelCompare';
 
 export function App() {
   return (
@@ -32,6 +33,7 @@ export function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/federated" element={<FLDashboard />} />
         <Route path="/validation/sites" element={<SiteValidationPage />} />
+        <Route path="/compare" element={<ModelComparePage />} />
       </Route>
     </Routes>
   );

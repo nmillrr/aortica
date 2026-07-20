@@ -1,0 +1,183 @@
+/* ============================================================
+   ModelCompare — Model Version Comparison & A/B Analysis (US-116)
+   ============================================================ */
+
+.model-compare {
+  padding: var(--space-8);
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: mcFadeIn 0.4s ease;
+}
+
+@keyframes mcFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mc-header {
+  margin-bottom: var(--space-6);
+}
+
+.mc-header h1 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.mc-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-2);
+}
+
+/* ── Upload cards ─────────────────────────────────────────── */
+
+.mc-uploads {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (max-width: 720px) {
+  .mc-uploads {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mc-upload-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mc-upload-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.mc-file-ok {
+  color: var(--color-success);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.mc-error {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Recommendation banner ────────────────────────────────── */
+
+.mc-recommendation {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-surface-border);
+}
+
+.mc-rec-badge {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-md);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+}
+
+.mc-rec-upgrade { background: var(--color-success-muted); }
+.mc-rec-upgrade .mc-rec-badge { color: var(--color-success); }
+
+.mc-rec-hold { background: var(--color-warning-muted); }
+.mc-rec-hold .mc-rec-badge { color: var(--color-warning); }
+
+.mc-rec-investigate { background: var(--color-danger-muted); }
+.mc-rec-investigate .mc-rec-badge { color: var(--color-danger); }
+
+.mc-rec-detail {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Tables ───────────────────────────────────────────────── */
+
+.mc-summary,
+.mc-task-detail {
+  margin-bottom: var(--space-6);
+}
+
+.mc-summary h2,
+.mc-task-detail h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  text-transform: capitalize;
+}
+
+.mc-table-scroll {
+  overflow-x: auto;
+}
+
+.mc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.mc-table th,
+.mc-table td {
+  padding: var(--space-2) var(--space-4);
+  text-align: right;
+  border-bottom: 1px solid var(--color-surface-border);
+}
+
+.mc-table th:first-child,
+.mc-table td:first-child {
+  text-align: left;
+}
+
+.mc-table thead th {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.mc-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.mc-row-regression {
+  background: var(--color-danger-muted);
+}
+
+.mc-flag {
+  margin-right: var(--space-1);
+}
+
+/* ── Delta colouring ──────────────────────────────────────── */
+
+.delta-up   { color: var(--color-success); font-weight: var(--font-weight-medium); }
+.delta-down { color: var(--color-danger);  font-weight: var(--font-weight-medium); }
+.delta-flat { color: var(--color-text-tertiary); }
+
+.mc-hint {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  margin-top: var(--space-4);
+}

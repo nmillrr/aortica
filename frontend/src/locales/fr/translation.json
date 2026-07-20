@@ -18,7 +18,6 @@
     "optional": "(facultatif)",
     "footer": "Auto-hébergé · Aucune donnée ne quitte votre déploiement"
   },
-
   "nav": {
     "dashboard": "Tableau de bord",
     "uploadEcg": "Téléverser un ECG",
@@ -27,9 +26,9 @@
     "reportEvent": "Signaler un événement",
     "admin": "Administration",
     "federated": "Apprentissage fédéré",
-    "validation": "Validation de sites"
+    "validation": "Validation de sites",
+    "compare": "Comparer les modèles"
   },
-
   "header": {
     "dashboard": "Tableau de bord",
     "uploadEcg": "Téléverser un ECG",
@@ -37,7 +36,6 @@
     "analysisResults": "Résultats d'analyse",
     "userMenu": "Menu utilisateur"
   },
-
   "dashboard": {
     "heroTitle": "Bienvenue sur <accent>Aortica</accent>",
     "heroSubtitle": "Plateforme d'analyse ECG par IA — apprentissage profond multi-tâche avec prédictions explicables.",
@@ -59,7 +57,6 @@
       "risk": "Risque"
     }
   },
-
   "login": {
     "title": "Aortica",
     "subtitle": "Plateforme d'analyse ECG par IA",
@@ -76,7 +73,6 @@
     "apiKeyFailed": "Échec de la validation de la clé API",
     "enterApiKey": "Veuillez entrer une clé API"
   },
-
   "upload": {
     "title": "Téléverser un fichier ECG",
     "subtitle": "Glissez-déposez votre fichier ECG ici, ou cliquez pour parcourir",
@@ -97,7 +93,6 @@
       "generatingReport": "Génération du rapport"
     }
   },
-
   "copilot": {
     "title": "Copilote IA",
     "findingsCount": "{{count}} résultat",
@@ -117,7 +112,6 @@
       "emergent": "Émergent"
     }
   },
-
   "connection": {
     "server": "Serveur — Modèle complet",
     "serverDetail": "Connecté au serveur local",
@@ -126,7 +120,6 @@
     "checking": "Vérification de la connexion…",
     "checkingDetail": "Tentative de contact du serveur"
   },
-
   "feedback": {
     "accepted": "✓ Accepté",
     "rejected": "✗ Rejeté",
@@ -137,7 +130,6 @@
     "rejectTitle": "Rejeter ce résultat",
     "modifyTitle": "Modifier ce résultat"
   },
-
   "adverseEvent": {
     "title": "⚠ Rapport d'événement indésirable",
     "description": "Signalez un événement indésirable où les résultats de l'IA ont pu contribuer à un problème de sécurité du patient. Tous les rapports sont stockés dans un journal d'audit immuable pour la surveillance post-commercialisation.",
@@ -166,19 +158,15 @@
       "critical": "Critique"
     }
   },
-
   "results": {
     "title": "Résultats d'analyse"
   },
-
   "batch": {
     "title": "Analyse par lots"
   },
-
   "history": {
     "title": "Historique ECG"
   },
-
   "admin": {
     "title": "Tableau de bord d'administration",
     "tabs": {
@@ -188,7 +176,6 @@
       "activityLog": "Journal d'activité"
     }
   },
-
   "conditions": {
     "AF": "Fibrillation auriculaire",
     "AFL": "Flutter auriculaire",
@@ -244,7 +231,6 @@
     "Digitalis Effect": "Effet digitalique",
     "QTc Prolongation": "Allongement du QTc"
   },
-
   "suggestions": {
     "AF": "Évaluer le risque d'AVC (CHA₂DS₂-VASc) et envisager une anticoagulation",
     "AFL": "Consultation de cardiologie recommandée pour le contrôle du rythme/fréquence",
@@ -294,12 +280,24 @@
     "Digitalis": "Vérifier la digoxinémie — évaluer les signes de toxicité",
     "QTc Prolongation": "Réviser les médicaments allongeant le QT ; vérifier les électrolytes"
   },
-
   "languageSelector": {
     "label": "Langue",
     "en": "English",
     "fr": "Français",
     "es": "Español",
     "sw": "Kiswahili"
+  },
+  "compare": {
+    "title": "Comparaison de versions de modèle",
+    "subtitle": "Importez deux rapports de benchmark (JSON) pour comparer les versions côte à côte.",
+    "uploadA": "Rapport de benchmark A",
+    "uploadB": "Rapport de benchmark B",
+    "summary": "Résumé",
+    "task": "Tâche",
+    "class": "Classe",
+    "regressions": "Régressions",
+    "noRegressions": "Aucune régression détectée",
+    "regressionsFound": "{{count}} régression(s) de classe détectée(s)",
+    "hint": "Générez les rapports avec : aortica benchmark <dataset> --format json"
   }
 }

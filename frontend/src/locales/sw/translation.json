@@ -18,7 +18,6 @@
     "optional": "(si lazima)",
     "footer": "Inajihifadhi · Hakuna data inayoondoka kwenye mfumo wako"
   },
-
   "nav": {
     "dashboard": "Dashibodi",
     "uploadEcg": "Pakia ECG",
@@ -27,9 +26,9 @@
     "reportEvent": "Ripoti Tukio",
     "admin": "Usimamizi",
     "federated": "Kujifunza kwa ushirikiano",
-    "validation": "Uthibitishaji wa tovuti"
+    "validation": "Uthibitishaji wa tovuti",
+    "compare": "Linganisha Miundo"
   },
-
   "header": {
     "dashboard": "Dashibodi",
     "uploadEcg": "Pakia ECG",
@@ -37,7 +36,6 @@
     "analysisResults": "Matokeo ya Uchambuzi",
     "userMenu": "Menyu ya mtumiaji"
   },
-
   "dashboard": {
     "heroTitle": "Karibu kwenye <accent>Aortica</accent>",
     "heroSubtitle": "Jukwaa la uchambuzi wa ECG linalotumia AI — kujifunza kwa kina kwa kazi nyingi na utabiri unaofafanuliwa.",
@@ -59,7 +57,6 @@
       "risk": "Hatari"
     }
   },
-
   "login": {
     "title": "Aortica",
     "subtitle": "Jukwaa la Uchambuzi wa ECG linalotumia AI",
@@ -76,7 +73,6 @@
     "apiKeyFailed": "Uthibitishaji wa ufunguo wa API umeshindikana",
     "enterApiKey": "Tafadhali weka ufunguo wa API"
   },
-
   "upload": {
     "title": "Pakia Faili ya ECG",
     "subtitle": "Buruta na udondoshe faili yako ya ECG hapa, au bofya kuvinjari",
@@ -97,7 +93,6 @@
       "generatingReport": "Inaunda ripoti"
     }
   },
-
   "copilot": {
     "title": "Msaidizi wa AI",
     "findingsCount": "matokeo {{count}}",
@@ -117,7 +112,6 @@
       "emergent": "Ya Hatari"
     }
   },
-
   "connection": {
     "server": "Seva — Modeli Kamili",
     "serverDetail": "Imeunganishwa na seva ya ndani",
@@ -126,7 +120,6 @@
     "checking": "Inakagua muunganisho…",
     "checkingDetail": "Inajaribu kuwasiliana na seva"
   },
-
   "feedback": {
     "accepted": "✓ Imekubaliwa",
     "rejected": "✗ Imekataliwa",
@@ -137,7 +130,6 @@
     "rejectTitle": "Kataa tokeo hili",
     "modifyTitle": "Rekebisha tokeo hili"
   },
-
   "adverseEvent": {
     "title": "⚠ Ripoti ya Tukio Baya",
     "description": "Ripoti tukio baya ambapo matokeo ya AI yanaweza kuwa yamechangia wasiwasi wa usalama wa mgonjwa. Ripoti zote zinahifadhiwa katika rekodi ya ukaguzi isiyobadilika kwa ufuatiliaji baada ya soko.",
@@ -166,19 +158,15 @@
       "critical": "Muhimu Sana"
     }
   },
-
   "results": {
     "title": "Matokeo ya Uchambuzi"
   },
-
   "batch": {
     "title": "Uchambuzi wa Kundi"
   },
-
   "history": {
     "title": "Historia ya ECG"
   },
-
   "admin": {
     "title": "Dashibodi ya Usimamizi",
     "tabs": {
@@ -188,7 +176,6 @@
       "activityLog": "Kumbukumbu ya Shughuli"
     }
   },
-
   "conditions": {
     "AF": "Fibrilesheni ya Atriamu",
     "AFL": "Flateri ya Atriamu",
@@ -244,7 +231,6 @@
     "Digitalis Effect": "Athari ya Digitali",
     "QTc Prolongation": "Kurefuka kwa QTc"
   },
-
   "suggestions": {
     "AF": "Tathmini hatari ya kiharusi (CHA₂DS₂-VASc) na uzingatie kuzuia damu kuganda",
     "AFL": "Rufaa ya moyo inapendekezwa kwa udhibiti wa mdundo/mapigo",
@@ -257,12 +243,24 @@
     "Hyperkalaemia": "Elektroliti za dharura — kalsiamu gluconate ikiwa ni kali",
     "Normal Sinus": "Mdundo wa kawaida wa sinus — hakuna hatua maalum inayohitajika"
   },
-
   "languageSelector": {
     "label": "Lugha",
     "en": "English",
     "fr": "Français",
     "es": "Español",
     "sw": "Kiswahili"
+  },
+  "compare": {
+    "title": "Ulinganishaji wa Matoleo ya Muundo",
+    "subtitle": "Pakia ripoti mbili za benchmark (JSON) ili kulinganisha matoleo ya muundo pamoja.",
+    "uploadA": "Ripoti ya benchmark A",
+    "uploadB": "Ripoti ya benchmark B",
+    "summary": "Muhtasari",
+    "task": "Kazi",
+    "class": "Darasa",
+    "regressions": "Marejesho",
+    "noRegressions": "Hakuna marejesho yaliyogunduliwa",
+    "regressionsFound": "Marejesho ya darasa {{count}} yamegunduliwa",
+    "hint": "Tengeneza ripoti kwa: aortica benchmark <dataset> --format json"
   }
 }

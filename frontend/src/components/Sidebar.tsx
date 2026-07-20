@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/admin',         icon: '⚙', id: 'admin',        labelKey: 'nav.admin' },
   { to: '/federated',     icon: '🌐', id: 'federated',    labelKey: 'nav.federated' },
   { to: '/validation/sites', icon: '🌍', id: 'validation', labelKey: 'nav.validation' },
+  { to: '/compare',       icon: '⇄', id: 'compare',      labelKey: 'nav.compare' },
 ] as const;
 
 export function Sidebar() {

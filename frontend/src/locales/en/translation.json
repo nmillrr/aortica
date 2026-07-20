@@ -18,7 +18,6 @@
     "optional": "(optional)",
     "footer": "Self-hosted · No data leaves your deployment"
   },
-
   "nav": {
     "dashboard": "Dashboard",
     "uploadEcg": "Upload ECG",
@@ -27,9 +26,9 @@
     "reportEvent": "Report Event",
     "admin": "Admin",
     "federated": "Federated Learning",
-    "validation": "Site Validation"
+    "validation": "Site Validation",
+    "compare": "Model Compare"
   },
-
   "header": {
     "dashboard": "Dashboard",
     "uploadEcg": "Upload ECG",
@@ -37,7 +36,6 @@
     "analysisResults": "Analysis Results",
     "userMenu": "User menu"
   },
-
   "dashboard": {
     "heroTitle": "Welcome to <accent>Aortica</accent>",
     "heroSubtitle": "AI-powered ECG analysis platform — multi-task deep learning with explainable predictions.",
@@ -59,7 +57,6 @@
       "risk": "Risk"
     }
   },
-
   "login": {
     "title": "Aortica",
     "subtitle": "AI-Powered ECG Analysis Platform",
@@ -76,7 +73,6 @@
     "apiKeyFailed": "API key validation failed",
     "enterApiKey": "Please enter an API key"
   },
-
   "upload": {
     "title": "Upload ECG File",
     "subtitle": "Drag & drop your ECG file here, or click to browse",
@@ -97,7 +93,6 @@
       "generatingReport": "Generating report"
     }
   },
-
   "copilot": {
     "title": "AI Copilot",
     "findingsCount": "{{count}} finding",
@@ -117,7 +112,6 @@
       "emergent": "Emergent"
     }
   },
-
   "connection": {
     "server": "Server — Full Model",
     "serverDetail": "Connected to local server",
@@ -126,7 +120,6 @@
     "checking": "Checking connection…",
     "checkingDetail": "Attempting server contact"
   },
-
   "feedback": {
     "accepted": "✓ Accepted",
     "rejected": "✗ Rejected",
@@ -137,7 +130,6 @@
     "rejectTitle": "Reject this finding",
     "modifyTitle": "Modify this finding"
   },
-
   "adverseEvent": {
     "title": "⚠ Adverse Event Report",
     "description": "Report an adverse event where AI findings may have contributed to a patient safety concern. All reports are stored in an immutable audit trail for post-market surveillance.",
@@ -166,19 +158,15 @@
       "critical": "Critical"
     }
   },
-
   "results": {
     "title": "Analysis Results"
   },
-
   "batch": {
     "title": "Batch Analysis"
   },
-
   "history": {
     "title": "ECG History"
   },
-
   "admin": {
     "title": "Admin Dashboard",
     "tabs": {
@@ -188,7 +176,6 @@
       "activityLog": "Activity Log"
     }
   },
-
   "conditions": {
     "AF": "Atrial Fibrillation",
     "AFL": "Atrial Flutter",
@@ -244,7 +231,6 @@
     "Digitalis Effect": "Digitalis Effect",
     "QTc Prolongation": "QTc Prolongation"
   },
-
   "suggestions": {
     "AF": "Evaluate stroke risk (CHA₂DS₂-VASc) and consider anticoagulation",
     "AFL": "Cardiology referral recommended for rate/rhythm control",
@@ -294,7 +280,6 @@
     "Digitalis": "Check digoxin level — assess for toxicity signs",
     "QTc Prolongation": "Review QT-prolonging medications; electrolytes check"
   },
-
   "languageSelector": {
     "label": "Language",
     "en": "English",
@@ -302,7 +287,6 @@
     "es": "Español",
     "sw": "Kiswahili"
   },
-
   "federated": {
     "title": "Federated Learning",
     "campaign": "Campaign",
@@ -311,5 +295,18 @@
     "privacy": "Privacy Budget",
     "convergence": "Convergence",
     "noData": "No campaign data available"
+  },
+  "compare": {
+    "title": "Model Version Comparison",
+    "subtitle": "Upload two benchmark reports (JSON) to compare model versions side-by-side.",
+    "uploadA": "Benchmark report A",
+    "uploadB": "Benchmark report B",
+    "summary": "Summary",
+    "task": "Task",
+    "class": "Class",
+    "regressions": "Regressions",
+    "noRegressions": "No regressions detected",
+    "regressionsFound": "{{count}} class regression(s) detected",
+    "hint": "Generate reports with: aortica benchmark <dataset> --format json"
   }
 }
