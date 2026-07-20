@@ -2433,3 +2433,19 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - BenchmarkReport.as_dict() shape for the frontend: {overall:{task:{macro_f1,ece,c_index,brier_score,per_class:[{name,auc,sensitivity,specificity,f1}]}}, n_samples, tasks_evaluated}.
   - aortica.data is BROKEN at HEAD: data/__init__.py imports aortica.data.ptbxl which doesn't exist → `import aortica.data` raises ModuleNotFoundError. benchmark CLI's _load_model_and_dataset also imports load_ptbxl, so the torch dataset route is un-runnable here. Kept compare's model+dataset path per AC but tested via the .npz mode. (Candidate cleanup: create data/ptbxl.py or fix the import.)
 ---
+
+## Iteration US-117 - FHIR Subscription and Webhook Notification Service
+- What was implemented:
+  - aortica/integration/fhir_subscription.py — SubscriptionManager (stdlib-only, thread-safe RLock, in-memory subs + per-sub notification history + dead-letter queue). SubscriptionCriteria (min_severity info/warning/critical, conditions allow-list, urgency_threshold), Subscription (+to_fhir() R4 resource), NotificationRecord. matches() maps worklist tiers→severities (critical→critical, high/moderate→warning, low→info). process_result() runs WorklistPrioritizer to score, matches every active sub, builds a FHIR subscription-notification Bundle, delivers on a daemon thread (or sync=True). _deliver() retries max_retries with exponential backoff (injectable sleep) then dead-letters. Injectable http_post (default urllib) for testing.
+  - aortica/api/subscription_endpoints.py — create_subscription_router: POST/GET/GET{id}/DELETE{id} /api/v1/subscriptions + GET {id}/notifications.
+  - Wired into app.py: app.state.subscription_manager + router; predict handler fans out process_result(findings, ecg_id=filename) after a successful inference (wrapped in try/except so notifications never break predict; background threads keep it <5s).
+- Files created: aortica/integration/fhir_subscription.py, aortica/api/subscription_endpoints.py, tests/integration/test_fhir_subscription.py (20), tests/api/test_subscription_endpoints.py (9).
+- Files modified: aortica/api/app.py (logger, subscription router+state, predict notification hook), PRD.md.
+- Test results: 29 new tests pass; 69 pass across subscription+worklist; 28 app tests pass (predict hook non-breaking). mypy --follow-imports=silent clean on both new files; ruff clean (app.py's 2 remaining E501/F-warnings are PRE-EXISTING at HEAD).
+- Learnings for future iterations:
+  - API DEPS to install for tests: `pip install fastapi "httpx<0.28" python-multipart`. httpx>=0.28 breaks starlette TestClient (get httpx 0.27.x). create_app() needs python-multipart (Form/File).
+  - NEWER FASTAPI (0.139) wraps included sub-routers as `_IncludedRouter` objects WITHOUT a `.path` attr — iterating app.routes for `.path` fails. Use `app.openapi()["paths"].keys()` to assert route registration.
+  - E402 gotcha in app.py: a module-level statement (e.g. `logger = logging.getLogger(...)`) placed before an existing `import aortica` makes that import "not at top" → ruff E402. Put logger assignment AFTER all imports.
+  - Worklist reuse: WorklistPrioritizer().prioritize([multi_task_output], ecg_ids=[id]) → PrioritizedWorklist; item.active_findings is a list of {class_name, confidence, task, tier}. PredictResponse.predictions is List[TaskPrediction(task, class_names, probabilities)] → convert to {task: dict(zip(class_names, probabilities))} for process_result.
+  - Delivery threads are daemon; tests use sync=True or mgr.wait_for_deliveries(timeout) to join. Inject sleep=lambda _:None to skip real backoff.
+---

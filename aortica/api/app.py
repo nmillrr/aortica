@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import tempfile
 from typing import Any, List, Optional, Sequence
@@ -18,6 +19,8 @@ except ImportError:  # pragma: no cover
     HAS_FASTAPI = False
 
 import aortica
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Pydantic response models
@@ -250,6 +253,14 @@ def create_app(
     mobile_router = create_mobile_router()
     app.include_router(mobile_router)
 
+    # Mount FHIR subscription / webhook notification router (US-117)
+    from aortica.api.subscription_endpoints import create_subscription_router
+    from aortica.integration.fhir_subscription import SubscriptionManager
+
+    subscription_manager = SubscriptionManager()
+    app.state.subscription_manager = subscription_manager  # type: ignore[attr-defined]
+    app.include_router(create_subscription_router(subscription_manager))
+
     # Mount federated learning monitoring router (GET /api/v1/federated/*)
     from aortica.api.federated_endpoints import create_federated_router
     from aortica.federated.fl_metrics_store import FLMetricsStore
@@ -369,6 +380,20 @@ def create_app(
                 status_code=422,
                 content={"detail": str(exc)},
             )
+
+        # Fan out webhook notifications for any subscription whose criteria
+        # this result matches (US-117). Delivery runs on background threads,
+        # so this does not delay the response.
+        try:
+            findings = {
+                tp.task: dict(zip(tp.class_names, tp.probabilities))
+                for tp in result.predictions
+            }
+            app.state.subscription_manager.process_result(  # type: ignore[attr-defined]
+                findings, ecg_id=filename
+            )
+        except Exception:  # noqa: BLE001 - notifications must never break predict
+            logger.exception("Subscription notification dispatch failed")
 
         return result
 

@@ -1748,18 +1748,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a hospital integrator, I want FHIR Subscription resources and webhook notifications so that the EHR is automatically alerted when Aortica detects critical findings, without polling the API.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.fhir_subscription.SubscriptionManager` class managing FHIR R4 Subscription resources
-- [ ] Supports `rest-hook` channel type: sends HTTP POST to a configured EHR webhook URL when a matching event occurs
-- [ ] Subscription criteria: configurable filters by finding severity (critical/warning), specific conditions (STEMI, VT, VF, Brugada), urgency score threshold
-- [ ] `POST /api/v1/subscriptions` creates a new subscription with criteria and webhook URL
-- [ ] `GET /api/v1/subscriptions` lists active subscriptions
-- [ ] `DELETE /api/v1/subscriptions/:id` removes a subscription
-- [ ] When a `POST /api/v1/predict` result matches a subscription's criteria, the system sends a FHIR Bundle (type: `subscription-notification`) to the webhook URL within 5 seconds
-- [ ] Webhook payload includes: FHIR DiagnosticReport reference, matched finding(s), urgency score, and timestamp
-- [ ] Retry logic: 3 retries with exponential backoff on webhook delivery failure; dead-letter queue for persistently failed notifications
-- [ ] `GET /api/v1/subscriptions/:id/notifications` returns delivery history for a subscription (sent, failed, pending)
-- [ ] Unit tests: subscription CRUD, matching logic, webhook delivery (mock server), retry behavior
-- [ ] Typecheck passes
+- [x] `aortica.integration.fhir_subscription.SubscriptionManager` class managing FHIR R4 Subscription resources
+- [x] Supports `rest-hook` channel type: sends HTTP POST to a configured EHR webhook URL when a matching event occurs
+- [x] Subscription criteria: configurable filters by finding severity (critical/warning), specific conditions (STEMI, VT, VF, Brugada), urgency score threshold
+- [x] `POST /api/v1/subscriptions` creates a new subscription with criteria and webhook URL
+- [x] `GET /api/v1/subscriptions` lists active subscriptions
+- [x] `DELETE /api/v1/subscriptions/:id` removes a subscription
+- [x] When a `POST /api/v1/predict` result matches a subscription's criteria, the system sends a FHIR Bundle (type: `subscription-notification`) to the webhook URL within 5 seconds
+- [x] Webhook payload includes: FHIR DiagnosticReport reference, matched finding(s), urgency score, and timestamp
+- [x] Retry logic: 3 retries with exponential backoff on webhook delivery failure; dead-letter queue for persistently failed notifications
+- [x] `GET /api/v1/subscriptions/:id/notifications` returns delivery history for a subscription (sent, failed, pending)
+- [x] Unit tests: subscription CRUD, matching logic, webhook delivery (mock server), retry behavior
+- [x] Typecheck passes
 
 ---
 
