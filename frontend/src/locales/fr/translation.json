@@ -410,5 +410,19 @@
     "id": "ID",
     "timestamp": "Submitted",
     "noEvents": "No reports submitted yet."
+  },
+  "finalize": {
+    "button": "Finaliser et soumettre",
+    "attestTitle": "Attester et soumettre",
+    "included": "Résultats inclus",
+    "none": "Aucun résultat positif.",
+    "channels": "Canaux de sortie",
+    "clinician": "Clinicien",
+    "confirm": "J’atteste que ce rapport est exact",
+    "cancel": "Annuler",
+    "attestSubmit": "Attester et soumettre",
+    "submitting": "Envoi…",
+    "submitted": "Soumis au DME",
+    "ref": "Référence"
   }
 }

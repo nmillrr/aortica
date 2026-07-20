@@ -373,5 +373,19 @@
     "id": "ID",
     "timestamp": "Submitted",
     "noEvents": "No reports submitted yet."
+  },
+  "finalize": {
+    "button": "Kamilisha na Wasilisha",
+    "attestTitle": "Thibitisha na Wasilisha",
+    "included": "Matokeo yaliyojumuishwa",
+    "none": "Hakuna matokeo chanya.",
+    "channels": "Njia za matokeo",
+    "clinician": "Daktari",
+    "confirm": "Nathibitisha ripoti hii ni sahihi",
+    "cancel": "Ghairi",
+    "attestSubmit": "Thibitisha na Wasilisha",
+    "submitting": "Inawasilisha…",
+    "submitted": "Imewasilishwa kwa EHR",
+    "ref": "Rejeleo"
   }
 }

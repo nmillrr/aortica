@@ -1,0 +1,132 @@
+/* ============================================================
+   FinalizeSubmit — copilot → report → EHR finalize (US-127)
+   ============================================================ */
+
+.fs-container { margin-top: var(--space-4); }
+
+.fs-finalize-btn {
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #fff;
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  width: 100%;
+}
+
+.fs-finalize-btn:hover { filter: brightness(1.08); }
+
+.fs-error {
+  background: var(--color-danger-muted); color: var(--color-danger);
+  border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+  margin-top: var(--space-2); font-size: var(--font-size-sm);
+}
+
+/* ── Submitted badge ──────────────────────────────────────── */
+
+.fs-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-success-muted);
+  border: 1px solid var(--color-success);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.fs-badge-check {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-success); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+
+.fs-badge-title { color: var(--color-success); font-weight: var(--font-weight-semibold); }
+.fs-badge-meta { color: var(--color-text-secondary); font-size: var(--font-size-xs); }
+
+/* ── Modal ────────────────────────────────────────────────── */
+
+.fs-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.fs-modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.fs-modal h2 {
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.fs-section { margin-bottom: var(--space-4); }
+
+.fs-section h3 {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--space-2);
+}
+
+.fs-findings { list-style: none; padding: 0; margin: 0; }
+.fs-findings li {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  padding: var(--space-1) 0;
+}
+.fs-conf { color: var(--color-accent); font-weight: var(--font-weight-semibold); }
+.fs-muted { color: var(--color-text-tertiary); font-style: italic; font-size: var(--font-size-sm); }
+
+.fs-channels { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.fs-channel, .fs-confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.fs-attest-meta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-2);
+}
+
+.fs-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.fs-btn {
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.fs-btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+.fs-btn:disabled { opacity: 0.5; cursor: not-allowed; }

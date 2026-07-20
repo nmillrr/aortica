@@ -3,6 +3,7 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import { ECGWaveformChart, generateDemoECGData } from '../components/ECGWaveformChart';
 import { XAIControls, TopFeaturesPanel, generateDemoXAIData } from '../components/XAIOverlay';
 import { CopilotPanel } from '../components/CopilotPanel';
+import { FinalizeSubmit } from '../components/FinalizeSubmit';
 import { SecondReaderMode } from '../components/SecondReaderMode';
 import { EdgeCaseSpotlight } from '../components/EdgeCaseSpotlight';
 import { ExplanationCard } from '../components/ExplanationCard';
@@ -563,6 +564,13 @@ export function Results() {
         findings={allFindings}
         onFindingClick={handleCopilotFindingClick}
         activeFinding={activeFinding}
+      />
+
+      {/* Finalize & Submit — generate reports and submit to the EHR (US-127) */}
+      <FinalizeSubmit
+        resultId={id ?? ''}
+        ecgId={fileName}
+        findings={allFindings}
       />
 
       {/* Edge-Case Spotlight — rare but dangerous findings */}

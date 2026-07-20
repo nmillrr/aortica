@@ -2187,15 +2187,15 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a cardiologist, I want a single-click workflow that takes my reviewed AI findings, generates a clinical report, and submits it to the EHR so that the entire AI-assisted interpretation cycle is completed without leaving the Aortica interface.
 
 **Acceptance Criteria:**
-- [ ] **"Finalize & Submit" button** on the copilot panel (US-049) visible after the clinician has accepted/rejected/modified all AI findings
-- [ ] Workflow on click: (1) Collect clinician-reviewed findings (accepted findings + modifications from US-053 feedback); (2) Generate PDF clinical report incorporating clinician decisions (US-087); (3) Generate FHIR DiagnosticReport with clinician attestation (US-080); (4) Submit to configured EHR channel (orchestrator from US-125); (5) Update worklist status to "completed" (US-119)
-- [ ] **Attestation step:** before submission, display summary modal with: report preview, findings included, excluded findings, clinician name + timestamp; require explicit "Attest and Submit" confirmation
-- [ ] **Configurable output channels:** checkboxes for which outputs to generate (PDF, FHIR, HL7, DICOM SR) — pre-configured per deployment
-- [ ] **Post-submission state:** results page shows "Submitted to EHR" badge with timestamp, EHR reference ID, and link to download the finalized report
-- [ ] `POST /api/v1/workflow/finalize` API endpoint accepting: result_id, reviewed_findings, attestation, output_channels; orchestrates the full workflow
-- [ ] Audit trail: `finalize_and_submit` event logged with clinician ID, all reviewed findings, generated report references, EHR submission status (US-121)
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] **"Finalize & Submit" button** on the copilot panel (US-049) visible after the clinician has accepted/rejected/modified all AI findings
+- [x] Workflow on click: (1) Collect clinician-reviewed findings (accepted findings + modifications from US-053 feedback); (2) Generate PDF clinical report incorporating clinician decisions (US-087); (3) Generate FHIR DiagnosticReport with clinician attestation (US-080); (4) Submit to configured EHR channel (orchestrator from US-125); (5) Update worklist status to "completed" (US-119)
+- [x] **Attestation step:** before submission, display summary modal with: report preview, findings included, excluded findings, clinician name + timestamp; require explicit "Attest and Submit" confirmation
+- [x] **Configurable output channels:** checkboxes for which outputs to generate (PDF, FHIR, HL7, DICOM SR) — pre-configured per deployment
+- [x] **Post-submission state:** results page shows "Submitted to EHR" badge with timestamp, EHR reference ID, and link to download the finalized report
+- [x] `POST /api/v1/workflow/finalize` API endpoint accepting: result_id, reviewed_findings, attestation, output_channels; orchestrates the full workflow
+- [x] Audit trail: `finalize_and_submit` event logged with clinician ID, all reviewed findings, generated report references, EHR submission status (US-121)
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

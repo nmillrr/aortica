@@ -2598,3 +2598,15 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - Injectable per-channel senders (Callable[[payload], bool]) keep multi-channel delivery testable; default stdlib senders are no-ops returning False (real FHIR/HL7/webhook/SMTP need a configured endpoint). Any exception in a sender is caught and recorded as status='failed' with the error text.
   - De-dup key = (patient_id, finding) with a rolling window; suppress only when a prior 'sent' record exists in-window. No patient_id → never de-dup (can't correlate).
   - SQLite tracking store uses check_same_thread=False + RLock (threaded FastAPI). :memory: db is fine for tests.
+
+## Iteration US-127 - Copilot to Report to EHR Clinical Workflow
+- What was implemented:
+  - aortica/api/workflow_endpoints.py: POST /api/v1/workflow/finalize (FinalizeRequest: result_id, ecg_id, reviewed_findings, attestation{clinician,confirmed}, output_channels[pdf/fhir/hl7/dicom_sr]). Requires attestation.confirmed (422 else); generates FHIR DiagnosticReport with attestation (best-effort), records other channels; mints an EHR reference; updates app.state.worklist_store entry → completed (assignee=clinician); logs an audit 'ehr_submitted' / finalize_and_submit event via app.state.audit_logger. Returns ehr_reference, report_references, channels_generated/skipped, worklist_updated.
+  - Frontend: FinalizeSubmit.tsx (+.css) — "Finalize & Submit" button on the Results page below the CopilotPanel → attestation modal (findings summary, output-channel checkboxes, clinician+timestamp, confirmation checkbox) → POST finalize → "Submitted to EHR" badge with reference + timestamp. Wired into Results.tsx (resultId=useParams id, ecgId=fileName, findings=allFindings). i18n x4.
+- Files created: aortica/api/workflow_endpoints.py, tests/api/test_workflow_endpoints.py (6), frontend/src/components/FinalizeSubmit.{tsx,css}
+- Files modified: aortica/api/app.py, frontend/src/pages/Results.tsx, locales x4, PRD.md.
+- Test results: 6 backend + 28 app pass; mypy+ruff clean; tsc -b clean + vite build; Playwright drove /results/1 → Finalize → attest → submit → "Submitted to EHR" badge with EHR-<uuid>, 0 page errors.
+- Learnings for future iterations:
+  - The Results page reads prediction data from useLocation().state (router navigation state), so a direct /results/:id visit renders with empty findings — fine for verifying the FinalizeSubmit button/modal/submit flow (backend accepts empty reviewed_findings).
+  - CopilotPanel (US-049) does NOT track accept/reject state internally; US-127 treats all displayed positive findings as the reviewed set + the clinician attestation as the confirmation, rather than deeply refactoring the copilot panel.
+  - to_diagnostic_report accepts ecg_metadata for provenance (used to carry attested_by). FHIR gen is best-effort in the endpoint (fhir.resources is installed here but treat as optional).

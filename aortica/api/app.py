@@ -323,6 +323,11 @@ def create_app(
         create_notification_router(app.state.urgent_notifier)  # type: ignore[attr-defined]
     )
 
+    # Mount copilot → report → EHR finalize workflow router (US-127)
+    from aortica.api.workflow_endpoints import create_workflow_router
+
+    app.include_router(create_workflow_router())
+
     # Mount federated learning monitoring router (GET /api/v1/federated/*)
     from aortica.api.federated_endpoints import create_federated_router
     from aortica.federated.fl_metrics_store import FLMetricsStore

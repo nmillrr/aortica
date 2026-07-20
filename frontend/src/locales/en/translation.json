@@ -419,5 +419,19 @@
     "id": "ID",
     "timestamp": "Submitted",
     "noEvents": "No reports submitted yet."
+  },
+  "finalize": {
+    "button": "Finalize & Submit",
+    "attestTitle": "Attest and Submit",
+    "included": "Findings included",
+    "none": "No positive findings.",
+    "channels": "Output channels",
+    "clinician": "Clinician",
+    "confirm": "I attest this report is accurate",
+    "cancel": "Cancel",
+    "attestSubmit": "Attest and Submit",
+    "submitting": "Submitting…",
+    "submitted": "Submitted to EHR",
+    "ref": "Reference"
   }
 }

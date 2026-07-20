@@ -410,5 +410,19 @@
     "id": "ID",
     "timestamp": "Submitted",
     "noEvents": "No reports submitted yet."
+  },
+  "finalize": {
+    "button": "Finalizar y enviar",
+    "attestTitle": "Certificar y enviar",
+    "included": "Hallazgos incluidos",
+    "none": "Sin hallazgos positivos.",
+    "channels": "Canales de salida",
+    "clinician": "Clínico",
+    "confirm": "Certifico que este informe es preciso",
+    "cancel": "Cancelar",
+    "attestSubmit": "Certificar y enviar",
+    "submitting": "Enviando…",
+    "submitted": "Enviado al HCE",
+    "ref": "Referencia"
   }
 }
