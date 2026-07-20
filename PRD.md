@@ -2168,18 +2168,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a cardiologist, I want urgent AI findings to automatically trigger notifications in my EHR so that critical ECGs are flagged for immediate review without me checking the Aortica worklist manually.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.notifications.UrgentFindingNotifier` class monitoring worklist for critical findings and pushing alerts to configured EHR channels
-- [ ] Notification channels:
+- [x] `aortica.integration.notifications.UrgentFindingNotifier` class monitoring worklist for critical findings and pushing alerts to configured EHR channels
+- [x] Notification channels:
   - FHIR CommunicationRequest resource sent to the FHIR server (for EHRs supporting FHIR R4 communication)
   - HL7 v2.x ADT^A08 (patient update) or ORU^R01 (unsolicited result) with ORC segment flagging urgency
   - Webhook POST to configurable URL (generic, for EHRs with custom alert endpoints)
   - Email notification via SMTP (configurable, for fallback alerting)
-- [ ] Notification trigger rules (configurable in `notification_rules.yaml`): condition list, minimum confidence threshold, urgency score threshold, de-duplication window (don't re-notify for same patient + finding within configurable hours)
-- [ ] Notification payload: patient identifier (if available), finding name, confidence, urgency score, Aortica result URL, recommended action
-- [ ] Delivery tracking: per-notification status (sent/delivered/failed/acknowledged), stored in SQLite
-- [ ] `GET /api/v1/notifications` API endpoint returning notification history with delivery status
-- [ ] Unit tests with mock EHR endpoints verifying: trigger logic, de-duplication, multi-channel delivery, failure handling
-- [ ] Typecheck passes
+- [x] Notification trigger rules (configurable in `notification_rules.yaml`): condition list, minimum confidence threshold, urgency score threshold, de-duplication window (don't re-notify for same patient + finding within configurable hours)
+- [x] Notification payload: patient identifier (if available), finding name, confidence, urgency score, Aortica result URL, recommended action
+- [x] Delivery tracking: per-notification status (sent/delivered/failed/acknowledged), stored in SQLite
+- [x] `GET /api/v1/notifications` API endpoint returning notification history with delivery status
+- [x] Unit tests with mock EHR endpoints verifying: trigger logic, de-duplication, multi-channel delivery, failure handling
+- [x] Typecheck passes
 
 ---
 

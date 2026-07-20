@@ -315,6 +315,14 @@ def create_app(
         create_integration_router(app.state.integration_orchestrator)  # type: ignore[attr-defined]
     )
 
+    # Mount urgent-finding notifications router (US-126)
+    from aortica.api.notification_endpoints import create_notification_router
+
+    app.state.urgent_notifier = None  # type: ignore[attr-defined]
+    app.include_router(
+        create_notification_router(app.state.urgent_notifier)  # type: ignore[attr-defined]
+    )
+
     # Mount federated learning monitoring router (GET /api/v1/federated/*)
     from aortica.api.federated_endpoints import create_federated_router
     from aortica.federated.fl_metrics_store import FLMetricsStore

@@ -2585,3 +2585,16 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - Injectable-handler pattern makes orchestration testable: pass pacs_writer/ehr_submitter as callables (mock lists in tests), result_store/worklist_store/subscription_manager as duck-typed objects. Reused SubscriptionManager (US-117) + WorklistStore (US-119) directly for the notification/worklist channels.
   - mypy union-attr on Optional[Any] attributes accessed in methods that are only reached when non-None: assign to a local `x: Any = self._attr` (widening to Any) rather than the Optional field to silence union-attr.
   - Per-channel error-rate health: keep a rolling list[(ts, ok)] trimmed to a window; error_rate = failures/len. Alert only when recent is non-empty AND rate>threshold.
+
+## Iteration US-126 - Worklist to EHR Notification Pipeline
+- What was implemented:
+  - aortica/integration/notifications.py: UrgentFindingNotifier — evaluates a result via WorklistPrioritizer, matches NotificationRules (conditions allow-list, min_confidence, urgency_threshold, dedup_window_hours), de-duplicates on patient+finding within the window, delivers to enabled channels (fhir CommunicationRequest / hl7 / webhook / email — all injectable senders, stdlib no-op defaults), tracks every delivery in SQLite (status sent/failed + error), history() query. build_communication_request() FHIR R4 helper. load_notification_rules(yaml).
+  - aortica/api/notification_endpoints.py: GET /api/v1/notifications (filter by patient_id, newest first).
+  - Wired app.state.urgent_notifier=None + router into app.py.
+- Files created: aortica/integration/notifications.py, aortica/api/notification_endpoints.py, tests/integration/test_notifications.py (14), tests/api/test_notification_endpoints.py (3).
+- Files modified: aortica/api/app.py, PRD.md.
+- Test results: 17 new + 31 with app regression pass; mypy clean; ruff clean.
+- Learnings for future iterations:
+  - Injectable per-channel senders (Callable[[payload], bool]) keep multi-channel delivery testable; default stdlib senders are no-ops returning False (real FHIR/HL7/webhook/SMTP need a configured endpoint). Any exception in a sender is caught and recorded as status='failed' with the error text.
+  - De-dup key = (patient_id, finding) with a rolling window; suppress only when a prior 'sent' record exists in-window. No patient_id → never de-dup (can't correlate).
+  - SQLite tracking store uses check_same_thread=False + RLock (threaded FastAPI). :memory: db is fine for tests.
