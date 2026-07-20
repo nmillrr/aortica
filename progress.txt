@@ -2395,3 +2395,22 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - SVG line charts are lightweight and dependency-free; good enough for dashboard use
   - Frontend TypeScript typecheck passes cleanly with useTranslation and useAuth patterns
 ---
+
+## Iteration US-115 - Federated Data Quality Gating
+- What was implemented:
+  - aortica/federated/data_quality.py — DataQualityGate (torch-free; numpy + signal.score_quality only) with 5 checks: sample_size (min 500 / warn 200 / block 100), signal_quality (>=70% score >=40), label_completeness (>=80% labeled), label_diversity (>=3 of 4 task superclasses with >=10 positives), format_consistency (all records pass score_quality). validate() returns DataQualityReport (per-check QualityCheck, statistics, recommendations, to_dict/summary).
+  - site_admitted(report, policy) + DQ_POLICIES ("strict"/"warn"/"permissive") for server-side site exclusion.
+  - FL client integration: FLClientConfig.run_data_quality_gate flag; AorticaFlowerClient.check_data_quality(gate=None) (cached) + _data_quality_metrics(); fit() reports dq_passed/dq_blocking/dq_num_ecgs/dq_mean_quality to the server on the first round.
+  - CLI: `aortica federated validate-data <path> [--labels npy/csv] [--min-samples N] [--format text|json]`; loads ECGs via read_ecg over a dir (dedups WFDB .hea/.dat), exits 1 on a blocking failure.
+- Files created: aortica/federated/data_quality.py, tests/federated/test_data_quality.py (31 tests), tests/cli/test_federated_validate_data.py (3 tests, wfdb roundtrip).
+- Files modified: aortica/federated/__init__.py (exports), aortica/federated/fl_client.py (config flag + gate methods + fit metrics), aortica/cli/federated_cmd.py (validate-data cmd), PRD.md.
+- Test results: 34 new tests pass; 58 pass across federated+cli affected suites. mypy --follow-imports=silent clean on data_quality.py + federated_cmd.py (fl_client.py union-attr errors are PRE-EXISTING in fit/train, lines 515+, not mine). ruff clean.
+- Learnings for future iterations:
+  - ENV: fresh container has NO deps installed. Run `pip install -q numpy scipy PyYAML pytest click mypy ruff && pip install -q -e .` first. wfdb is installed transitively after -e . (it's a core dep).
+  - TESTS MUST BE FAST: score_quality runs FFTs per lead; a 600×12-lead dataset per test hangs the 120s runner. Use 2-lead 2s signals + scaled gate thresholds (min50/warn20/block10) and N in the 5-60 range. A `_gate()` factory keeps ratios identical to prod defaults.
+  - score_quality gives an all-zeros flatline a score of 60 (only the 40-pt flatline penalty), still >= the 40 "marginal" threshold. To get a <40 poor signal, combine penalties: heavily-clipped noise (np.clip(normal*1000, -10, 10)) + a flat segment scores ~10.
+  - read_ecg CSV auto-detect FAILS without a CSVConfig (needs sample_rate). WFDB is self-describing: wfdb.wrsamp(name, fs, units, sig_name, p_signal=[samples,leads], write_dir) then read_ecg(f"{name}.hea"). Use for CLI dir tests.
+  - dispatcher.SUPPORTED_FORMATS is FORMAT NAMES ("wfdb","csv",...), NOT extensions. Use dispatcher._EXTENSION_MAP for suffix->format when scanning a directory.
+  - Label matrix column layout is rhythm(28)|structural(19)|ischaemia(19)|risk(6) = 72, same order as fl_client._TASK_NUM_OUTPUTS. A record counts as "labeled"/"positive for superclass" if any column in the slice is != 0 (works for continuous risk too).
+  - AorticaFlowerClient() constructs WITHOUT torch (guarded imports); check_data_quality only reads dataset.records/.labels, so client integration is testable without torch via a fake loader exposing `.dataset`.
+---

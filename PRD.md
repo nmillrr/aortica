@@ -1599,19 +1599,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-063 defines the FL client wrapper that trains on site-local data, but there's no validation that the local data meets minimum quality standards. A site with noisy data, too few samples, or missing labels could degrade the aggregated model. This story adds pre-training quality gates that run at the client before joining an FL round.
 
 **Acceptance Criteria:**
-- [ ] `aortica.federated.DataQualityGate` class performing pre-training validation on site-local data
-- [ ] Quality checks:
+- [x] `aortica.federated.DataQualityGate` class performing pre-training validation on site-local data
+- [x] Quality checks:
   - Minimum sample size: configurable threshold (default 500 ECGs), warns below 200, blocks below 100
   - Signal quality distribution: ≥70% of ECGs must have quality score ≥ 40 ("marginal" or better)
   - Label completeness: ≥80% of ECGs must have at least one diagnostic label
   - Label diversity: at least 3 of 4 task superclasses (rhythm, structural, ischaemia, risk) must have ≥10 positive examples
   - Format consistency: all ECGs must successfully pass through the preprocessing pipeline without error
-- [ ] `gate.validate(dataset)` returns `DataQualityReport` with pass/fail per check, detailed statistics, and recommendations
-- [ ] FL client (US-063) runs data quality gate before first FL round; reports results to server; server can be configured to exclude failing sites
-- [ ] `aortica federated validate-data <data_path>` CLI command for sites to pre-check their data before joining a campaign
-- [ ] Server-side configurable policy: `strict` (exclude failing sites), `warn` (include with warning), `permissive` (include all)
-- [ ] Unit tests with synthetic datasets hitting each quality threshold
-- [ ] Typecheck passes
+- [x] `gate.validate(dataset)` returns `DataQualityReport` with pass/fail per check, detailed statistics, and recommendations
+- [x] FL client (US-063) runs data quality gate before first FL round; reports results to server; server can be configured to exclude failing sites
+- [x] `aortica federated validate-data <data_path>` CLI command for sites to pre-check their data before joining a campaign
+- [x] Server-side configurable policy: `strict` (exclude failing sites), `warn` (include with warning), `permissive` (include all)
+- [x] Unit tests with synthetic datasets hitting each quality threshold
+- [x] Typecheck passes
 
 ---
 

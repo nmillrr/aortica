@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+from aortica.federated.data_quality import (
+    DQ_POLICIES,
+    DataQualityGate,
+    DataQualityReport,
+    QualityCheck,
+    site_admitted,
+)
 from aortica.federated.dp import (
     DPConfig,
     DPWrapper,
@@ -41,6 +48,9 @@ from aortica.federated.strategies import (
 __all__ = [
     "AorticaFlowerClient",
     "CampaignStatus",
+    "DQ_POLICIES",
+    "DataQualityGate",
+    "DataQualityReport",
     "DPConfig",
     "DPWrapper",
     "EncryptedWeights",
@@ -52,6 +62,7 @@ __all__ = [
     "FedProxStrategy",
     "PipelineStepResult",
     "PrivacyBudgetTracker",
+    "QualityCheck",
     "ReleasePipelineResult",
     "RoundMetrics",
     "RoundRecord",
@@ -60,5 +71,6 @@ __all__ = [
     "SecureAggregator",
     "SiteRecord",
     "release_pipeline",
+    "site_admitted",
 ]
 
