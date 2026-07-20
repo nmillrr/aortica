@@ -1,0 +1,31 @@
+# Example configuration for the Aortica end-to-end EHR integration daemon.
+#
+# Run with:
+#   aortica integration run --config integration.example.yaml \
+#     --watch-dir /var/spool/aortica/incoming \
+#     --output-dir /var/spool/aortica/results
+#
+# The orchestrator drives, in order, the channels enabled below:
+#   storage      — persist the AI result locally
+#   pacs         — write a DICOM SR back to the imaging archive (C-STORE)
+#   ehr          — submit a FHIR DiagnosticReport / HL7 ORU^R01 to the EHR
+#   worklist     — add the ECG to the prioritized review worklist
+#   notification — fire FHIR Subscription notifications for critical findings
+#
+# A failure in any one channel is isolated: it does not block the others,
+# is queued for retry, and dead-lettered after `max_retries` attempts.
+
+enabled_channels:
+  - storage
+  - pacs
+  - ehr
+  - worklist
+  - notification
+
+# Retry attempts per failed step before dead-lettering.
+max_retries: 3
+
+# Health monitoring: alert if a channel's error rate exceeds this fraction
+# over the rolling window below.
+error_rate_threshold: 0.05
+error_rate_window_seconds: 3600

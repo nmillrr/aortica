@@ -49,6 +49,7 @@ def _build_cli() -> Any:
     from aortica.cli.federated_cmd import federated_group
     from aortica.cli.hardware_benchmark_cmd import benchmark_hardware_cmd
     from aortica.cli.info import info_cmd
+    from aortica.cli.integration_cmd import integration_group
     from aortica.cli.performance_card_cmd import performance_card_cmd
     from aortica.cli.plugin_cmd import plugin_group
     from aortica.cli.predict import predict
@@ -75,6 +76,7 @@ def _build_cli() -> Any:
     cli.add_command(compare_cmd)
     cli.add_command(plugin_group)
     cli.add_command(audit_group)
+    cli.add_command(integration_group)
     return cli
 
 

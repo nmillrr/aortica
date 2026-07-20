@@ -2152,15 +2152,15 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** Individual integration components exist in isolation: DICOM DIMSE (US-083), FHIR output (US-080), HL7 output (US-081), DICOM SR (US-082), worklist (US-086), and SMART on FHIR (US-085). But no story connects them into a complete automated workflow: ECG arrives → Aortica processes → results written to PACS + EHR + worklist + notifications. This orchestration story provides that glue layer.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.orchestrator.IntegrationOrchestrator` class managing the full EHR integration loop
-- [ ] Workflow steps: (1) ECG ingestion — via DIMSE C-STORE listener, FHIR Subscription, or file watcher (configurable); (2) AI processing — full inference pipeline + XAI; (3) Result storage — persist to local SQLite (US-054); (4) PACS write-back — DICOM SR via C-STORE (US-082/083); (5) EHR submission — FHIR DiagnosticReport or HL7 ORU^R01 (US-080/081); (6) Worklist update — add to prioritized worklist (US-086); (7) Notification — trigger FHIR Subscription notifications for matching criteria (US-117)
-- [ ] Configurable via `integration.yaml`: which output channels are enabled, EHR connection parameters, PACS connection parameters, notification rules
-- [ ] Error handling: per-step failure isolation (e.g., PACS write-back failure doesn't block EHR submission), retry queue for failed steps, dead-letter log for persistently failed integrations
-- [ ] `aortica integration run --config integration.yaml` CLI command starting the orchestrator as a long-running daemon
-- [ ] `GET /api/v1/integration/status` API endpoint showing: orchestrator status, queue depth, per-channel success/failure counts, last error per channel
-- [ ] Integration health monitoring: alerts if any channel error rate exceeds configurable threshold (default 5% over 1 hour)
-- [ ] Unit tests with mock EHR/PACS endpoints verifying full workflow execution, per-step error isolation, and retry logic
-- [ ] Typecheck passes
+- [x] `aortica.integration.orchestrator.IntegrationOrchestrator` class managing the full EHR integration loop
+- [x] Workflow steps: (1) ECG ingestion — via DIMSE C-STORE listener, FHIR Subscription, or file watcher (configurable); (2) AI processing — full inference pipeline + XAI; (3) Result storage — persist to local SQLite (US-054); (4) PACS write-back — DICOM SR via C-STORE (US-082/083); (5) EHR submission — FHIR DiagnosticReport or HL7 ORU^R01 (US-080/081); (6) Worklist update — add to prioritized worklist (US-086); (7) Notification — trigger FHIR Subscription notifications for matching criteria (US-117)
+- [x] Configurable via `integration.yaml`: which output channels are enabled, EHR connection parameters, PACS connection parameters, notification rules
+- [x] Error handling: per-step failure isolation (e.g., PACS write-back failure doesn't block EHR submission), retry queue for failed steps, dead-letter log for persistently failed integrations
+- [x] `aortica integration run --config integration.yaml` CLI command starting the orchestrator as a long-running daemon
+- [x] `GET /api/v1/integration/status` API endpoint showing: orchestrator status, queue depth, per-channel success/failure counts, last error per channel
+- [x] Integration health monitoring: alerts if any channel error rate exceeds configurable threshold (default 5% over 1 hour)
+- [x] Unit tests with mock EHR/PACS endpoints verifying full workflow execution, per-step error isolation, and retry logic
+- [x] Typecheck passes
 
 ---
 

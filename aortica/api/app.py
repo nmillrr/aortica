@@ -307,6 +307,14 @@ def create_app(
     app.include_router(create_audit_router(audit_logger))
     app.add_middleware(AuditMiddleware)
 
+    # Mount integration orchestrator status router (US-125)
+    from aortica.api.integration_endpoints import create_integration_router
+
+    app.state.integration_orchestrator = None  # type: ignore[attr-defined]
+    app.include_router(
+        create_integration_router(app.state.integration_orchestrator)  # type: ignore[attr-defined]
+    )
+
     # Mount federated learning monitoring router (GET /api/v1/federated/*)
     from aortica.api.federated_endpoints import create_federated_router
     from aortica.federated.fl_metrics_store import FLMetricsStore

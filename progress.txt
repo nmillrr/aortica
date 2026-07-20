@@ -2571,3 +2571,17 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - Age decile bucketing: (age//10)*10 → "age_50-59", cap "age_90+". Parse back the low/high bounds from the label for the WHERE age BETWEEN filter.
   - Changing a CSV/report schema (added `subgroup` column) breaks existing exact-header assertions — update the corresponding test (legitimate, story-required schema change).
   - The equity-drift heuristic compares each subgroup's F1 to the aggregate task F1 (not a per-subgroup baseline) so an equity regression is caught even when the aggregate looks stable.
+
+## Iteration US-125 - End-to-End EHR Integration Workflow
+- What was implemented:
+  - aortica/integration/orchestrator.py: IntegrationOrchestrator drives ECG→AI→storage→PACS→EHR→worklist→notification. Per-step failure isolation (each channel try/except, failure never blocks later channels), retry queue + dead-letter (max_retries), per-channel ChannelStats (success/failure/rolling error_rate/last_error), health_alerts() when error_rate>threshold, status() for the API. External steps (pacs_writer, ehr_submitter) + result_store + worklist_store + subscription_manager are all INJECTED → fully mockable. IntegrationConfig + load_integration_config(integration.yaml) (enabled_channels/max_retries/error_rate_threshold).
+  - aortica/api/integration_endpoints.py: GET /api/v1/integration/status (no-op when orchestrator None).
+  - aortica/cli/integration_cmd.py: `aortica integration run --config --watch-dir --output-dir [--dry-run] [--max-cycles]` (FileWatcher ingestion + orchestrator + default model processor) and `integration status`.
+  - Wired status router into app.py (app.state.integration_orchestrator=None default); registered integration_group CLI; integration.example.yaml.
+- Files created: aortica/integration/orchestrator.py, aortica/api/integration_endpoints.py, aortica/cli/integration_cmd.py, tests/integration/test_orchestrator.py (13), tests/api/test_integration_endpoints.py (3), tests/cli/test_integration_cmd.py (3), integration.example.yaml.
+- Files modified: aortica/api/app.py, aortica/cli/__init__.py, PRD.md.
+- Test results: 19 new tests pass; 28 app tests pass; mypy clean; ruff clean.
+- Learnings for future iterations:
+  - Injectable-handler pattern makes orchestration testable: pass pacs_writer/ehr_submitter as callables (mock lists in tests), result_store/worklist_store/subscription_manager as duck-typed objects. Reused SubscriptionManager (US-117) + WorklistStore (US-119) directly for the notification/worklist channels.
+  - mypy union-attr on Optional[Any] attributes accessed in methods that are only reached when non-None: assign to a local `x: Any = self._attr` (widening to Any) rather than the Optional field to silence union-attr.
+  - Per-channel error-rate health: keep a rolling list[(ts, ok)] trimmed to a window; error_rate = failures/len. Alert only when recent is non-empty AND rate>threshold.
