@@ -7,7 +7,8 @@ import { Results } from './pages/Results';
 import { ResultBrowser } from './pages/ResultBrowser';
 import { Batch } from './pages/Batch';
 import { Login } from './pages/Login';
-import { ReportEvent } from './pages/ReportEvent';
+import { AdverseEventWizard } from './pages/AdverseEventWizard';
+import { AdverseEventHistory } from './pages/AdverseEventHistory';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { FLDashboard } from './pages/FLDashboard';
 import { SiteValidationPage } from './pages/SiteValidation';
@@ -33,7 +34,8 @@ export function App() {
         <Route path="/history" element={<ResultBrowser />} />
         <Route path="/results/:id" element={<Results />} />
         <Route path="/batch" element={<Batch />} />
-        <Route path="/report-event" element={<ReportEvent />} />
+        <Route path="/report-event" element={<AdverseEventWizard />} />
+        <Route path="/report-event/history" element={<AdverseEventHistory />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/federated" element={<FLDashboard />} />
         <Route path="/validation/sites" element={<SiteValidationPage />} />

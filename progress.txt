@@ -2530,3 +2530,17 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - Any SQLite-backed store wired into the threaded FastAPI app MUST use check_same_thread=False (connection created in startup/main thread, requests run in worker threads). Symptom: "SQLite objects created in a thread can only be used in that same thread."
   - Server management across sleep-blocks: use Bash run_in_background=true for uvicorn; fuser -k 8000/tcp to free the port before rebinding.
 ---
+
+## Iteration US-124 - Adverse Event Reporting Form (Dedicated Frontend)
+- What was implemented:
+  - frontend/src/pages/AdverseEventWizard.tsx (+.css) at /report-event — 4-step wizard: (1) identification (ECG ref/date/reporter, auto-populated from ?ecg=&finding= query params + user.sub), (2) details (description ≥50 chars required, severity grid with clinical-definition tooltips minor/moderate/serious/critical, contributing AI finding), (3) outcome (patient outcome, follow-up status, harm-prevented), (4) review + confirmation checkbox. Draft auto-saved to localStorage with resume/discard banner; success modal with event reference + download-copy + view-history. Per-step validation gates Next/Submit.
+  - frontend/src/pages/AdverseEventHistory.tsx at /report-event/history — table of submitted events (id/ecg/severity pill/finding/timestamp) from GET /api/v1/validation/adverse-events.
+  - Routes replace the old /report-event (ReportEvent + AdverseEventForm now orphaned but kept). i18n adverseWizard block x4.
+- Files created: frontend/src/pages/AdverseEventWizard.{tsx,css}, AdverseEventHistory.tsx
+- Files modified: frontend/src/App.tsx, locales x4, PRD.md.
+- Test results: tsc -b clean, vite build ok; Playwright drove the full wizard end-to-end (auto-fill ecg_42, 4 steps, submit → UUID reference in success modal, history shows 1 row, 0 page errors) against a seeded AdverseEventStore server.
+- Learnings for future iterations:
+  - AdverseEventStore opens a FRESH sqlite connection per op (_get_connection) → already thread-safe, no check_same_thread fix needed (unlike PerformanceMonitor/ProspectiveCollector which hold one long-lived connection).
+  - POST /api/v1/validation/adverse-event body: {reporter_id, ecg_reference, event_description, severity(minor|moderate|serious|critical), ai_finding, patient_outcome}. GET /adverse-events returns a bare JSON array. Router needs adverse_event_store passed to create_validation_router (else no-op).
+  - Backend already existed (US-102); US-124 was purely the polished multi-step frontend. Old single-page AdverseEventForm component left in place to avoid breaking its tests.
+---

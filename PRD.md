@@ -2129,16 +2129,16 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-102 defines the backend API and mentions "React form component" as an acceptance criterion. However, adverse event reporting is a safety-critical workflow that deserves a dedicated, carefully designed frontend story ensuring the form guides clinicians through a complete report with required fields, severity classification, and confirmation flow — not just a checkbox item on a backend story.
 
 **Acceptance Criteria:**
-- [ ] `AdverseEventForm` React page at route `/report-event` accessible from the copilot panel, results page, and sidebar navigation
-- [ ] **Guided form flow:** multi-step wizard with: (1) Event identification — ECG reference (auto-populated if navigated from results page), event date, reporter information; (2) Event details — description (free-text, required, min 50 characters), severity classification (minor/moderate/serious/critical with tooltip definitions), AI finding that contributed (auto-populated from predictions if available); (3) Patient outcome — outcome description, follow-up status, was clinical harm prevented; (4) Review and submit — summary of all fields with edit links, confirmation checkbox ("I confirm this report is accurate")
-- [ ] **Severity guidance:** tooltip/popover for each severity level with clinical definitions and examples (e.g., "Serious: resulted in hospitalization or significant intervention")
-- [ ] **Auto-population:** when accessed from a results page, pre-fills ECG reference, AI findings, and confidence levels
-- [ ] **Draft saving:** form state persisted to `localStorage` to prevent data loss on accidental navigation; draft indicator with resume option
-- [ ] **Submission confirmation:** success modal with event reference number and option to download a copy of the report
-- [ ] **Event history page:** at `/report-event/history`, list of previously submitted reports by the current user with status indicators
-- [ ] Accessibility: all form fields properly labeled, keyboard-navigable, screen reader tested
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `AdverseEventForm` React page at route `/report-event` accessible from the copilot panel, results page, and sidebar navigation
+- [x] **Guided form flow:** multi-step wizard with: (1) Event identification — ECG reference (auto-populated if navigated from results page), event date, reporter information; (2) Event details — description (free-text, required, min 50 characters), severity classification (minor/moderate/serious/critical with tooltip definitions), AI finding that contributed (auto-populated from predictions if available); (3) Patient outcome — outcome description, follow-up status, was clinical harm prevented; (4) Review and submit — summary of all fields with edit links, confirmation checkbox ("I confirm this report is accurate")
+- [x] **Severity guidance:** tooltip/popover for each severity level with clinical definitions and examples (e.g., "Serious: resulted in hospitalization or significant intervention")
+- [x] **Auto-population:** when accessed from a results page, pre-fills ECG reference, AI findings, and confidence levels
+- [x] **Draft saving:** form state persisted to `localStorage` to prevent data loss on accidental navigation; draft indicator with resume option
+- [x] **Submission confirmation:** success modal with event reference number and option to download a copy of the report
+- [x] **Event history page:** at `/report-event/history`, list of previously submitted reports by the current user with status indicators
+- [x] Accessibility: all form fields properly labeled, keyboard-navigable, screen reader tested
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

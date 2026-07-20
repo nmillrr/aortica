@@ -1,0 +1,278 @@
+/* ============================================================
+   AdverseEventWizard — guided safety-event reporting (US-124)
+   ============================================================ */
+
+.ae-wizard {
+  padding: var(--space-8);
+  max-width: 900px;
+  margin: 0 auto;
+  animation: aeFade 0.4s ease;
+}
+
+@keyframes aeFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ae-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-5);
+}
+
+.ae-header h1 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.ae-history-link {
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+.ae-draft-banner {
+  background: var(--color-warning-muted);
+  color: var(--color-warning);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.ae-link-btn {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  text-decoration: underline;
+}
+
+/* ── Steps ────────────────────────────────────────────────── */
+
+.ae-steps {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-5);
+  gap: var(--space-2);
+}
+
+.ae-step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  padding: var(--space-2);
+  border-bottom: 2px solid var(--color-surface-border);
+}
+
+.ae-step.current { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+.ae-step.done { color: var(--color-success); border-bottom-color: var(--color-success); }
+
+.ae-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-hover);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.ae-step.current .ae-step-num { background: var(--color-accent); color: #fff; }
+.ae-step.done .ae-step-num { background: var(--color-success); color: #fff; }
+
+/* ── Panel & fields ───────────────────────────────────────── */
+
+.ae-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+.ae-fields { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.ae-field,
+.ae-field-label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.ae-field input,
+.ae-field textarea,
+.ae-field select {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  padding: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+}
+
+.ae-error {
+  background: var(--color-danger-muted); color: var(--color-danger);
+  border-radius: var(--radius-md); padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4); font-size: var(--font-size-sm);
+}
+
+/* ── Severity ─────────────────────────────────────────────── */
+
+.ae-severity-group { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.ae-severity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.ae-severity {
+  text-align: left;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ae-severity-label { font-weight: var(--font-weight-semibold); color: var(--color-text-primary); }
+.ae-severity-def { font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+
+.ae-severity.selected { border-width: 2px; }
+.severity--minor.selected { border-color: var(--color-success); }
+.severity--moderate.selected { border-color: var(--color-info); }
+.severity--serious.selected { border-color: var(--color-warning); }
+.severity--critical.selected { border-color: var(--color-danger); }
+
+/* ── Review ───────────────────────────────────────────────── */
+
+.ae-review dl {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0 0 var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+.ae-review dt { color: var(--color-text-tertiary); }
+.ae-review dd { color: var(--color-text-primary); margin: 0; }
+
+.ae-confirm {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+/* ── Nav ──────────────────────────────────────────────────── */
+
+.ae-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.ae-nav > :only-child { margin-left: auto; }
+
+.ae-btn {
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ae-btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+.ae-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Success modal ────────────────────────────────────────── */
+
+.ae-success-modal {
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  text-align: center;
+  max-width: 480px;
+  margin: var(--space-8) auto;
+}
+
+.ae-success-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-success);
+  color: #fff;
+  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ae-success-modal h2 { color: var(--color-text-primary); margin-bottom: var(--space-2); }
+.ae-success-modal p { color: var(--color-text-secondary); margin-bottom: var(--space-4); }
+.ae-success-actions { display: flex; gap: var(--space-3); justify-content: center; }
+
+/* ── History table ────────────────────────────────────────── */
+
+.ae-empty { color: var(--color-text-tertiary); font-style: italic; }
+
+.ae-table-scroll { overflow-x: auto; }
+
+.ae-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.ae-table th,
+.ae-table td {
+  padding: var(--space-2) var(--space-4);
+  text-align: left;
+  border-bottom: 1px solid var(--color-surface-border);
+}
+
+.ae-table thead th { background: var(--color-bg-secondary); color: var(--color-text-secondary); }
+.ae-table tbody tr:last-child td { border-bottom: none; }
+
+.ae-sev-pill {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.ae-sev-pill.severity--minor { background: var(--color-success-muted); color: var(--color-success); }
+.ae-sev-pill.severity--moderate { background: var(--color-info-muted); color: var(--color-info); }
+.ae-sev-pill.severity--serious { background: var(--color-warning-muted); color: var(--color-warning); }
+.ae-sev-pill.severity--critical { background: var(--color-danger-muted); color: var(--color-danger); }
