@@ -215,7 +215,7 @@ class TestCSVContent:
             reader = csv.reader(f)
             headers = next(reader)
         expected = [
-            "quarter", "year", "task", "auc", "f1", "ece",
+            "quarter", "year", "subgroup", "task", "auc", "f1", "ece",
             "n_samples", "total_predictions", "total_labeled",
             "drift_detected",
         ]

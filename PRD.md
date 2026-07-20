@@ -2244,12 +2244,12 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-100 and US-101 are marked complete, and US-101's acceptance criteria promise "demographic subgroup breakdowns" in the quarterly report. In practice `PerformanceMonitor` records only `(ecg_id, task, class_name, prediction, ground_truth, timestamp)` — it stores **no demographic attributes**, so neither the monitor nor `generate_quarterly_report` can produce any subgroup stratification. The report's "demographic subgroup breakdowns" criterion is therefore unsatisfiable as built. This story closes the gap between the stated criterion and the implementation.
 
 **Acceptance Criteria:**
-- [ ] `PerformanceMonitor.record_prediction(...)` accepts optional demographic attributes (at minimum `age` and `sex`), persisted alongside each prediction
-- [ ] `get_status()` / a new `get_subgroup_status()` computes rolling AUC/F1/ECE stratified by sex and age decile for subgroups with sufficient sample size (configurable minimum, default N≥30)
-- [ ] `generate_quarterly_report` renders a real demographic-subgroup section (markdown table + CSV rows) instead of omitting it; when demographics are absent it states so explicitly rather than implying a breakdown exists
-- [ ] Drift detection optionally runs per subgroup so an equity regression in one group is flagged even when the aggregate metric looks stable
-- [ ] Unit tests with synthetic demographic-tagged production data verifying subgroup stratification, the minimum-sample guard, and the "no demographics available" path
-- [ ] Typecheck passes
+- [x] `PerformanceMonitor.record_prediction(...)` accepts optional demographic attributes (at minimum `age` and `sex`), persisted alongside each prediction
+- [x] `get_status()` / a new `get_subgroup_status()` computes rolling AUC/F1/ECE stratified by sex and age decile for subgroups with sufficient sample size (configurable minimum, default N≥30)
+- [x] `generate_quarterly_report` renders a real demographic-subgroup section (markdown table + CSV rows) instead of omitting it; when demographics are absent it states so explicitly rather than implying a breakdown exists
+- [x] Drift detection optionally runs per subgroup so an equity regression in one group is flagged even when the aggregate metric looks stable
+- [x] Unit tests with synthetic demographic-tagged production data verifying subgroup stratification, the minimum-sample guard, and the "no demographics available" path
+- [x] Typecheck passes
 
 ---
 

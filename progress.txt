@@ -2558,3 +2558,16 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - The `sys.modules['torch']=None` mock is UNRELIABLE for "imports without torch" checks — fl_client fails that mock at HEAD too (imperfect torch-absent simulation). Use a subprocess that overrides builtins.__import__ to raise ImportError on torch/tensorflow for a faithful test.
   - Mid-file imports (SSOT pattern, import placed after module code) need BOTH `# noqa: E402` AND may trip I001 (import-block sorting) — run `ruff --fix` on the specific files to sort. `TASK_NUM_OUTPUTS as task_sizes`/lowercase aliases trip N811 (constant→non-constant) — add `# noqa: N811` or access via importlib.import_module + getattr in tests.
   - All copies were ALREADY at the correct expanded values (28/19/19/6) at HEAD — the earlier US-072..079 work did update them — but they were still duplicated. US-129 removes the duplication so a future expansion can't drift.
+
+## Iteration US-130 - Demographic-Stratified Production Monitoring
+- What was implemented:
+  - performance_monitor.py: added age/sex columns to monitor_predictions (+_migrate_demographics ALTER TABLE for pre-existing DBs); record_prediction(age=, sex=) persists them; refactored _compute_task_metrics to accept extra_where/extra_params for subgroup filtering; SubgroupMetric + SubgroupStatus dataclasses; get_subgroup_status(min_samples=30 default via subgroup_min_samples ctor arg) stratifies rolling AUC/F1/ECE by sex + age decile, guards on min sample size, returns has_demographics=False + explanatory note when no demographics; optional per-subgroup equity-drift alerts (subgroup F1 vs aggregate task F1 beyond drift_deviation).
+  - quarterly_report.py: _generate_markdown + _generate_csv take subgroup_status; markdown renders a "Demographic Subgroup Breakdown" table (or explicit "No demographic attributes recorded" note); CSV gains a `subgroup` column with per-subgroup rows.
+- Files created: tests/validation/test_demographic_monitoring.py (12).
+- Files modified: aortica/validation/performance_monitor.py, quarterly_report.py, __init__.py (exports), tests/validation/test_quarterly_report.py (CSV header now includes `subgroup`), PRD.md.
+- Test results: 12 new + 87 across validation+dashboards pass; mypy clean; ruff clean on my files (pre-existing F401/F841/E501/I001 in quarterly_report.py untouched).
+- Learnings for future iterations:
+  - SQLite migration for an already-created table: PRAGMA table_info(t) → check column names → ALTER TABLE ADD COLUMN for missing ones (CREATE TABLE IF NOT EXISTS won't add columns to an existing table). Run in __init__ before commit.
+  - Age decile bucketing: (age//10)*10 → "age_50-59", cap "age_90+". Parse back the low/high bounds from the label for the WHERE age BETWEEN filter.
+  - Changing a CSV/report schema (added `subgroup` column) breaks existing exact-header assertions — update the corresponding test (legitimate, story-required schema change).
+  - The equity-drift heuristic compares each subgroup's F1 to the aggregate task F1 (not a per-subgroup baseline) so an equity regression is caught even when the aggregate looks stable.
