@@ -201,11 +201,16 @@ def create_app(
     smart_router = create_smart_router()
     app.include_router(smart_router)
 
-    # Mount report generation router
-    from aortica.api.report_endpoints import create_report_router
+    # Mount report generation router + report listing router (US-120)
+    from aortica.api.report_endpoints import (
+        ReportHistoryStore,
+        create_report_listing_router,
+        create_report_router,
+    )
 
-    report_router = create_report_router()
-    app.include_router(report_router)
+    app.state.report_history = ReportHistoryStore()  # type: ignore[attr-defined]
+    app.include_router(create_report_router())
+    app.include_router(create_report_listing_router())
 
     # Mount validation endpoints router
     from aortica.api.validation_endpoints import create_validation_router

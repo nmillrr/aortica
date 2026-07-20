@@ -284,5 +284,21 @@
     "assignTo": "Kabidhi kwa…",
     "generateReport": "Tengeneza ripoti",
     "empty": "Hakuna ECG katika orodha ya kazi."
+  },
+  "reports": {
+    "title": "Ripoti ya kiafya",
+    "forResult": "Matokeo",
+    "csvBatch": "CSV (Kundi)",
+    "generate": "Tengeneza hakikisho",
+    "generating": "Inatengeneza…",
+    "download": "Pakua",
+    "copy": "Nakili",
+    "copied": "Imenakiliwa!",
+    "generatingHint": "Inatengeneza ripoti — inaweza kuchukua sekunde chache…",
+    "csvNote": "Usafirishaji wa CSV hutengenezwa kwa makundi ya matokeo. Chagua matokeo mengi katika Historia ya ECG au Uchambuzi wa Kundi.",
+    "pdfFallback": "Hakikisho la PDF halipatikani. Tumia kitufe cha Pakua.",
+    "placeholder": "Chagua muundo kisha bofya “Tengeneza hakikisho”.",
+    "history": "Historia ya ripoti",
+    "noHistory": "Hakuna ripoti zilizotengenezwa bado."
   }
 }

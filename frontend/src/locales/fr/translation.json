@@ -321,5 +321,21 @@
     "assignTo": "Assigner à…",
     "generateReport": "Générer un rapport",
     "empty": "Aucun ECG dans la liste de travail."
+  },
+  "reports": {
+    "title": "Rapport clinique",
+    "forResult": "Résultat",
+    "csvBatch": "CSV (Lot)",
+    "generate": "Générer l’aperçu",
+    "generating": "Génération…",
+    "download": "Télécharger",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "generatingHint": "Génération du rapport — cela peut prendre quelques secondes…",
+    "csvNote": "L’export CSV est généré pour des lots de résultats. Sélectionnez plusieurs résultats dans l’historique ECG ou l’analyse par lots.",
+    "pdfFallback": "Aperçu PDF indisponible. Utilisez le bouton Télécharger.",
+    "placeholder": "Sélectionnez un format et cliquez sur « Générer l’aperçu ».",
+    "history": "Historique des rapports",
+    "noHistory": "Aucun rapport généré."
   }
 }

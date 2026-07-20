@@ -2481,3 +2481,20 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - getAuthHeader() (not a token field) is the AuthContext method to spread into fetch headers: `headers: { ...getAuthHeader() }`.
   - The predict hook now does worklist ingestion + subscription dispatch; both wrapped in independent try/except so neither can break predict. Score once (WorklistPrioritizer) — reused for both.
 ---
+
+## Iteration US-120 - Report Generation and Download Page
+- What was implemented:
+  - aortica/api/report_endpoints.py: ReportHistoryStore (thread-safe in-memory generation log), REPORT_FORMATS metadata, create_report_listing_router() → GET /api/v1/reports/{result_id} (available_formats + history; 404 unknown, 422 no store), _record_report() recording added before each of the 4 POST returns (pdf/fhir/hl7/jsonld).
+  - Wired app.state.report_history + both routers in app.py.
+  - Frontend: ReportPage.tsx + .css at /reports/:result_id — format tabs (PDF/FHIR/HL7/JSON-LD/CSV), Generate Preview (POST → PDF via <object> blob URL, text formats pretty-printed in <pre>), Download (blob + correct filename/ext), Copy to Clipboard, loading spinner, error banner, Report History list. Route wired (no nav item — reached from results/worklist). i18n x4.
+- Files created: aortica/api/worklist... no — aortica/api report listing in existing file; tests/api/test_report_listing.py (7), frontend/src/pages/ReportPage.{tsx,css}
+- Files modified: aortica/api/report_endpoints.py, aortica/api/app.py, frontend/src/App.tsx, locales x4, PRD.md.
+- Test results: 7 listing tests pass; 34 app+listing pass; mypy clean on report_endpoints; ruff clean on new code (1 pre-existing Depends F401 remains, 4→1 at HEAD); tsc -b clean, vite build ok; Playwright verified /reports/1 (5 tabs, FHIR preview renders resourceType JSON, 2 history rows w/ timestamps, 0 page errors).
+- Learnings for future iterations:
+  - The report generators have DIFFERENT input-format contracts: to_diagnostic_report (FHIR) + PDF + HL7 take dict-form {task:{class:conf}}; but jsonld_report._extract_predictions expects LIST-form {task:[floats]} and does values[:n] → "unhashable type: slice" on dict input. Stored results are dict-form, so the JSON-LD report endpoint is effectively BROKEN for real stored results (pre-existing US-088/US-090 gap — candidate fix: make jsonld _extract_predictions accept dict like worklist does).
+  - Optional report deps NOT installed by default: fhir.resources (FHIR), weasyprint (PDF), hl7apy (HL7). `pip install fhir.resources` for FHIR. Test history wiring by recording directly into app.state.report_history rather than driving a generator.
+  - app.state.result_store is NEVER wired in create_app() — report + result-browser endpoints read it lazily and 422/empty without it. Tests attach application.state.result_store = MockStore after create_app.
+  - PRE-EXISTING failing test (not mine, fails at HEAD): tests/api/test_report_endpoints.py::TestReportEndpointRouting::test_all_report_routes_exist — iterates app.routes for .path, which FastAPI 0.139 no longer exposes for included sub-routers. Use app.openapi()["paths"] instead.
+  - PDF preview without react-pdf: <object data={blobUrl} type="application/pdf"> renders natively in-browser, zero deps.
+  - BACKGROUND SERVERS: use the Bash run_in_background=true flag, NOT `(cmd &); sleep N` — the chained sleep is blocked by the harness and the subshell server may not survive. Port 8000 lingering from a prior server → `fuser -k 8000/tcp` or free it before rebinding.
+---

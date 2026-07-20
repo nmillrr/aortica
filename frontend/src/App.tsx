@@ -13,6 +13,7 @@ import { FLDashboard } from './pages/FLDashboard';
 import { SiteValidationPage } from './pages/SiteValidation';
 import { ModelComparePage } from './pages/ModelCompare';
 import { WorklistDashboard } from './pages/WorklistDashboard';
+import { ReportPage } from './pages/ReportPage';
 
 export function App() {
   return (
@@ -36,6 +37,7 @@ export function App() {
         <Route path="/validation/sites" element={<SiteValidationPage />} />
         <Route path="/compare" element={<ModelComparePage />} />
         <Route path="/worklist" element={<WorklistDashboard />} />
+        <Route path="/reports/:result_id" element={<ReportPage />} />
       </Route>
     </Routes>
   );

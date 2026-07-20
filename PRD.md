@@ -1870,18 +1870,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a clinician, I want a web page for generating and downloading clinical reports so that I can produce PDF, FHIR, HL7, and JSON-LD reports from the UI without using the API directly.
 
 **Acceptance Criteria:**
-- [ ] `ReportPage` React page at route `/reports/:result_id` accessible from results page and worklist
-- [ ] **Format selector:** radio buttons or tabs for: PDF Clinical Report, FHIR R4 Bundle, HL7 v2.x Message, JSON-LD, CSV (for batch)
-- [ ] **PDF preview:** inline preview of the PDF report using a PDF viewer component (e.g., `react-pdf`), with download button
-- [ ] **FHIR/HL7/JSON-LD preview:** syntax-highlighted JSON/text view of the report content with copy-to-clipboard button
-- [ ] **Download button:** triggers file download with appropriate filename and MIME type for each format
-- [ ] **Batch report generation:** from the result browser (US-105) or batch dashboard (US-047), select multiple results and generate a combined CSV analytics export or individual PDF reports as a ZIP archive
-- [ ] **Report history:** list of previously generated reports for a given result, with timestamp and download link
-- [ ] `GET /api/v1/reports/:result_id` API endpoint listing available/generated reports for a result
-- [ ] Loading state with progress indicator for PDF generation (which may take 2–5 seconds)
-- [ ] Error handling: clear message if report generation fails (e.g., missing XAI data, incomplete result)
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `ReportPage` React page at route `/reports/:result_id` accessible from results page and worklist
+- [x] **Format selector:** radio buttons or tabs for: PDF Clinical Report, FHIR R4 Bundle, HL7 v2.x Message, JSON-LD, CSV (for batch)
+- [x] **PDF preview:** inline preview of the PDF report using a PDF viewer component (e.g., `react-pdf`), with download button
+- [x] **FHIR/HL7/JSON-LD preview:** syntax-highlighted JSON/text view of the report content with copy-to-clipboard button
+- [x] **Download button:** triggers file download with appropriate filename and MIME type for each format
+- [x] **Batch report generation:** from the result browser (US-105) or batch dashboard (US-047), select multiple results and generate a combined CSV analytics export or individual PDF reports as a ZIP archive
+- [x] **Report history:** list of previously generated reports for a given result, with timestamp and download link
+- [x] `GET /api/v1/reports/:result_id` API endpoint listing available/generated reports for a result
+- [x] Loading state with progress indicator for PDF generation (which may take 2–5 seconds)
+- [x] Error handling: clear message if report generation fails (e.g., missing XAI data, incomplete result)
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

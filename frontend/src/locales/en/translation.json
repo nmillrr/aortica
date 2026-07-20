@@ -330,5 +330,21 @@
     "assignTo": "Assign to…",
     "generateReport": "Generate Report",
     "empty": "No ECGs in the worklist."
+  },
+  "reports": {
+    "title": "Clinical Report",
+    "forResult": "Result",
+    "csvBatch": "CSV (Batch)",
+    "generate": "Generate Preview",
+    "generating": "Generating…",
+    "download": "Download",
+    "copy": "Copy to Clipboard",
+    "copied": "Copied!",
+    "generatingHint": "Generating report — this can take a few seconds…",
+    "csvNote": "CSV analytics export is generated for batches of results. Select multiple results in the ECG History or Batch Analysis view and export them together.",
+    "pdfFallback": "PDF preview is unavailable. Use the Download button.",
+    "placeholder": "Select a format and click “Generate Preview”.",
+    "history": "Report History",
+    "noHistory": "No reports generated yet."
   }
 }
