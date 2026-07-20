@@ -2449,3 +2449,19 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - Worklist reuse: WorklistPrioritizer().prioritize([multi_task_output], ecg_ids=[id]) → PrioritizedWorklist; item.active_findings is a list of {class_name, confidence, task, tier}. PredictResponse.predictions is List[TaskPrediction(task, class_names, probabilities)] → convert to {task: dict(zip(class_names, probabilities))} for process_result.
   - Delivery threads are daemon; tests use sync=True or mgr.wait_for_deliveries(timeout) to join. Inject sleep=lambda _:None to skip real backoff.
 ---
+
+## Iteration US-118 - ECG Management System Plugin Architecture
+- What was implemented:
+  - aortica/integration/plugins/ subpackage: base.py (ECGSystemPlugin ABC: connect/poll_for_ecgs/submit_result/get_worklist/health_check; shared process_once() orchestration with on_ecg_received/on_result_generated/on_critical_finding hooks; default_critical_detector; PluginHealth/ProcessReport dataclasses), registry.py (register_plugin/get_plugin/list_plugins/unregister_plugin), file_watcher.py (FileWatcherPlugin — scans a dir, reads via read_ecg, writes result JSON, optional processed_dir move), muse.py (MusePlugin wraps DicomClient C-FIND/C-STORE + dicom_sr), fhir_plugin.py (FHIRPlugin wraps FHIR search + to_diagnostic_report POST, injectable http), daemon.py (PluginConfig + load_plugins_config(plugins.yaml) + PluginDaemon poll loop, injectable processor+sleep).
+  - CLI: `aortica plugin list` and `aortica plugin run --config plugins.yaml [--max-cycles N] [--dry-run]`. Default processor loads a pretrained model and maps ECGRecord→{task:{class:conf}} via model.as_dict() + predict._get_task_class_names.
+  - plugins.example.yaml at repo root.
+- Files created: aortica/integration/plugins/{__init__,base,registry,file_watcher,muse,fhir_plugin,daemon}.py, aortica/cli/plugin_cmd.py, tests/integration/test_plugins.py (25), tests/cli/test_plugin_cmd.py (3), plugins.example.yaml.
+- Files modified: aortica/cli/__init__.py (register plugin_group), PRD.md.
+- Test results: 28 new tests pass. mypy --follow-imports=silent clean on all 7 plugin modules + CLI; ruff clean.
+- Learnings for future iterations:
+  - NO aortica/models/inference.py exists. Model forward on a record: x = torch.from_numpy(record.signals.astype(float32)).unsqueeze(0); output = model(x); output.as_dict() → {task: probs_tensor|None}; class names from aortica.api.predict._get_task_class_names(). load_pretrained("latest") is in aortica.models.registry.
+  - FHIROutput (US-080 to_diagnostic_report) exposes .bundle_json (JSON string), NOT .to_dict(). json.loads(output.bundle_json) to get the bundle.
+  - _simple_yaml_load lives in aortica.federated.fl_server (fallback when PyYAML absent) — reuse for any YAML config loader.
+  - Keep the model-loading processor OUT of module import time: the CLI `list`/`--dry-run` paths must work without torch. Only _build_default_processor() (called in the real `run` path) imports torch.
+  - Registry is process-global; plugins/__init__.py self-registers the 3 built-ins on import. Tests use unregister_plugin for cleanup.
+---

@@ -1769,18 +1769,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** PRD-2 Phase 4 mentions "FHIR ECG management system plugin" and "national programme support." Individual integration protocols exist (DICOM DIMSE in US-083, SCP-ECG in US-084, FHIR in US-080), but there's no pluggable architecture that ties them together into a coherent plugin interface that ECG management system vendors or hospital IT teams can adapt.
 
 **Acceptance Criteria:**
-- [ ] `aortica/integration/plugins/` subpackage with `base.py` defining `ECGSystemPlugin` abstract base class
-- [ ] Plugin interface methods: `connect(config)`, `poll_for_ecgs()`, `submit_result(ecg_id, result)`, `get_worklist()`, `health_check()`
-- [ ] Reference plugin implementations:
+- [x] `aortica/integration/plugins/` subpackage with `base.py` defining `ECGSystemPlugin` abstract base class
+- [x] Plugin interface methods: `connect(config)`, `poll_for_ecgs()`, `submit_result(ecg_id, result)`, `get_worklist()`, `health_check()`
+- [x] Reference plugin implementations:
   - `MusePlugin`: DIMSE C-FIND to poll for new ECGs, C-STORE to write back DICOM SR results (wraps US-083)
   - `FHIRPlugin`: FHIR R4 search to poll for ECGs, DiagnosticReport POST to submit results (wraps US-080)
   - `FileWatcherPlugin`: watches a configurable directory for new ECG files (SCP-ECG, WFDB, CSV), processes them automatically, writes results to output directory
-- [ ] Plugin registry: `aortica.integration.plugins.register_plugin(name, cls)` and `get_plugin(name)` for discovery
-- [ ] Plugin configuration via YAML (`plugins.yaml`) with per-plugin connection parameters
-- [ ] Daemon mode: `aortica plugin run --config plugins.yaml` starts a long-running service that polls the configured ECG management system, processes new ECGs, and submits results back
-- [ ] Event hooks: `on_ecg_received`, `on_result_generated`, `on_critical_finding` for custom post-processing
-- [ ] Unit tests for plugin registry, base class contract, and FileWatcherPlugin with synthetic ECG files
-- [ ] Typecheck passes
+- [x] Plugin registry: `aortica.integration.plugins.register_plugin(name, cls)` and `get_plugin(name)` for discovery
+- [x] Plugin configuration via YAML (`plugins.yaml`) with per-plugin connection parameters
+- [x] Daemon mode: `aortica plugin run --config plugins.yaml` starts a long-running service that polls the configured ECG management system, processes new ECGs, and submits results back
+- [x] Event hooks: `on_ecg_received`, `on_result_generated`, `on_critical_finding` for custom post-processing
+- [x] Unit tests for plugin registry, base class contract, and FileWatcherPlugin with synthetic ECG files
+- [x] Typecheck passes
 
 ---
 
