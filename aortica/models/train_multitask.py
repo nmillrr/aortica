@@ -292,12 +292,8 @@ class MultiTaskEpochMetrics:
 # Label splitting helper
 # ---------------------------------------------------------------------------
 
-_TASK_NUM_OUTPUTS: dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
+# Single source of truth (US-129), derived from the head class-list constants.
+from aortica.models.task_dims import TASK_NUM_OUTPUTS as _TASK_NUM_OUTPUTS  # noqa: E402
 
 
 def _split_labels(

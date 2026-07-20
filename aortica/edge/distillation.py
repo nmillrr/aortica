@@ -111,14 +111,8 @@ class DistillationConfig:
 # Task definitions
 # ---------------------------------------------------------------------------
 
-# Must stay in sync with the head class constants (rhythm=28, structural=19,
-# ischaemia=19, risk=6) and benchmark.TASK_NUM_OUTPUTS.
-_TASK_NUM_OUTPUTS: dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
+# Single source of truth (US-129), derived from the head class-list constants.
+from aortica.models.task_dims import TASK_NUM_OUTPUTS as _TASK_NUM_OUTPUTS  # noqa: E402
 
 _CLASSIFICATION_TASKS: set[str] = {"rhythm", "structural", "ischaemia"}
 

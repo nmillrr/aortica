@@ -212,16 +212,10 @@ class FLClientConfig:
 # Task output dimensions
 # ---------------------------------------------------------------------------
 
-# Must stay in sync with the task-head class constants
-# (RHYTHM_CLASSES, STRUCTURAL_CLASSES, ISCHAEMIA_CLASSES, RISK_OUTPUTS) and with
-# aortica.models.train_multitask._TASK_NUM_OUTPUTS.
-_TASK_NUM_OUTPUTS: Dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
-
+# Single source of truth (US-129), derived from the head class-list constants.
+# task_dims imports only the (torch-guarded) class-list constants, so this
+# does not force a heavyweight ML import at module load.
+from aortica.models.task_dims import TASK_NUM_OUTPUTS as _TASK_NUM_OUTPUTS  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Helper: split concatenated labels

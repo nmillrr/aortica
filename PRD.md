@@ -2229,12 +2229,12 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** The task-head expansion (US-072–US-079) raised the head sizes to rhythm=28, structural=19, ischaemia=19, risk=6 (72 total). However, the per-task dimension map (`TASK_NUM_OUTPUTS` / `_TASK_NUM_OUTPUTS`) is **duplicated across at least seven modules** — `models/train_multitask.py`, `models/conformal_prediction.py`, `models/temperature_scaling.py`, `evaluation/benchmark.py`, `edge/distillation.py`, `edge/validation.py`, and `federated/fl_client.py`. Several copies were not updated during the expansion and remained at the old 22/15/10/3 values. This caused real, silent correctness bugs: the federated client trained against mis-sized labels, and the conformal predictor, temperature-scaling calibrator, INT8 distillation, and edge-validation harness all split concatenated labels at the wrong offsets when run against the real (expanded) model. The acceptance criterion "Update all downstream code referencing RHYTHM_CLASSES count" was checked off without these copies being caught, because each module's unit tests built synthetic data sized to its own stale copy and therefore stayed self-consistently green.
 
 **Acceptance Criteria:**
-- [ ] A single canonical definition of per-task output dimensions, derived from the head class constants (`len(RHYTHM_CLASSES)`, `len(STRUCTURAL_CLASSES)`, `len(ISCHAEMIA_CLASSES)`, `len(RISK_OUTPUTS)`), exposed as e.g. `aortica.models.task_dims.TASK_NUM_OUTPUTS`
-- [ ] All seven (or more) existing copies replaced by an import of the canonical map; no module hardcodes the integers
-- [ ] The canonical map is importable without forcing a heavyweight (torch/tf) import at module load, preserving the existing lazy-import behaviour of `federated/fl_client.py`
-- [ ] A regression test asserts the canonical map equals the actual head class-list lengths, so any future head expansion that forgets a downstream update fails CI immediately
-- [ ] A test that exercises conformal prediction, temperature scaling, distillation label-splitting, and the FL client against a real `AorticaModel` (not synthetic fixed-width data) so dimension drift is caught end-to-end
-- [ ] Typecheck passes
+- [x] A single canonical definition of per-task output dimensions, derived from the head class constants (`len(RHYTHM_CLASSES)`, `len(STRUCTURAL_CLASSES)`, `len(ISCHAEMIA_CLASSES)`, `len(RISK_OUTPUTS)`), exposed as e.g. `aortica.models.task_dims.TASK_NUM_OUTPUTS`
+- [x] All seven (or more) existing copies replaced by an import of the canonical map; no module hardcodes the integers
+- [x] The canonical map is importable without forcing a heavyweight (torch/tf) import at module load, preserving the existing lazy-import behaviour of `federated/fl_client.py`
+- [x] A regression test asserts the canonical map equals the actual head class-list lengths, so any future head expansion that forgets a downstream update fails CI immediately
+- [x] A test that exercises conformal prediction, temperature scaling, distillation label-splitting, and the FL client against a real `AorticaModel` (not synthetic fixed-width data) so dimension drift is caught end-to-end
+- [x] Typecheck passes
 
 ---
 

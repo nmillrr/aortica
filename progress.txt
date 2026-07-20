@@ -2544,3 +2544,17 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - POST /api/v1/validation/adverse-event body: {reporter_id, ecg_reference, event_description, severity(minor|moderate|serious|critical), ai_finding, patient_outcome}. GET /adverse-events returns a bare JSON array. Router needs adverse_event_store passed to create_validation_router (else no-op).
   - Backend already existed (US-102); US-124 was purely the polished multi-step frontend. Old single-page AdverseEventForm component left in place to avoid breaking its tests.
 ---
+
+## Iteration US-129 - Single Source of Truth for Task-Head Output Dimensions
+- What was implemented:
+  - aortica/models/task_dims.py — canonical TASK_NUM_OUTPUTS derived from len(RHYTHM_CLASSES)/len(STRUCTURAL_CLASSES)/len(ISCHAEMIA_CLASSES)/len(RISK_OUTPUTS); also ALL_TASKS, CLASSIFICATION_TASKS, TOTAL_OUTPUTS. Imports only the (torch-guarded) head class-list constants → no forced torch/tf import.
+  - Replaced ALL 8 hardcoded copies with imports of the canonical map: evaluation/benchmark.py, edge/distillation.py, edge/validation.py, models/train_multitask.py, models/conformal_prediction.py, models/temperature_scaling.py (inline in fn), models/aortica_model_tf.py, federated/fl_client.py, federated/data_quality.py.
+  - tests/models/test_task_dims.py: canonical map == head class lengths; TOTAL_OUTPUTS sum; import-without-torch via a subprocess that blocks torch/tf imports; all-consumers-share-canonical-map; and 3 torch-gated end-to-end tests exercising real AorticaModel head widths + train/fl _split_labels against the real 72-wide output.
+- Files created: aortica/models/task_dims.py, tests/models/test_task_dims.py (5 pass + 3 torch-skipped).
+- Files modified: the 9 consumer modules + PRD.md.
+- Test results: 5 pass / 3 skipped (torch-gated); 36 pass across benchmark+data_quality+task_dims; mypy clean; ruff clean.
+- Learnings for future iterations:
+  - torch is NOT installed in this env — the end-to-end "real model" tests use pytest.importorskip("torch") and run only in CI. Head class-list constants (RHYTHM_CLASSES etc.) ARE importable without torch (guarded try/except in each *_head.py).
+  - The `sys.modules['torch']=None` mock is UNRELIABLE for "imports without torch" checks — fl_client fails that mock at HEAD too (imperfect torch-absent simulation). Use a subprocess that overrides builtins.__import__ to raise ImportError on torch/tensorflow for a faithful test.
+  - Mid-file imports (SSOT pattern, import placed after module code) need BOTH `# noqa: E402` AND may trip I001 (import-block sorting) — run `ruff --fix` on the specific files to sort. `TASK_NUM_OUTPUTS as task_sizes`/lowercase aliases trip N811 (constant→non-constant) — add `# noqa: N811` or access via importlib.import_module + getattr in tests.
+  - All copies were ALREADY at the correct expanded values (28/19/19/6) at HEAD — the earlier US-072..079 work did update them — but they were still duplicated. US-129 removes the duplication so a future expansion can't drift.

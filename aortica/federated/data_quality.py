@@ -31,7 +31,6 @@ import numpy as np
 from numpy.typing import NDArray
 
 from aortica.io.ecg_record import ECGRecord
-from aortica.signal.quality_scoring import score_quality
 
 # ---------------------------------------------------------------------------
 # Task-head output dimensions (label-matrix column layout)
@@ -41,14 +40,10 @@ from aortica.signal.quality_scoring import score_quality
 # ``aortica.federated.fl_client._TASK_NUM_OUTPUTS`` /
 # ``aortica.models.train_multitask._TASK_NUM_OUTPUTS``.
 # ---------------------------------------------------------------------------
-
-_TASK_SUPERCLASSES: List[str] = ["rhythm", "structural", "ischaemia", "risk"]
-_TASK_NUM_OUTPUTS: Dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
+# Single source of truth (US-129), derived from the head class-list constants.
+from aortica.models.task_dims import ALL_TASKS as _TASK_SUPERCLASSES  # noqa: E402
+from aortica.models.task_dims import TASK_NUM_OUTPUTS as _TASK_NUM_OUTPUTS  # noqa: E402
+from aortica.signal.quality_scoring import score_quality
 
 
 def _task_slices(
