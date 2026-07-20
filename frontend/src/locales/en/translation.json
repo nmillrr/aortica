@@ -27,7 +27,8 @@
     "admin": "Admin",
     "federated": "Federated Learning",
     "validation": "Site Validation",
-    "compare": "Model Compare"
+    "compare": "Model Compare",
+    "worklist": "Worklist"
   },
   "header": {
     "dashboard": "Dashboard",
@@ -308,5 +309,26 @@
     "noRegressions": "No regressions detected",
     "regressionsFound": "{{count}} class regression(s) detected",
     "hint": "Generate reports with: aortica benchmark <dataset> --format json"
+  },
+  "worklist": {
+    "title": "ECG Worklist",
+    "pending": "Pending",
+    "critical": "Critical",
+    "completed": "Completed",
+    "avgReview": "Avg. time-to-review",
+    "allStatuses": "All statuses",
+    "allTiers": "All tiers",
+    "allFindings": "All findings",
+    "urgency": "Urgency",
+    "acquired": "Acquired",
+    "patient": "Patient",
+    "topFinding": "Top finding",
+    "action": "Recommended action",
+    "status": "Status",
+    "actions": "Actions",
+    "markReviewed": "Mark Reviewed",
+    "assignTo": "Assign to…",
+    "generateReport": "Generate Report",
+    "empty": "No ECGs in the worklist."
   }
 }

@@ -27,7 +27,8 @@
     "admin": "Administración",
     "federated": "Aprendizaje federado",
     "validation": "Validación de sitios",
-    "compare": "Comparar modelos"
+    "compare": "Comparar modelos",
+    "worklist": "Lista de trabajo"
   },
   "header": {
     "dashboard": "Panel principal",
@@ -299,5 +300,26 @@
     "noRegressions": "No se detectaron regresiones",
     "regressionsFound": "{{count}} regresión(es) de clase detectada(s)",
     "hint": "Genera informes con: aortica benchmark <dataset> --format json"
+  },
+  "worklist": {
+    "title": "Lista de trabajo de ECG",
+    "pending": "Pendiente",
+    "critical": "Crítico",
+    "completed": "Completado",
+    "avgReview": "Tiempo medio de revisión",
+    "allStatuses": "Todos los estados",
+    "allTiers": "Todos los niveles",
+    "allFindings": "Todos los hallazgos",
+    "urgency": "Urgencia",
+    "acquired": "Adquirido",
+    "patient": "Paciente",
+    "topFinding": "Hallazgo principal",
+    "action": "Acción recomendada",
+    "status": "Estado",
+    "actions": "Acciones",
+    "markReviewed": "Marcar revisado",
+    "assignTo": "Asignar a…",
+    "generateReport": "Generar informe",
+    "empty": "No hay ECG en la lista de trabajo."
   }
 }

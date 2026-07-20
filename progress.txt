@@ -2465,3 +2465,19 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - Keep the model-loading processor OUT of module import time: the CLI `list`/`--dry-run` paths must work without torch. Only _build_default_processor() (called in the real `run` path) imports torch.
   - Registry is process-global; plugins/__init__.py self-registers the 3 built-ins on import. Tests use unregister_plugin for cleanup.
 ---
+
+## Iteration US-119 - Worklist Dashboard Page
+- What was implemented:
+  - aortica/integration/worklist_store.py — WorklistStore (in-memory, RLock): WorklistEntry with review_status (pending/in-progress/completed), assignee, created_at/reviewed_at, patient_id, acquired_at. add_from_prioritized/add_from_item (preserves review state on re-ingest), list_entries (filter by status/tier/finding/date range, sorted by urgency desc), update_entry (stamps reviewed_at on completed, clears on revert), summary (total_pending/critical_count/completed_count/avg_time_to_review_seconds).
+  - aortica/api/worklist_endpoints.py — GET /api/v1/worklist (filters → {items, summary}) + PATCH /api/v1/worklist/{ecg_id} (review_status/assignee).
+  - Wired app.state.worklist_store + router; predict hook now scores once and (a) adds to worklist store, (b) fans out subscription notifications.
+  - Frontend: WorklistDashboard.tsx + .css at /worklist — summary bar, filters (status/tier/finding), sortable columns, red-border + animated pulse for urgency>=80, row click→/results/:id, inline Mark Reviewed / Assign to / Generate Report, 30s polling. Route + Sidebar nav + i18n (en/fr/es/sw).
+- Files created: aortica/integration/worklist_store.py, aortica/api/worklist_endpoints.py, tests/integration/test_worklist_store.py (12), tests/api/test_worklist_endpoints.py (7), frontend/src/pages/WorklistDashboard.{tsx,css}
+- Files modified: aortica/api/app.py (worklist store+router+predict ingestion), frontend/src/App.tsx, Sidebar.tsx, locales x4, PRD.md.
+- Test results: 19 backend tests pass; 28 app tests pass (predict hook non-breaking); mypy+ruff clean; tsc -b clean, vite build ok; Playwright verified /worklist against a seeded backend (4 rows, STEMI sorted first, 2 critical highlighted, Mark Reviewed updates status+summary live, 0 page errors).
+- Learnings for future iterations:
+  - Browser-verifying a page that needs backend data: run a tiny standalone uvicorn app that mounts just the router with a seeded store (no model needed): create_worklist_router(store) + CORSMiddleware(allow_origins=["*"]) on port 8000, then addInitScript auth-seed + point the page at it. `pip install uvicorn`.
+  - Playwright ESM import needs the symlink INSIDE the dir the .mjs lives in (node_modules/playwright). A script in /tmp can't resolve a symlink under frontend/node_modules — copy the .mjs into frontend/ before running.
+  - getAuthHeader() (not a token field) is the AuthContext method to spread into fetch headers: `headers: { ...getAuthHeader() }`.
+  - The predict hook now does worklist ingestion + subscription dispatch; both wrapped in independent try/except so neither can break predict. Score once (WorklistPrioritizer) — reused for both.
+---

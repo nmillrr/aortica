@@ -27,7 +27,8 @@
     "admin": "Usimamizi",
     "federated": "Kujifunza kwa ushirikiano",
     "validation": "Uthibitishaji wa tovuti",
-    "compare": "Linganisha Miundo"
+    "compare": "Linganisha Miundo",
+    "worklist": "Orodha ya kazi"
   },
   "header": {
     "dashboard": "Dashibodi",
@@ -262,5 +263,26 @@
     "noRegressions": "Hakuna marejesho yaliyogunduliwa",
     "regressionsFound": "Marejesho ya darasa {{count}} yamegunduliwa",
     "hint": "Tengeneza ripoti kwa: aortica benchmark <dataset> --format json"
+  },
+  "worklist": {
+    "title": "Orodha ya kazi ya ECG",
+    "pending": "Inasubiri",
+    "critical": "Hatari",
+    "completed": "Imekamilika",
+    "avgReview": "Wastani wa muda wa kukagua",
+    "allStatuses": "Hali zote",
+    "allTiers": "Viwango vyote",
+    "allFindings": "Matokeo yote",
+    "urgency": "Uharaka",
+    "acquired": "Ilipatikana",
+    "patient": "Mgonjwa",
+    "topFinding": "Matokeo makuu",
+    "action": "Hatua iliyopendekezwa",
+    "status": "Hali",
+    "actions": "Vitendo",
+    "markReviewed": "Weka alama kama imekaguliwa",
+    "assignTo": "Kabidhi kwa…",
+    "generateReport": "Tengeneza ripoti",
+    "empty": "Hakuna ECG katika orodha ya kazi."
   }
 }

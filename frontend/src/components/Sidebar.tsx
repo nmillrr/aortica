@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: '/',              icon: '⌂', id: 'dashboard',    labelKey: 'nav.dashboard' },
   { to: '/upload',        icon: '↑', id: 'upload',       labelKey: 'nav.uploadEcg' },
   { to: '/history',       icon: '📋', id: 'history',      labelKey: 'nav.ecgHistory' },
+  { to: '/worklist',      icon: '⚑', id: 'worklist',     labelKey: 'nav.worklist' },
   { to: '/batch',         icon: '⊞', id: 'batch',        labelKey: 'nav.batchAnalysis' },
   { to: '/report-event',  icon: '⚠', id: 'report-event', labelKey: 'nav.reportEvent' },
   { to: '/admin',         icon: '⚙', id: 'admin',        labelKey: 'nav.admin' },

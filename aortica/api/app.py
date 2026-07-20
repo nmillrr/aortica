@@ -261,6 +261,14 @@ def create_app(
     app.state.subscription_manager = subscription_manager  # type: ignore[attr-defined]
     app.include_router(create_subscription_router(subscription_manager))
 
+    # Mount stateful worklist router (US-119)
+    from aortica.api.worklist_endpoints import create_worklist_router
+    from aortica.integration.worklist_store import WorklistStore
+
+    worklist_store = WorklistStore()
+    app.state.worklist_store = worklist_store  # type: ignore[attr-defined]
+    app.include_router(create_worklist_router(worklist_store))
+
     # Mount federated learning monitoring router (GET /api/v1/federated/*)
     from aortica.api.federated_endpoints import create_federated_router
     from aortica.federated.fl_metrics_store import FLMetricsStore
@@ -381,14 +389,29 @@ def create_app(
                 content={"detail": str(exc)},
             )
 
-        # Fan out webhook notifications for any subscription whose criteria
-        # this result matches (US-117). Delivery runs on background threads,
-        # so this does not delay the response.
+        # Score the result once, then (a) add it to the review worklist
+        # (US-119) and (b) fan out webhook notifications for any matching
+        # subscription (US-117). Both are best-effort and must never break
+        # the predict response.
         try:
             findings = {
                 tp.task: dict(zip(tp.class_names, tp.probabilities))
                 for tp in result.predictions
             }
+        except Exception:  # noqa: BLE001
+            findings = {}
+
+        try:
+            from aortica.integration.worklist import WorklistPrioritizer
+
+            worklist = WorklistPrioritizer().prioritize(
+                [findings], ecg_ids=[filename]
+            )
+            app.state.worklist_store.add_from_prioritized(worklist)  # type: ignore[attr-defined]
+        except Exception:  # noqa: BLE001 - worklist ingestion must not break predict
+            logger.exception("Worklist ingestion failed")
+
+        try:
             app.state.subscription_manager.process_result(  # type: ignore[attr-defined]
                 findings, ecg_id=filename
             )

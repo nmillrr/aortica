@@ -1788,19 +1788,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a cardiologist, I want a web dashboard showing the AI-prioritized ECG worklist so that I can review the most urgent ECGs first and work through my queue efficiently.
 
 **Acceptance Criteria:**
-- [ ] `WorklistDashboard` React page at route `/worklist`
-- [ ] Table view with columns: urgency score (0–100) with color-coded badge, ECG ID, acquisition timestamp, patient identifier (if available), top finding, recommended action, review status (pending/in-progress/completed)
-- [ ] Default sort by urgency score (highest first); sortable by all columns
-- [ ] Filter controls: urgency tier (critical/moderate/routine), finding type, date range, review status
-- [ ] Critical findings row styling: red left border + animated urgency indicator for scores ≥80
-- [ ] Click row to open full results page with ECG waveform, predictions, and copilot panel
-- [ ] Inline actions: "Mark as Reviewed", "Assign to" (dropdown of registered clinicians), "Generate Report"
-- [ ] `PATCH /api/v1/worklist/:ecg_id` API endpoint for updating review status and assignee
-- [ ] `GET /api/v1/worklist` API endpoint returning prioritized worklist with status filters
-- [ ] Real-time update: new ECGs appear in the worklist automatically (polling or WebSocket, configurable interval default 30s)
-- [ ] Worklist summary bar: total pending, critical count, average time-to-review
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `WorklistDashboard` React page at route `/worklist`
+- [x] Table view with columns: urgency score (0–100) with color-coded badge, ECG ID, acquisition timestamp, patient identifier (if available), top finding, recommended action, review status (pending/in-progress/completed)
+- [x] Default sort by urgency score (highest first); sortable by all columns
+- [x] Filter controls: urgency tier (critical/moderate/routine), finding type, date range, review status
+- [x] Critical findings row styling: red left border + animated urgency indicator for scores ≥80
+- [x] Click row to open full results page with ECG waveform, predictions, and copilot panel
+- [x] Inline actions: "Mark as Reviewed", "Assign to" (dropdown of registered clinicians), "Generate Report"
+- [x] `PATCH /api/v1/worklist/:ecg_id` API endpoint for updating review status and assignee
+- [x] `GET /api/v1/worklist` API endpoint returning prioritized worklist with status filters
+- [x] Real-time update: new ECGs appear in the worklist automatically (polling or WebSocket, configurable interval default 30s)
+- [x] Worklist summary bar: total pending, critical count, average time-to-review
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
