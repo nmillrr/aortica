@@ -220,7 +220,30 @@ def create_app(
     _site_registry_path = os.path.join(_validation_data_dir, "site_validations.json")
     _site_registry = SiteValidationRegistry(path=_site_registry_path)
 
-    validation_router = create_validation_router(site_registry=_site_registry)
+    # Best-effort prospective collector + performance monitor (optional deps).
+    _prospective_collector: Optional[Any] = None
+    _performance_monitor: Optional[Any] = None
+    try:
+        from aortica.validation.prospective_collector import ProspectiveCollector
+
+        _prospective_collector = ProspectiveCollector(db_dir=_validation_data_dir)
+    except Exception:  # noqa: BLE001 - collector needs cryptography; degrade gracefully
+        logger.info("Prospective collector unavailable; progress endpoint no-op")
+    try:
+        from aortica.validation.performance_monitor import PerformanceMonitor
+
+        _performance_monitor = PerformanceMonitor(db_dir=_validation_data_dir)
+    except Exception:  # noqa: BLE001 - degrade gracefully
+        logger.info("Performance monitor unavailable; monitor endpoints no-op")
+
+    app.state.prospective_collector = _prospective_collector  # type: ignore[attr-defined]
+    app.state.performance_monitor = _performance_monitor  # type: ignore[attr-defined]
+
+    validation_router = create_validation_router(
+        collector=_prospective_collector,
+        monitor=_performance_monitor,
+        site_registry=_site_registry,
+    )
     app.include_router(validation_router)
 
     # Mount result browser router

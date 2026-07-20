@@ -28,7 +28,9 @@
     "federated": "Kujifunza kwa ushirikiano",
     "validation": "Uthibitishaji wa tovuti",
     "compare": "Linganisha Miundo",
-    "worklist": "Orodha ya kazi"
+    "worklist": "Orodha ya kazi",
+    "prospective": "Utafiti wa mbele",
+    "monitor": "Kifuatiliaji cha Utendaji"
   },
   "header": {
     "dashboard": "Dashibodi",
@@ -300,5 +302,40 @@
     "placeholder": "Chagua muundo kisha bofya “Tengeneza hakikisho”.",
     "history": "Historia ya ripoti",
     "noHistory": "Hakuna ripoti zilizotengenezwa bado."
+  },
+  "prospective": {
+    "title": "Ukusanyaji wa Data ya Mbele",
+    "submitted": "ECG zilizowasilishwa",
+    "linked": "Zenye ukweli wa msingi",
+    "concordance": "Ukamilishaji",
+    "enrollment": "Uandikishaji",
+    "upload": "Pakia ECG",
+    "running": "Inaendesha…",
+    "export": "Hamisha CSV",
+    "aiResults": "Utabiri wa AI",
+    "groundTruth": "Ingizo la Ukweli wa Msingi",
+    "incomplete": "Hakuna hali iliyochaguliwa",
+    "outcomeCategory": "Aina ya matokeo",
+    "followUp": "Tarehe ya ufuatiliaji",
+    "notes": "Maelezo",
+    "submit": "Wasilisha Ukweli wa Msingi",
+    "submittedOk": "Ukweli wa msingi umeunganishwa."
+  },
+  "monitor": {
+    "title": "Ufuatiliaji wa Utendaji",
+    "refresh": "Onyesha upya",
+    "predictions": "Jumla ya utabiri",
+    "labeled": "Zilizoandikwa",
+    "window": "Dirisha",
+    "overview": "Muhtasari wa Vipimo",
+    "noData": "Hakuna data ya ufuatiliaji.",
+    "baseline": "F1 ya msingi",
+    "alerts": "Tahadhari za Mtelemko",
+    "task": "Kazi",
+    "metric": "Kipimo",
+    "current": "Sasa",
+    "threshold": "Kizingiti",
+    "type": "Aina",
+    "noDrift": "Hakuna mtelemko uliogunduliwa"
   }
 }

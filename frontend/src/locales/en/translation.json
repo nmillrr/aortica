@@ -28,7 +28,9 @@
     "federated": "Federated Learning",
     "validation": "Site Validation",
     "compare": "Model Compare",
-    "worklist": "Worklist"
+    "worklist": "Worklist",
+    "prospective": "Prospective Study",
+    "monitor": "Performance Monitor"
   },
   "header": {
     "dashboard": "Dashboard",
@@ -346,5 +348,40 @@
     "placeholder": "Select a format and click “Generate Preview”.",
     "history": "Report History",
     "noHistory": "No reports generated yet."
+  },
+  "prospective": {
+    "title": "Prospective Data Collection",
+    "submitted": "ECGs submitted",
+    "linked": "With ground-truth",
+    "concordance": "Completion",
+    "enrollment": "Enrollment",
+    "upload": "Upload ECG",
+    "running": "Running…",
+    "export": "Export CSV",
+    "aiResults": "AI Predictions",
+    "groundTruth": "Ground-Truth Entry",
+    "incomplete": "No conditions selected yet",
+    "outcomeCategory": "Outcome category",
+    "followUp": "Follow-up date",
+    "notes": "Notes",
+    "submit": "Submit Ground-Truth",
+    "submittedOk": "Ground-truth linked successfully."
+  },
+  "monitor": {
+    "title": "Performance Monitoring",
+    "refresh": "Auto-refresh",
+    "predictions": "Total predictions",
+    "labeled": "Labeled",
+    "window": "Window",
+    "overview": "Metrics Overview",
+    "noData": "No monitoring data yet.",
+    "baseline": "Baseline F1",
+    "alerts": "Drift Alerts",
+    "task": "Task",
+    "metric": "Metric",
+    "current": "Current",
+    "threshold": "Threshold",
+    "type": "Type",
+    "noDrift": "No drift detected"
   }
 }

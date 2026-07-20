@@ -177,7 +177,7 @@ class ProspectiveCollector:
         self._fernet = Fernet(key_bytes)  # type: ignore[arg-type]
 
         # Open / create database
-        self._conn = sqlite3.connect(str(self._db_path))
+        self._conn = sqlite3.connect(str(self._db_path), check_same_thread=False)
         self._conn.execute("PRAGMA journal_mode=WAL;")
         self._conn.execute(_CREATE_TABLE_SQL)
         self._conn.execute(_CREATE_INDEX_SQL)

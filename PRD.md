@@ -2090,17 +2090,17 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a site coordinator running a prospective validation study, I want a web interface for submitting ECGs with ground-truth outcomes so that data collection is systematic and doesn't require API scripting.
 
 **Acceptance Criteria:**
-- [ ] `ProspectiveDataPage` React page at route `/validation/prospective` (protected: requires authenticated site coordinator role)
-- [ ] **ECG submission form:** upload ECG file, auto-runs prediction pipeline, displays results for clinician review
-- [ ] **Ground-truth entry form:** structured input for clinician-verified diagnosis at follow-up — checkbox list of conditions (matching Aortica's class taxonomy), free-text notes, follow-up date, outcome category (confirmed/ruled-out/indeterminate)
-- [ ] **Outcome linkage:** pairs the AI prediction with the ground-truth entry for the same ECG, auto-computing per-class concordance (TP/FP/TN/FN)
-- [ ] **Collection progress dashboard:** total ECGs submitted per site, target vs. actual enrollment, per-class label distribution, concordance summary
-- [ ] **Data quality indicators:** flags incomplete submissions (missing ground-truth, missing demographics), highlights outlier predictions for review
-- [ ] Export button: generates de-identified CSV (reuses US-099 `export_study_data`) downloadable from the UI
-- [ ] `GET /api/v1/validation/prospective/progress` API endpoint returning collection progress stats
-- [ ] Multi-site support: each authenticated user is associated with a site ID; data is tagged and filterable by site
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `ProspectiveDataPage` React page at route `/validation/prospective` (protected: requires authenticated site coordinator role)
+- [x] **ECG submission form:** upload ECG file, auto-runs prediction pipeline, displays results for clinician review
+- [x] **Ground-truth entry form:** structured input for clinician-verified diagnosis at follow-up — checkbox list of conditions (matching Aortica's class taxonomy), free-text notes, follow-up date, outcome category (confirmed/ruled-out/indeterminate)
+- [x] **Outcome linkage:** pairs the AI prediction with the ground-truth entry for the same ECG, auto-computing per-class concordance (TP/FP/TN/FN)
+- [x] **Collection progress dashboard:** total ECGs submitted per site, target vs. actual enrollment, per-class label distribution, concordance summary
+- [x] **Data quality indicators:** flags incomplete submissions (missing ground-truth, missing demographics), highlights outlier predictions for review
+- [x] Export button: generates de-identified CSV (reuses US-099 `export_study_data`) downloadable from the UI
+- [x] `GET /api/v1/validation/prospective/progress` API endpoint returning collection progress stats
+- [x] Multi-site support: each authenticated user is associated with a site ID; data is tagged and filterable by site
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -2108,18 +2108,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a deployment administrator, I want a web dashboard showing live performance monitoring metrics so that I can detect model drift, track accuracy trends, and respond to degradation without running CLI commands.
 
 **Acceptance Criteria:**
-- [ ] `PerformanceMonitorPage` React page at route `/validation/monitor` (protected: requires admin role)
-- [ ] **Metrics overview panel:** current rolling AUC, F1, and calibration (ECE) per task head, with trend arrows (↑↓↔) vs. previous period
-- [ ] **Time-series charts:** line charts of per-task AUC and F1 over the monitoring window (default 30 days), with configurable window selector
-- [ ] **Drift alert panel:** list of active drift alerts with: alert timestamp, affected task/class, metric value, threshold, deviation percentage, severity (warning/critical)
-- [ ] **Demographic breakdown:** per-subgroup (age decile, sex) metric cards showing current performance vs. baseline, with equity gate status
-- [ ] **Volume metrics:** total ECGs processed (daily/weekly/monthly), inference latency trends, error rate
-- [ ] **Baseline comparison:** overlay baseline metrics (from original benchmark) on the time-series chart for visual drift assessment
-- [ ] `GET /api/v1/validation/monitor/metrics` API endpoint returning current monitoring metrics with time-series data
-- [ ] `GET /api/v1/validation/monitor/alerts` API endpoint returning active drift alerts
-- [ ] Auto-refresh with configurable interval (default 5 minutes)
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `PerformanceMonitorPage` React page at route `/validation/monitor` (protected: requires admin role)
+- [x] **Metrics overview panel:** current rolling AUC, F1, and calibration (ECE) per task head, with trend arrows (↑↓↔) vs. previous period
+- [x] **Time-series charts:** line charts of per-task AUC and F1 over the monitoring window (default 30 days), with configurable window selector
+- [x] **Drift alert panel:** list of active drift alerts with: alert timestamp, affected task/class, metric value, threshold, deviation percentage, severity (warning/critical)
+- [x] **Demographic breakdown:** per-subgroup (age decile, sex) metric cards showing current performance vs. baseline, with equity gate status
+- [x] **Volume metrics:** total ECGs processed (daily/weekly/monthly), inference latency trends, error rate
+- [x] **Baseline comparison:** overlay baseline metrics (from original benchmark) on the time-series chart for visual drift assessment
+- [x] `GET /api/v1/validation/monitor/metrics` API endpoint returning current monitoring metrics with time-series data
+- [x] `GET /api/v1/validation/monitor/alerts` API endpoint returning active drift alerts
+- [x] Auto-refresh with configurable interval (default 5 minutes)
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

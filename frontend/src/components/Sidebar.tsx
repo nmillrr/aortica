@@ -13,6 +13,8 @@ const NAV_ITEMS = [
   { to: '/admin',         icon: '⚙', id: 'admin',        labelKey: 'nav.admin' },
   { to: '/federated',     icon: '🌐', id: 'federated',    labelKey: 'nav.federated' },
   { to: '/validation/sites', icon: '🌍', id: 'validation', labelKey: 'nav.validation' },
+  { to: '/validation/prospective', icon: '🧪', id: 'prospective', labelKey: 'nav.prospective' },
+  { to: '/validation/monitor', icon: '📈', id: 'monitor', labelKey: 'nav.monitor' },
   { to: '/compare',       icon: '⇄', id: 'compare',      labelKey: 'nav.compare' },
 ] as const;
 

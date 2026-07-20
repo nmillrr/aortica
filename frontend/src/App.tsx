@@ -14,6 +14,8 @@ import { SiteValidationPage } from './pages/SiteValidation';
 import { ModelComparePage } from './pages/ModelCompare';
 import { WorklistDashboard } from './pages/WorklistDashboard';
 import { ReportPage } from './pages/ReportPage';
+import { ProspectiveDataPage } from './pages/ProspectiveData';
+import { PerformanceMonitorPage } from './pages/PerformanceMonitor';
 
 export function App() {
   return (
@@ -38,6 +40,8 @@ export function App() {
         <Route path="/compare" element={<ModelComparePage />} />
         <Route path="/worklist" element={<WorklistDashboard />} />
         <Route path="/reports/:result_id" element={<ReportPage />} />
+        <Route path="/validation/prospective" element={<ProspectiveDataPage />} />
+        <Route path="/validation/monitor" element={<PerformanceMonitorPage />} />
       </Route>
     </Routes>
   );

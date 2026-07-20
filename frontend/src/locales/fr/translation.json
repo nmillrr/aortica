@@ -28,7 +28,9 @@
     "federated": "Apprentissage fédéré",
     "validation": "Validation de sites",
     "compare": "Comparer les modèles",
-    "worklist": "Liste de travail"
+    "worklist": "Liste de travail",
+    "prospective": "Étude prospective",
+    "monitor": "Suivi des performances"
   },
   "header": {
     "dashboard": "Tableau de bord",
@@ -337,5 +339,40 @@
     "placeholder": "Sélectionnez un format et cliquez sur « Générer l’aperçu ».",
     "history": "Historique des rapports",
     "noHistory": "Aucun rapport généré."
+  },
+  "prospective": {
+    "title": "Collecte de données prospective",
+    "submitted": "ECG soumis",
+    "linked": "Avec vérité terrain",
+    "concordance": "Achèvement",
+    "enrollment": "Recrutement",
+    "upload": "Importer un ECG",
+    "running": "En cours…",
+    "export": "Exporter CSV",
+    "aiResults": "Prédictions IA",
+    "groundTruth": "Saisie de la vérité terrain",
+    "incomplete": "Aucune condition sélectionnée",
+    "outcomeCategory": "Catégorie de résultat",
+    "followUp": "Date de suivi",
+    "notes": "Notes",
+    "submit": "Soumettre la vérité terrain",
+    "submittedOk": "Vérité terrain liée avec succès."
+  },
+  "monitor": {
+    "title": "Suivi des performances",
+    "refresh": "Actualisation",
+    "predictions": "Prédictions totales",
+    "labeled": "Étiquetées",
+    "window": "Fenêtre",
+    "overview": "Vue d’ensemble",
+    "noData": "Aucune donnée de suivi.",
+    "baseline": "F1 de référence",
+    "alerts": "Alertes de dérive",
+    "task": "Tâche",
+    "metric": "Métrique",
+    "current": "Actuel",
+    "threshold": "Seuil",
+    "type": "Type",
+    "noDrift": "Aucune dérive détectée"
   }
 }

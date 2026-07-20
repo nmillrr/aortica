@@ -2514,3 +2514,19 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - AuditLogger uses sqlite3 check_same_thread=False + RLock (threaded FastAPI). pydantic v2 ignores extra keys, so AuditEventModel(**to_dict()) works even though to_dict includes prev_hash not in the model.
   - Middleware via starlette.middleware.base.BaseHTTPMiddleware; guard import so module loads without fastapi (BaseHTTPMiddleware = object fallback).
 ---
+
+## Iteration US-122 + US-123 - Prospective Data Collection UI & Performance Monitoring Dashboard
+- What was implemented:
+  - Backend (validation_endpoints.py): GET /api/v1/validation/prospective/progress (collector.count total/linked → completion_rate, site filter); GET /api/v1/validation/monitor/metrics (per-task auc/f1/ece + baseline via monitor.get_baseline + trend up/down/flat + volume); GET /api/v1/validation/monitor/alerts (drift_alerts + has_drift). All no-op gracefully when collector/monitor is None.
+  - Wired ProspectiveCollector + PerformanceMonitor into app.state (best-effort try/except; collector needs cryptography which IS installed) and passed to create_validation_router.
+  - FIXED thread-safety: added check_same_thread=False to both PerformanceMonitor and ProspectiveCollector sqlite3.connect (they broke under the threaded FastAPI TestClient / live server otherwise).
+  - Frontend US-122: ProspectiveData.tsx (/validation/prospective) — progress dashboard (submitted/linked/completion + enrollment bar), ECG upload→predict, AI results review, ground-truth checklist + outcome category + follow-up + notes, submit to /validation/submit, export CSV, incomplete-data flag.
+  - Frontend US-123: PerformanceMonitor.tsx (/validation/monitor) — volume stats, per-task metric cards with trend arrows vs baseline, drift-alerts table, configurable auto-refresh (1m/5m/15m). Routes + 2 Sidebar nav items + i18n x4.
+- Files created: tests/api/test_validation_dashboards.py (7), frontend/src/pages/ProspectiveData.{tsx,css}, PerformanceMonitor.{tsx,css}
+- Files modified: aortica/api/validation_endpoints.py, aortica/api/app.py, aortica/validation/{performance_monitor,prospective_collector}.py (check_same_thread), frontend/src/{App.tsx,components/Sidebar.tsx,locales x4}, PRD.md.
+- Test results: 7 new backend tests pass; 49 with app+site regression; mypy clean on validation_endpoints; ruff clean on my code (pre-existing F401/E501 in validation_endpoints monitor/site endpoints + app.py retrieval msg remain, 5 at HEAD); tsc -b clean, vite build ok; Playwright verified both pages against a seeded collector+monitor server (prospective total=12, monitor 2 task cards + volume 60, 0 page errors).
+- Learnings for future iterations:
+  - ProspectiveCollector(db_dir=...) and PerformanceMonitor(db_dir=...) — both take db_dir (a directory), NOT db_path. ingest_ecg requires quality= (positional after predictions). add_outcome(record_id=, ground_truth=). record_prediction(ecg_id, task, predictions={class:conf}, ground_truth={class:0/1}). monitor.set_baseline(task, metric, value) + get_baseline(task, metric).
+  - Any SQLite-backed store wired into the threaded FastAPI app MUST use check_same_thread=False (connection created in startup/main thread, requests run in worker threads). Symptom: "SQLite objects created in a thread can only be used in that same thread."
+  - Server management across sleep-blocks: use Bash run_in_background=true for uvicorn; fuser -k 8000/tcp to free the port before rebinding.
+---

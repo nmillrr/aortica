@@ -321,7 +321,7 @@ class PerformanceMonitor:
         self.min_thresholds = min_thresholds or {}
         self.webhook_url = webhook_url
 
-        self._conn = sqlite3.connect(str(self._db_path))
+        self._conn = sqlite3.connect(str(self._db_path), check_same_thread=False)
         self._conn.execute("PRAGMA journal_mode=WAL;")
         self._conn.execute(_CREATE_PREDICTIONS_TABLE)
         self._conn.execute(_CREATE_BASELINES_TABLE)
