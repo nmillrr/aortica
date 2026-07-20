@@ -41,6 +41,7 @@ def _build_cli() -> Any:
     """Build and return the Click CLI group (lazy to avoid import failures)."""
     _check_cli_deps()
 
+    from aortica.cli.audit_cmd import audit_group
     from aortica.cli.benchmark import benchmark_cmd
     from aortica.cli.build_index_cmd import build_index_cmd
     from aortica.cli.compare_cmd import compare_cmd
@@ -73,6 +74,7 @@ def _build_cli() -> Any:
     cli.add_command(edge_group)
     cli.add_command(compare_cmd)
     cli.add_command(plugin_group)
+    cli.add_command(audit_group)
     return cli
 
 

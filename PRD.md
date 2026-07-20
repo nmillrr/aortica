@@ -1997,19 +1997,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** Individual audit logging exists in the Android app (US-061c) and clinician feedback (US-053), but there's no centralized, tamper-evident audit trail covering the full lifecycle: ECG ingestion → AI prediction → clinician review → report generation → EHR submission. Regulatory frameworks (IEC 62304, FDA SaMD guidance) require traceability of AI-assisted clinical decisions.
 
 **Acceptance Criteria:**
-- [ ] `aortica/audit/` subpackage with `__init__.py`
-- [ ] `aortica.audit.AuditLogger` class recording immutable audit events to an append-only SQLite table with HMAC integrity verification per row
-- [ ] Audit event types: `ecg_ingested`, `prediction_generated`, `xai_computed`, `finding_accepted`, `finding_rejected`, `finding_modified`, `report_generated`, `report_exported`, `ehr_submitted`, `adverse_event_reported`, `model_loaded`, `model_updated`
-- [ ] Each event includes: timestamp (UTC), event_type, user_id (if authenticated), ecg_reference_id, model_version, session_id, IP address, event_details (JSON), HMAC signature
-- [ ] HMAC chain: each row's HMAC includes the previous row's hash, creating a tamper-evident chain (any modification to a past row invalidates all subsequent HMACs)
-- [ ] `aortica.audit.verify_integrity(audit_db_path)` validates the HMAC chain and reports any broken links
-- [ ] FastAPI middleware that automatically logs `prediction_generated`, `report_generated`, and `ehr_submitted` events without requiring manual instrumentation in each endpoint
-- [ ] `GET /api/v1/audit/events` API endpoint with filters: date range, event type, user, ECG reference (admin-only)
-- [ ] `GET /api/v1/audit/verify` API endpoint that runs integrity verification and returns pass/fail with details
-- [ ] CLI command `aortica audit export --from <date> --to <date> --format csv|json` exports audit log for regulatory submission
-- [ ] Audit log rotation: configurable max database size with archival to compressed files
-- [ ] Unit tests: event logging, HMAC chain verification (valid and tampered), integrity check, export
-- [ ] Typecheck passes
+- [x] `aortica/audit/` subpackage with `__init__.py`
+- [x] `aortica.audit.AuditLogger` class recording immutable audit events to an append-only SQLite table with HMAC integrity verification per row
+- [x] Audit event types: `ecg_ingested`, `prediction_generated`, `xai_computed`, `finding_accepted`, `finding_rejected`, `finding_modified`, `report_generated`, `report_exported`, `ehr_submitted`, `adverse_event_reported`, `model_loaded`, `model_updated`
+- [x] Each event includes: timestamp (UTC), event_type, user_id (if authenticated), ecg_reference_id, model_version, session_id, IP address, event_details (JSON), HMAC signature
+- [x] HMAC chain: each row's HMAC includes the previous row's hash, creating a tamper-evident chain (any modification to a past row invalidates all subsequent HMACs)
+- [x] `aortica.audit.verify_integrity(audit_db_path)` validates the HMAC chain and reports any broken links
+- [x] FastAPI middleware that automatically logs `prediction_generated`, `report_generated`, and `ehr_submitted` events without requiring manual instrumentation in each endpoint
+- [x] `GET /api/v1/audit/events` API endpoint with filters: date range, event type, user, ECG reference (admin-only)
+- [x] `GET /api/v1/audit/verify` API endpoint that runs integrity verification and returns pass/fail with details
+- [x] CLI command `aortica audit export --from <date> --to <date> --format csv|json` exports audit log for regulatory submission
+- [x] Audit log rotation: configurable max database size with archival to compressed files
+- [x] Unit tests: event logging, HMAC chain verification (valid and tampered), integrity check, export
+- [x] Typecheck passes
 
 ---
 

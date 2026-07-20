@@ -274,6 +274,16 @@ def create_app(
     app.state.worklist_store = worklist_store  # type: ignore[attr-defined]
     app.include_router(create_worklist_router(worklist_store))
 
+    # Mount audit trail router + auto-logging middleware (US-121)
+    from aortica.api.audit_endpoints import AuditMiddleware, create_audit_router
+    from aortica.audit import AuditLogger
+
+    _audit_dir = os.environ.get("AORTICA_DATA_DIR", tempfile.gettempdir())
+    audit_logger = AuditLogger(os.path.join(_audit_dir, "audit.db"))
+    app.state.audit_logger = audit_logger  # type: ignore[attr-defined]
+    app.include_router(create_audit_router(audit_logger))
+    app.add_middleware(AuditMiddleware)
+
     # Mount federated learning monitoring router (GET /api/v1/federated/*)
     from aortica.api.federated_endpoints import create_federated_router
     from aortica.federated.fl_metrics_store import FLMetricsStore

@@ -2498,3 +2498,19 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - PDF preview without react-pdf: <object data={blobUrl} type="application/pdf"> renders natively in-browser, zero deps.
   - BACKGROUND SERVERS: use the Bash run_in_background=true flag, NOT `(cmd &); sleep N` — the chained sleep is blocked by the harness and the subshell server may not survive. Port 8000 lingering from a prior server → `fuser -k 8000/tcp` or free it before rebinding.
 ---
+
+## Iteration US-121 - Audit Trail and Compliance Logging
+- What was implemented:
+  - aortica/audit/ subpackage: logger.py (AuditLogger — append-only SQLite, HMAC-SHA256 chain where each row signs prev_row_hmac + canonical fields; 12 EVENT_TYPES; query with filters; rotate_if_needed(max_bytes)→gzip archive + fresh chain; verify()) + verify_integrity(db_path) standalone. IntegrityReport (valid, total_rows, broken_links, detail).
+  - aortica/api/audit_endpoints.py: AuditMiddleware (auto-logs prediction_generated/report_generated/ehr_submitted by path+method on 2xx), create_audit_router → GET /api/v1/audit/events (filters, admin) + /verify (admin).
+  - aortica/cli/audit_cmd.py: `aortica audit export --db --from --to --format csv|json [--output]` (oldest-first) + `aortica audit verify --db` (exit 1 on tamper).
+  - Wired app.state.audit_logger + router + middleware in app.py; registered audit_group in CLI.
+- Files created: aortica/audit/{__init__,logger}.py, aortica/api/audit_endpoints.py, aortica/cli/audit_cmd.py, tests/audit/{__init__,test_audit_logger}.py (17), tests/api/test_audit_endpoints.py (7), tests/cli/test_audit_cmd.py (5).
+- Files modified: aortica/api/app.py, aortica/cli/__init__.py, PRD.md.
+- Test results: 29 new tests pass; 57 with app regression; mypy clean on all 3 modules; ruff clean.
+- Learnings for future iterations:
+  - HMAC CHAIN CASCADE: to make "any tampered row invalidates ALL subsequent rows" (AC requirement), verify by chaining on the RECOMPUTED (expected) hmac, not the stored one. Then a tampered row's expected hmac diverges and every later row's stored_prev no longer matches → cascade. Flag row broken if stored_prev != prev_expected OR stored_hmac != expected. This also catches deleted rows.
+  - !!! RUFF FOOTGUN: `ruff check --fix <glob>` with a broad path (e.g. `tests/`) auto-fixes EVERY matching file, silently rewriting dozens of pre-existing files (import sorting etc.) that are out of scope. ONLY pass the specific files you created/edited to `ruff --fix`. Recover with: `git diff --name-only | grep -v <your-files> | xargs git checkout --`.
+  - AuditLogger uses sqlite3 check_same_thread=False + RLock (threaded FastAPI). pydantic v2 ignores extra keys, so AuditEventModel(**to_dict()) works even though to_dict includes prev_hash not in the model.
+  - Middleware via starlette.middleware.base.BaseHTTPMiddleware; guard import so module loads without fastapi (BaseHTTPMiddleware = object fallback).
+---
