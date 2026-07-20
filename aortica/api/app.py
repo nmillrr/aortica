@@ -328,6 +328,20 @@ def create_app(
 
     app.include_router(create_workflow_router())
 
+    # Mount edge-sync receiver + cross-site analytics router (US-128)
+    from aortica.api.analytics_endpoints import create_analytics_router
+    from aortica.sync.central_aggregator import CentralAggregator
+
+    _agg_db = os.path.join(
+        os.environ.get("AORTICA_DATA_DIR", tempfile.gettempdir()),
+        "central_aggregator.db",
+    )
+    central_aggregator = CentralAggregator(
+        _agg_db, monitor=_performance_monitor
+    )
+    app.state.central_aggregator = central_aggregator  # type: ignore[attr-defined]
+    app.include_router(create_analytics_router(central_aggregator))
+
     # Mount federated learning monitoring router (GET /api/v1/federated/*)
     from aortica.api.federated_endpoints import create_federated_router
     from aortica.federated.fl_metrics_store import FLMetricsStore

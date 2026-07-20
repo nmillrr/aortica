@@ -2205,17 +2205,17 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** Edge sites store results locally (US-054) and sync them to a central server (US-055/US-056). The performance monitor (US-100) tracks accuracy against labeled data. But there's no story connecting synced edge data into the central monitoring pipeline. Without this, edge deployments are invisible to the central performance tracking system.
 
 **Acceptance Criteria:**
-- [ ] `aortica.sync.CentralAggregator` class that receives synced results from edge devices and ingests them into the central analytics pipeline
-- [ ] Sync receiver: `POST /api/v1/sync/receive` endpoint (authenticated per-device) accepting batch result uploads from edge sync engines (US-055)
-- [ ] Per-site tagging: each synced result tagged with source device_id and site_id for site-level analytics
-- [ ] Performance monitor integration: synced results automatically fed into `PerformanceMonitor` (US-100) when ground-truth labels are available (from prospective collection US-099)
-- [ ] Site-level analytics: `GET /api/v1/analytics/sites` API endpoint returning per-site metrics: total ECGs processed, finding distribution, quality score distribution, sync status, last sync timestamp
-- [ ] Cross-site dashboard: `SiteAnalyticsPage` React page at route `/analytics/sites` showing all edge sites with per-site metrics, geographic distribution (if location configured), and aggregate performance
-- [ ] Anomaly detection: flag sites with significantly different finding distributions or quality scores vs. fleet average (z-score > 2.0)
-- [ ] Data reconciliation: detect and report sync gaps (expected vs. received result count per device based on inference timestamps)
-- [ ] Unit tests with synthetic multi-site sync data verifying aggregation, site-level metrics, and anomaly detection
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `aortica.sync.CentralAggregator` class that receives synced results from edge devices and ingests them into the central analytics pipeline
+- [x] Sync receiver: `POST /api/v1/sync/receive` endpoint (authenticated per-device) accepting batch result uploads from edge sync engines (US-055)
+- [x] Per-site tagging: each synced result tagged with source device_id and site_id for site-level analytics
+- [x] Performance monitor integration: synced results automatically fed into `PerformanceMonitor` (US-100) when ground-truth labels are available (from prospective collection US-099)
+- [x] Site-level analytics: `GET /api/v1/analytics/sites` API endpoint returning per-site metrics: total ECGs processed, finding distribution, quality score distribution, sync status, last sync timestamp
+- [x] Cross-site dashboard: `SiteAnalyticsPage` React page at route `/analytics/sites` showing all edge sites with per-site metrics, geographic distribution (if location configured), and aggregate performance
+- [x] Anomaly detection: flag sites with significantly different finding distributions or quality scores vs. fleet average (z-score > 2.0)
+- [x] Data reconciliation: detect and report sync gaps (expected vs. received result count per device based on inference timestamps)
+- [x] Unit tests with synthetic multi-site sync data verifying aggregation, site-level metrics, and anomaly detection
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 

@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { to: '/validation/sites', icon: '🌍', id: 'validation', labelKey: 'nav.validation' },
   { to: '/validation/prospective', icon: '🧪', id: 'prospective', labelKey: 'nav.prospective' },
   { to: '/validation/monitor', icon: '📈', id: 'monitor', labelKey: 'nav.monitor' },
+  { to: '/analytics/sites', icon: '🗺', id: 'siteAnalytics', labelKey: 'nav.siteAnalytics' },
   { to: '/compare',       icon: '⇄', id: 'compare',      labelKey: 'nav.compare' },
 ] as const;
 

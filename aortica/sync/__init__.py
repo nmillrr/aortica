@@ -9,6 +9,11 @@ from aortica.sync.config import (
     anonymise_result,
     check_connectivity,
 )
+from aortica.sync.central_aggregator import (
+    Anomaly,
+    CentralAggregator,
+    SiteMetrics,
+)
 from aortica.sync.result_store import ResultStore
 from aortica.sync.sync_engine import (
     ConflictRecord,
@@ -19,10 +24,13 @@ from aortica.sync.sync_engine import (
 )
 
 __all__ = [
+    "Anomaly",
     "AutoSyncScheduler",
+    "CentralAggregator",
     "ConflictRecord",
     "ConnectivityStatus",
     "ResultStore",
+    "SiteMetrics",
     "SyncConfig",
     "SyncEngine",
     "SyncQueueEntry",

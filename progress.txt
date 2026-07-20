@@ -2610,3 +2610,17 @@ JSON-locale-based localization (en/fr complete, es/sw stubs).
   - The Results page reads prediction data from useLocation().state (router navigation state), so a direct /results/:id visit renders with empty findings — fine for verifying the FinalizeSubmit button/modal/submit flow (backend accepts empty reviewed_findings).
   - CopilotPanel (US-049) does NOT track accept/reject state internally; US-127 treats all displayed positive findings as the reviewed set + the clinician attestation as the confirmation, rather than deeply refactoring the copilot panel.
   - to_diagnostic_report accepts ecg_metadata for provenance (used to carry attested_by). FHIR gen is best-effort in the endpoint (fhir.resources is installed here but treat as optional).
+
+## Iteration US-128 - Edge Sync to Central Analytics Pipeline
+- What was implemented:
+  - aortica/sync/central_aggregator.py: CentralAggregator (SQLite synced_results tagged device_id/site_id). receive_batch() ingests batches + forwards labeled results to PerformanceMonitor.record_prediction (US-100). site_metrics() → per-site total_ecgs/mean_quality/critical_rate/finding_distribution/device_ids/last_sync. detect_anomalies() → z-score of mean_quality & critical_rate vs fleet (|z|>threshold, needs >=3 sites). reconcile(device, expected) → sync gap.
+  - aortica/api/analytics_endpoints.py: POST /api/v1/sync/receive (optional per-device X-Device-Key auth, optional expected_count → reconciliation) + GET /api/v1/analytics/sites (sites + anomalies + fleet summary).
+  - Wired app.state.central_aggregator (fed by _performance_monitor) + router into app.py; exported from aortica.sync.
+  - Frontend: SiteAnalytics.tsx (+.css) at /analytics/sites — fleet summary cards, Anomaly Alerts panel, per-site table with anomalous rows highlighted, 60s polling. Route + Sidebar nav + i18n x4.
+- Files created: aortica/sync/central_aggregator.py, aortica/api/analytics_endpoints.py, tests/sync/test_central_aggregator.py (11), tests/api/test_analytics_endpoints.py (5), frontend/src/pages/SiteAnalytics.{tsx,css}
+- Files modified: aortica/api/app.py, aortica/sync/__init__.py, frontend/src/{App.tsx,components/Sidebar.tsx,locales x4}, PRD.md.
+- Test results: 16 backend + 39 app pass; mypy+ruff clean; tsc -b clean + vite build; Playwright verified /analytics/sites (5 site rows, 1 anomaly-highlighted, fleet 48 ECGs, anomaly panel z-scores, 0 page errors).
+- Learnings for future iterations:
+  - z-score anomaly detection needs >=3 sites for a meaningful fleet distribution; guard std==0. Population std (÷N) is fine here.
+  - The aggregator forwards labeled synced results into the SAME PerformanceMonitor the dashboards (US-123/130) read, so edge results become visible to central monitoring automatically.
+  - This was the FINAL unresolved story — all US-001..US-130 acceptance criteria in PRD.md are now [x].

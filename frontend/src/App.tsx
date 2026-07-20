@@ -17,6 +17,7 @@ import { WorklistDashboard } from './pages/WorklistDashboard';
 import { ReportPage } from './pages/ReportPage';
 import { ProspectiveDataPage } from './pages/ProspectiveData';
 import { PerformanceMonitorPage } from './pages/PerformanceMonitor';
+import { SiteAnalyticsPage } from './pages/SiteAnalytics';
 
 export function App() {
   return (
@@ -44,6 +45,7 @@ export function App() {
         <Route path="/reports/:result_id" element={<ReportPage />} />
         <Route path="/validation/prospective" element={<ProspectiveDataPage />} />
         <Route path="/validation/monitor" element={<PerformanceMonitorPage />} />
+        <Route path="/analytics/sites" element={<SiteAnalyticsPage />} />
       </Route>
     </Routes>
   );

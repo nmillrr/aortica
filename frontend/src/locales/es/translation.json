@@ -30,7 +30,8 @@
     "compare": "Comparar modelos",
     "worklist": "Lista de trabajo",
     "prospective": "Estudio prospectivo",
-    "monitor": "Monitor de rendimiento"
+    "monitor": "Monitor de rendimiento",
+    "siteAnalytics": "Analítica de sitios"
   },
   "header": {
     "dashboard": "Panel principal",
@@ -424,5 +425,20 @@
     "submitting": "Enviando…",
     "submitted": "Enviado al HCE",
     "ref": "Referencia"
+  },
+  "siteAnalytics": {
+    "title": "Analítica entre sitios",
+    "sites": "Sitios",
+    "devices": "Dispositivos",
+    "ecgs": "ECG sincronizados",
+    "anomalies": "Anomalías",
+    "anomalyAlerts": "Alertas de anomalía",
+    "perSite": "Métricas por sitio",
+    "site": "Sitio",
+    "quality": "Calidad media",
+    "critical": "Tasa crítica",
+    "topFindings": "Hallazgos principales",
+    "lastSync": "Última sinc.",
+    "empty": "Ningún sitio ha sincronizado datos aún."
   }
 }

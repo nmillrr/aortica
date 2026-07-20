@@ -30,7 +30,8 @@
     "compare": "Comparer les modèles",
     "worklist": "Liste de travail",
     "prospective": "Étude prospective",
-    "monitor": "Suivi des performances"
+    "monitor": "Suivi des performances",
+    "siteAnalytics": "Analytique des sites"
   },
   "header": {
     "dashboard": "Tableau de bord",
@@ -424,5 +425,20 @@
     "submitting": "Envoi…",
     "submitted": "Soumis au DME",
     "ref": "Référence"
+  },
+  "siteAnalytics": {
+    "title": "Analytique multi-sites",
+    "sites": "Sites",
+    "devices": "Appareils",
+    "ecgs": "ECG synchronisés",
+    "anomalies": "Anomalies",
+    "anomalyAlerts": "Alertes d’anomalie",
+    "perSite": "Métriques par site",
+    "site": "Site",
+    "quality": "Qualité moyenne",
+    "critical": "Taux critique",
+    "topFindings": "Principaux résultats",
+    "lastSync": "Dernière sync",
+    "empty": "Aucun site n’a encore synchronisé de données."
   }
 }

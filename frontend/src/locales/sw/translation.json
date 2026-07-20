@@ -30,7 +30,8 @@
     "compare": "Linganisha Miundo",
     "worklist": "Orodha ya kazi",
     "prospective": "Utafiti wa mbele",
-    "monitor": "Kifuatiliaji cha Utendaji"
+    "monitor": "Kifuatiliaji cha Utendaji",
+    "siteAnalytics": "Uchambuzi wa Tovuti"
   },
   "header": {
     "dashboard": "Dashibodi",
@@ -387,5 +388,20 @@
     "submitting": "Inawasilisha…",
     "submitted": "Imewasilishwa kwa EHR",
     "ref": "Rejeleo"
+  },
+  "siteAnalytics": {
+    "title": "Uchambuzi wa Tovuti Mbalimbali",
+    "sites": "Tovuti",
+    "devices": "Vifaa",
+    "ecgs": "ECG zilizosawazishwa",
+    "anomalies": "Hitilafu",
+    "anomalyAlerts": "Tahadhari za Hitilafu",
+    "perSite": "Vipimo kwa Tovuti",
+    "site": "Tovuti",
+    "quality": "Ubora wastani",
+    "critical": "Kiwango cha hatari",
+    "topFindings": "Matokeo makuu",
+    "lastSync": "Usawazishaji wa mwisho",
+    "empty": "Hakuna tovuti iliyosawazisha data bado."
   }
 }
