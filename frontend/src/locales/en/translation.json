@@ -18,7 +18,6 @@
     "optional": "(optional)",
     "footer": "Self-hosted · No data leaves your deployment"
   },
-
   "nav": {
     "dashboard": "Dashboard",
     "uploadEcg": "Upload ECG",
@@ -27,9 +26,13 @@
     "reportEvent": "Report Event",
     "admin": "Admin",
     "federated": "Federated Learning",
-    "validation": "Site Validation"
+    "validation": "Site Validation",
+    "compare": "Model Compare",
+    "worklist": "Worklist",
+    "prospective": "Prospective Study",
+    "monitor": "Performance Monitor",
+    "siteAnalytics": "Site Analytics"
   },
-
   "header": {
     "dashboard": "Dashboard",
     "uploadEcg": "Upload ECG",
@@ -37,7 +40,6 @@
     "analysisResults": "Analysis Results",
     "userMenu": "User menu"
   },
-
   "dashboard": {
     "heroTitle": "Welcome to <accent>Aortica</accent>",
     "heroSubtitle": "AI-powered ECG analysis platform — multi-task deep learning with explainable predictions.",
@@ -59,7 +61,6 @@
       "risk": "Risk"
     }
   },
-
   "login": {
     "title": "Aortica",
     "subtitle": "AI-Powered ECG Analysis Platform",
@@ -76,7 +77,6 @@
     "apiKeyFailed": "API key validation failed",
     "enterApiKey": "Please enter an API key"
   },
-
   "upload": {
     "title": "Upload ECG File",
     "subtitle": "Drag & drop your ECG file here, or click to browse",
@@ -97,7 +97,6 @@
       "generatingReport": "Generating report"
     }
   },
-
   "copilot": {
     "title": "AI Copilot",
     "findingsCount": "{{count}} finding",
@@ -117,7 +116,6 @@
       "emergent": "Emergent"
     }
   },
-
   "connection": {
     "server": "Server — Full Model",
     "serverDetail": "Connected to local server",
@@ -126,7 +124,6 @@
     "checking": "Checking connection…",
     "checkingDetail": "Attempting server contact"
   },
-
   "feedback": {
     "accepted": "✓ Accepted",
     "rejected": "✗ Rejected",
@@ -137,7 +134,6 @@
     "rejectTitle": "Reject this finding",
     "modifyTitle": "Modify this finding"
   },
-
   "adverseEvent": {
     "title": "⚠ Adverse Event Report",
     "description": "Report an adverse event where AI findings may have contributed to a patient safety concern. All reports are stored in an immutable audit trail for post-market surveillance.",
@@ -166,19 +162,15 @@
       "critical": "Critical"
     }
   },
-
   "results": {
     "title": "Analysis Results"
   },
-
   "batch": {
     "title": "Batch Analysis"
   },
-
   "history": {
     "title": "ECG History"
   },
-
   "admin": {
     "title": "Admin Dashboard",
     "tabs": {
@@ -188,7 +180,6 @@
       "activityLog": "Activity Log"
     }
   },
-
   "conditions": {
     "AF": "Atrial Fibrillation",
     "AFL": "Atrial Flutter",
@@ -244,7 +235,6 @@
     "Digitalis Effect": "Digitalis Effect",
     "QTc Prolongation": "QTc Prolongation"
   },
-
   "suggestions": {
     "AF": "Evaluate stroke risk (CHA₂DS₂-VASc) and consider anticoagulation",
     "AFL": "Cardiology referral recommended for rate/rhythm control",
@@ -294,7 +284,6 @@
     "Digitalis": "Check digoxin level — assess for toxicity signs",
     "QTc Prolongation": "Review QT-prolonging medications; electrolytes check"
   },
-
   "languageSelector": {
     "label": "Language",
     "en": "English",
@@ -302,7 +291,6 @@
     "es": "Español",
     "sw": "Kiswahili"
   },
-
   "federated": {
     "title": "Federated Learning",
     "campaign": "Campaign",
@@ -311,5 +299,155 @@
     "privacy": "Privacy Budget",
     "convergence": "Convergence",
     "noData": "No campaign data available"
+  },
+  "compare": {
+    "title": "Model Version Comparison",
+    "subtitle": "Upload two benchmark reports (JSON) to compare model versions side-by-side.",
+    "uploadA": "Benchmark report A",
+    "uploadB": "Benchmark report B",
+    "summary": "Summary",
+    "task": "Task",
+    "class": "Class",
+    "regressions": "Regressions",
+    "noRegressions": "No regressions detected",
+    "regressionsFound": "{{count}} class regression(s) detected",
+    "hint": "Generate reports with: aortica benchmark <dataset> --format json"
+  },
+  "worklist": {
+    "title": "ECG Worklist",
+    "pending": "Pending",
+    "critical": "Critical",
+    "completed": "Completed",
+    "avgReview": "Avg. time-to-review",
+    "allStatuses": "All statuses",
+    "allTiers": "All tiers",
+    "allFindings": "All findings",
+    "urgency": "Urgency",
+    "acquired": "Acquired",
+    "patient": "Patient",
+    "topFinding": "Top finding",
+    "action": "Recommended action",
+    "status": "Status",
+    "actions": "Actions",
+    "markReviewed": "Mark Reviewed",
+    "assignTo": "Assign to…",
+    "generateReport": "Generate Report",
+    "empty": "No ECGs in the worklist."
+  },
+  "reports": {
+    "title": "Clinical Report",
+    "forResult": "Result",
+    "csvBatch": "CSV (Batch)",
+    "generate": "Generate Preview",
+    "generating": "Generating…",
+    "download": "Download",
+    "copy": "Copy to Clipboard",
+    "copied": "Copied!",
+    "generatingHint": "Generating report — this can take a few seconds…",
+    "csvNote": "CSV analytics export is generated for batches of results. Select multiple results in the ECG History or Batch Analysis view and export them together.",
+    "pdfFallback": "PDF preview is unavailable. Use the Download button.",
+    "placeholder": "Select a format and click “Generate Preview”.",
+    "history": "Report History",
+    "noHistory": "No reports generated yet."
+  },
+  "prospective": {
+    "title": "Prospective Data Collection",
+    "submitted": "ECGs submitted",
+    "linked": "With ground-truth",
+    "concordance": "Completion",
+    "enrollment": "Enrollment",
+    "upload": "Upload ECG",
+    "running": "Running…",
+    "export": "Export CSV",
+    "aiResults": "AI Predictions",
+    "groundTruth": "Ground-Truth Entry",
+    "incomplete": "No conditions selected yet",
+    "outcomeCategory": "Outcome category",
+    "followUp": "Follow-up date",
+    "notes": "Notes",
+    "submit": "Submit Ground-Truth",
+    "submittedOk": "Ground-truth linked successfully."
+  },
+  "monitor": {
+    "title": "Performance Monitoring",
+    "refresh": "Auto-refresh",
+    "predictions": "Total predictions",
+    "labeled": "Labeled",
+    "window": "Window",
+    "overview": "Metrics Overview",
+    "noData": "No monitoring data yet.",
+    "baseline": "Baseline F1",
+    "alerts": "Drift Alerts",
+    "task": "Task",
+    "metric": "Metric",
+    "current": "Current",
+    "threshold": "Threshold",
+    "type": "Type",
+    "noDrift": "No drift detected"
+  },
+  "adverseWizard": {
+    "title": "Report an Adverse Event",
+    "history": "History",
+    "historyTitle": "Adverse Event History",
+    "newReport": "New report",
+    "draftFound": "A saved draft was found.",
+    "resume": "Resume",
+    "discard": "Discard",
+    "step_identification": "Identification",
+    "step_details": "Details",
+    "step_outcome": "Outcome",
+    "step_review": "Review",
+    "ecgRef": "ECG reference",
+    "eventDate": "Event date",
+    "reporter": "Reporter",
+    "description": "Event description",
+    "severity": "Severity",
+    "aiFinding": "Contributing AI finding",
+    "outcome": "Patient outcome",
+    "followUp": "Follow-up status",
+    "harm": "Was clinical harm prevented?",
+    "yes": "Yes",
+    "no": "No",
+    "unknown": "Unknown",
+    "confirm": "I confirm this report is accurate",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit Report",
+    "submitted": "Report Submitted",
+    "reference": "Event reference",
+    "downloadCopy": "Download a copy",
+    "viewHistory": "View history",
+    "id": "ID",
+    "timestamp": "Submitted",
+    "noEvents": "No reports submitted yet."
+  },
+  "finalize": {
+    "button": "Finalize & Submit",
+    "attestTitle": "Attest and Submit",
+    "included": "Findings included",
+    "none": "No positive findings.",
+    "channels": "Output channels",
+    "clinician": "Clinician",
+    "confirm": "I attest this report is accurate",
+    "cancel": "Cancel",
+    "attestSubmit": "Attest and Submit",
+    "submitting": "Submitting…",
+    "submitted": "Submitted to EHR",
+    "ref": "Reference"
+  },
+  "siteAnalytics": {
+    "title": "Cross-Site Analytics",
+    "sites": "Sites",
+    "devices": "Devices",
+    "ecgs": "ECGs synced",
+    "anomalies": "Anomalies",
+    "anomalyAlerts": "Anomaly Alerts",
+    "perSite": "Per-Site Metrics",
+    "site": "Site",
+    "quality": "Mean quality",
+    "critical": "Critical rate",
+    "topFindings": "Top findings",
+    "lastSync": "Last sync",
+    "empty": "No sites have synced data yet."
   }
 }

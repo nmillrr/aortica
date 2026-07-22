@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import tempfile
 from typing import Any, List, Optional, Sequence
@@ -18,6 +19,8 @@ except ImportError:  # pragma: no cover
     HAS_FASTAPI = False
 
 import aortica
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Pydantic response models
@@ -198,11 +201,16 @@ def create_app(
     smart_router = create_smart_router()
     app.include_router(smart_router)
 
-    # Mount report generation router
-    from aortica.api.report_endpoints import create_report_router
+    # Mount report generation router + report listing router (US-120)
+    from aortica.api.report_endpoints import (
+        ReportHistoryStore,
+        create_report_listing_router,
+        create_report_router,
+    )
 
-    report_router = create_report_router()
-    app.include_router(report_router)
+    app.state.report_history = ReportHistoryStore()  # type: ignore[attr-defined]
+    app.include_router(create_report_router())
+    app.include_router(create_report_listing_router())
 
     # Mount validation endpoints router
     from aortica.api.validation_endpoints import create_validation_router
@@ -212,7 +220,30 @@ def create_app(
     _site_registry_path = os.path.join(_validation_data_dir, "site_validations.json")
     _site_registry = SiteValidationRegistry(path=_site_registry_path)
 
-    validation_router = create_validation_router(site_registry=_site_registry)
+    # Best-effort prospective collector + performance monitor (optional deps).
+    _prospective_collector: Optional[Any] = None
+    _performance_monitor: Optional[Any] = None
+    try:
+        from aortica.validation.prospective_collector import ProspectiveCollector
+
+        _prospective_collector = ProspectiveCollector(db_dir=_validation_data_dir)
+    except Exception:  # noqa: BLE001 - collector needs cryptography; degrade gracefully
+        logger.info("Prospective collector unavailable; progress endpoint no-op")
+    try:
+        from aortica.validation.performance_monitor import PerformanceMonitor
+
+        _performance_monitor = PerformanceMonitor(db_dir=_validation_data_dir)
+    except Exception:  # noqa: BLE001 - degrade gracefully
+        logger.info("Performance monitor unavailable; monitor endpoints no-op")
+
+    app.state.prospective_collector = _prospective_collector  # type: ignore[attr-defined]
+    app.state.performance_monitor = _performance_monitor  # type: ignore[attr-defined]
+
+    validation_router = create_validation_router(
+        collector=_prospective_collector,
+        monitor=_performance_monitor,
+        site_registry=_site_registry,
+    )
     app.include_router(validation_router)
 
     # Mount result browser router
@@ -249,6 +280,67 @@ def create_app(
 
     mobile_router = create_mobile_router()
     app.include_router(mobile_router)
+
+    # Mount FHIR subscription / webhook notification router (US-117)
+    from aortica.api.subscription_endpoints import create_subscription_router
+    from aortica.integration.fhir_subscription import SubscriptionManager
+
+    subscription_manager = SubscriptionManager()
+    app.state.subscription_manager = subscription_manager  # type: ignore[attr-defined]
+    app.include_router(create_subscription_router(subscription_manager))
+
+    # Mount stateful worklist router (US-119)
+    from aortica.api.worklist_endpoints import create_worklist_router
+    from aortica.integration.worklist_store import WorklistStore
+
+    worklist_store = WorklistStore()
+    app.state.worklist_store = worklist_store  # type: ignore[attr-defined]
+    app.include_router(create_worklist_router(worklist_store))
+
+    # Mount audit trail router + auto-logging middleware (US-121)
+    from aortica.api.audit_endpoints import AuditMiddleware, create_audit_router
+    from aortica.audit import AuditLogger
+
+    _audit_dir = os.environ.get("AORTICA_DATA_DIR", tempfile.gettempdir())
+    audit_logger = AuditLogger(os.path.join(_audit_dir, "audit.db"))
+    app.state.audit_logger = audit_logger  # type: ignore[attr-defined]
+    app.include_router(create_audit_router(audit_logger))
+    app.add_middleware(AuditMiddleware)
+
+    # Mount integration orchestrator status router (US-125)
+    from aortica.api.integration_endpoints import create_integration_router
+
+    app.state.integration_orchestrator = None  # type: ignore[attr-defined]
+    app.include_router(
+        create_integration_router(app.state.integration_orchestrator)  # type: ignore[attr-defined]
+    )
+
+    # Mount urgent-finding notifications router (US-126)
+    from aortica.api.notification_endpoints import create_notification_router
+
+    app.state.urgent_notifier = None  # type: ignore[attr-defined]
+    app.include_router(
+        create_notification_router(app.state.urgent_notifier)  # type: ignore[attr-defined]
+    )
+
+    # Mount copilot → report → EHR finalize workflow router (US-127)
+    from aortica.api.workflow_endpoints import create_workflow_router
+
+    app.include_router(create_workflow_router())
+
+    # Mount edge-sync receiver + cross-site analytics router (US-128)
+    from aortica.api.analytics_endpoints import create_analytics_router
+    from aortica.sync.central_aggregator import CentralAggregator
+
+    _agg_db = os.path.join(
+        os.environ.get("AORTICA_DATA_DIR", tempfile.gettempdir()),
+        "central_aggregator.db",
+    )
+    central_aggregator = CentralAggregator(
+        _agg_db, monitor=_performance_monitor
+    )
+    app.state.central_aggregator = central_aggregator  # type: ignore[attr-defined]
+    app.include_router(create_analytics_router(central_aggregator))
 
     # Mount federated learning monitoring router (GET /api/v1/federated/*)
     from aortica.api.federated_endpoints import create_federated_router
@@ -369,6 +461,35 @@ def create_app(
                 status_code=422,
                 content={"detail": str(exc)},
             )
+
+        # Score the result once, then (a) add it to the review worklist
+        # (US-119) and (b) fan out webhook notifications for any matching
+        # subscription (US-117). Both are best-effort and must never break
+        # the predict response.
+        try:
+            findings = {
+                tp.task: dict(zip(tp.class_names, tp.probabilities))
+                for tp in result.predictions
+            }
+        except Exception:  # noqa: BLE001
+            findings = {}
+
+        try:
+            from aortica.integration.worklist import WorklistPrioritizer
+
+            worklist = WorklistPrioritizer().prioritize(
+                [findings], ecg_ids=[filename]
+            )
+            app.state.worklist_store.add_from_prioritized(worklist)  # type: ignore[attr-defined]
+        except Exception:  # noqa: BLE001 - worklist ingestion must not break predict
+            logger.exception("Worklist ingestion failed")
+
+        try:
+            app.state.subscription_manager.process_result(  # type: ignore[attr-defined]
+                findings, ecg_id=filename
+            )
+        except Exception:  # noqa: BLE001 - notifications must never break predict
+            logger.exception("Subscription notification dispatch failed")
 
         return result
 

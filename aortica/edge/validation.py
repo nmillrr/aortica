@@ -75,17 +75,12 @@ def _check_onnxruntime() -> None:
         )
 
 
-# Task output sizes (same as benchmark.TASK_NUM_OUTPUTS). Must stay in sync with
-# the head class constants (rhythm=28, structural=19, ischaemia=19, risk=6).
-TASK_NUM_OUTPUTS: dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
-
-CLASSIFICATION_TASKS: list[str] = ["rhythm", "structural", "ischaemia"]
-ALL_TASKS: list[str] = ["rhythm", "structural", "ischaemia", "risk"]
+# Single source of truth (US-129), derived from the head class-list constants.
+from aortica.models.task_dims import (  # noqa: E402
+    ALL_TASKS,
+    CLASSIFICATION_TASKS,
+    TASK_NUM_OUTPUTS,
+)
 
 # Default pass/fail threshold: maximum allowed relative performance
 # degradation (as a fraction, e.g. 0.03 = 3%).

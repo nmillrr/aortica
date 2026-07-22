@@ -712,3 +712,148 @@ def release_cmd(
     if not result.success:
         sys.exit(1)
 
+
+
+# ---------------------------------------------------------------------------
+# validate-data
+# ---------------------------------------------------------------------------
+
+
+def _load_site_dataset(data_path: str, labels_path: Optional[str]) -> Any:
+    """Load a site dataset as a ``(records, labels)`` tuple.
+
+    Reads every supported ECG file found under *data_path* (a single file
+    or a directory searched recursively) via the universal dispatcher, and
+    an optional label matrix from *labels_path* (``.npy`` or ``.csv``).
+
+    Records that fail to read are still surfaced to the quality gate as
+    ``None`` placeholders so the format-consistency check can report them.
+    """
+    import numpy as np
+
+    from aortica.federated.data_quality import _TASK_NUM_OUTPUTS
+    from aortica.io.dispatcher import _EXTENSION_MAP, read_ecg
+
+    path = Path(data_path)
+    if path.is_dir():
+        candidates = sorted(
+            p
+            for p in path.rglob("*")
+            if p.is_file() and p.suffix.lower() in _EXTENSION_MAP
+        )
+        # De-duplicate WFDB records: the .hea header is the canonical entry
+        # point, so drop the companion .dat sharing the same base name.
+        headers = {
+            str(p.with_suffix("")) for p in candidates if p.suffix.lower() == ".hea"
+        }
+        files: list[Path] = []
+        for p in candidates:
+            if p.suffix.lower() == ".dat" and str(p.with_suffix("")) in headers:
+                continue
+            files.append(p)
+    else:
+        files = [path]
+
+    records: list[Any] = []
+    for fp in files:
+        try:
+            records.append(read_ecg(fp))
+        except Exception:  # noqa: BLE001 - surface as a format failure
+            # A sentinel object that fails quality scoring, so the
+            # format-consistency check counts it as an error.
+            records.append(_UnreadableRecord(str(fp)))
+
+    n = len(records)
+    if labels_path:
+        lp = Path(labels_path)
+        if lp.suffix.lower() == ".npy":
+            labels = np.load(lp)
+        else:
+            labels = np.loadtxt(lp, delimiter=",", ndmin=2)
+    else:
+        # No labels supplied: an all-zero matrix so label-based checks
+        # report the absence of annotations rather than crashing.
+        labels = np.zeros((n, sum(_TASK_NUM_OUTPUTS.values())), dtype=np.float64)
+
+    return records, labels
+
+
+class _UnreadableRecord:
+    """Placeholder for a file that failed to parse.
+
+    ``score_quality`` raises on this object, so the data-quality gate's
+    format-consistency check counts it as a preprocessing failure.
+    """
+
+    def __init__(self, source: str) -> None:
+        self.source = source
+
+
+@federated_group.command(name="validate-data")
+@click.argument("data_path", type=click.Path(exists=True))
+@click.option(
+    "--labels",
+    "labels_path",
+    type=click.Path(exists=True),
+    default=None,
+    help="Optional label matrix (.npy or .csv) aligned with the ECGs.",
+)
+@click.option(
+    "--min-samples",
+    type=int,
+    default=500,
+    show_default=True,
+    help="Target minimum number of ECGs.",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"], case_sensitive=False),
+    default="text",
+    show_default=True,
+    help="Output format.",
+)
+def validate_data_cmd(
+    data_path: str,
+    labels_path: Optional[str],
+    min_samples: int,
+    output_format: str,
+) -> None:
+    """Pre-check site-local data before joining a federated campaign.
+
+    Runs the data-quality gate over the ECGs found at DATA_PATH (a file or
+    a directory) and reports which checks pass, detailed statistics, and
+    recommendations.  Exits non-zero when a *blocking* check fails.
+
+    \b
+    Examples:
+        aortica federated validate-data ./site_ecgs
+        aortica federated validate-data ./site_ecgs --labels labels.npy
+    """
+    from aortica.federated.data_quality import DataQualityGate
+
+    dataset = _load_site_dataset(data_path, labels_path)
+    warn_below = min(200, min_samples)
+    block_below = min(100, warn_below)
+    gate = DataQualityGate(
+        min_sample_size=min_samples,
+        warn_sample_size=warn_below,
+        block_sample_size=block_below,
+    )
+    report = gate.validate(dataset)
+
+    if output_format == "json":
+        click.echo(json.dumps(report.to_dict(), indent=2))
+    else:
+        summary = report.summary()
+        if HAS_RICH:
+            console = Console()
+            colour = "green" if report.passed else (
+                "red" if report.blocking else "yellow"
+            )
+            console.print(f"[bold {colour}]{summary}[/bold {colour}]")
+        else:
+            click.echo(summary)
+
+    if report.blocking:
+        sys.exit(1)

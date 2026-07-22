@@ -69,6 +69,106 @@ def _get_stored_result(store: Any, result_id: int) -> Any:
 
 
 # ---------------------------------------------------------------------------
+# Report generation history (US-120)
+# ---------------------------------------------------------------------------
+
+#: Metadata for every report format the API can produce.
+REPORT_FORMATS: List[Dict[str, str]] = [
+    {"format": "pdf", "label": "PDF Clinical Report",
+     "endpoint": "/api/v1/report/pdf/{result_id}", "media_type": "application/pdf",
+     "extension": "pdf"},
+    {"format": "fhir", "label": "FHIR R4 Bundle",
+     "endpoint": "/api/v1/report/fhir/{result_id}", "media_type": "application/fhir+json",
+     "extension": "json"},
+    {"format": "hl7", "label": "HL7 v2.x Message",
+     "endpoint": "/api/v1/report/hl7/{result_id}", "media_type": "text/plain",
+     "extension": "hl7"},
+    {"format": "jsonld", "label": "JSON-LD",
+     "endpoint": "/api/v1/report/jsonld/{result_id}", "media_type": "application/ld+json",
+     "extension": "jsonld"},
+]
+
+
+class ReportHistoryStore:
+    """Thread-safe in-memory log of generated reports, keyed by result id."""
+
+    def __init__(self) -> None:
+        import threading
+
+        self._lock = threading.RLock()
+        self._history: Dict[int, List[Dict[str, Any]]] = {}
+
+    def record(self, result_id: int, fmt: str, filename: str) -> None:
+        import time
+
+        with self._lock:
+            self._history.setdefault(result_id, []).append(
+                {
+                    "format": fmt,
+                    "filename": filename,
+                    "generated_at": time.time(),
+                }
+            )
+
+    def list(self, result_id: int) -> List[Dict[str, Any]]:
+        with self._lock:
+            return list(self._history.get(result_id, []))
+
+
+def _record_report(request: Any, result_id: int, fmt: str, filename: str) -> None:
+    """Append a generation event to the app's report history, if present."""
+    history = getattr(request.app.state, "report_history", None)
+    if history is not None:
+        try:
+            history.record(result_id, fmt, filename)
+        except Exception:  # noqa: BLE001 - history is best-effort
+            pass
+
+
+# ---------------------------------------------------------------------------
+# Report listing router (US-120)
+# ---------------------------------------------------------------------------
+
+
+def create_report_listing_router() -> Any:
+    """Build a router exposing ``GET /api/v1/reports/{result_id}``."""
+    if not HAS_FASTAPI:
+        raise ImportError(
+            "FastAPI is required for report endpoints. "
+            "Install with: pip install aortica[api]"
+        )
+
+    router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
+
+    @router.get(
+        "/{result_id}",
+        summary="List available and previously generated reports",
+        responses={
+            404: {"model": ReportErrorResponse, "description": "Result not found"},
+        },
+    )
+    async def list_reports(
+        result_id: int,
+        request: Request,  # type: ignore[arg-type]
+    ) -> Any:
+        """Return available report formats and generation history."""
+        store = _get_result_store(request)
+        _get_stored_result(store, result_id)  # 404 if unknown
+
+        history = getattr(request.app.state, "report_history", None)
+        generated = history.list(result_id) if history is not None else []
+        return JSONResponse(
+            content={
+                "result_id": result_id,
+                "available_formats": REPORT_FORMATS,
+                "history": generated,
+            }
+        )
+
+    return router
+
+
+# ---------------------------------------------------------------------------
 # Router factory
 # ---------------------------------------------------------------------------
 
@@ -127,8 +227,6 @@ def create_report_router() -> Any:
         result = _get_stored_result(store, result_id)
 
         try:
-            from aortica.reports.pdf_report import generate_pdf as _gen_pdf
-
             import os
             import tempfile
 
@@ -136,6 +234,7 @@ def create_report_router() -> Any:
             import numpy as np
 
             from aortica.io.ecg_record import ECGRecord
+            from aortica.reports.pdf_report import generate_pdf as _gen_pdf
 
             # Build a stub ECG record from stored metadata
             metadata = result.metadata or {}
@@ -179,6 +278,7 @@ def create_report_router() -> Any:
                 if os.path.exists(tmp_path):
                     os.unlink(tmp_path)
 
+            _record_report(request, result_id, "pdf", f"report_{result_id}.pdf")
             return Response(
                 content=pdf_bytes,
                 media_type="application/pdf",
@@ -250,6 +350,9 @@ def create_report_router() -> Any:
                 model_version=model_version,
             )
 
+            _record_report(
+                request, result_id, "jsonld", f"report_{result_id}.jsonld"
+            )
             return JSONResponse(content=jsonld_doc)
 
         except ImportError as exc:
@@ -320,6 +423,9 @@ def create_report_router() -> Any:
 
             import json
 
+            _record_report(
+                request, result_id, "fhir", f"report_{result_id}.json"
+            )
             return JSONResponse(content=json.loads(fhir_output.bundle_json))
 
         except ImportError as exc:
@@ -385,6 +491,7 @@ def create_report_router() -> Any:
                 confidence_threshold=confidence_threshold,
             )
 
+            _record_report(request, result_id, "hl7", f"report_{result_id}.hl7")
             return Response(
                 content=hl7_message,
                 media_type="text/plain",

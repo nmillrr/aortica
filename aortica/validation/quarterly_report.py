@@ -96,6 +96,7 @@ def _generate_markdown(
     quarter: int,
     year: int,
     previous_status: Optional[MonitorStatus] = None,
+    subgroup_status: Optional[Any] = None,
 ) -> str:
     """Generate the markdown report content."""
     label = _quarter_label(quarter, year)
@@ -188,6 +189,37 @@ def _generate_markdown(
         lines.append("✓ No drift alerts during this period.")
         lines.append("")
 
+    # Demographic subgroup breakdown (US-130)
+    lines.append("## Demographic Subgroup Breakdown")
+    lines.append("")
+    if subgroup_status is None or not getattr(subgroup_status, "has_demographics", False):
+        note = getattr(
+            subgroup_status, "note", "",
+        ) or "No demographic attributes were recorded during this period."
+        lines.append(f"*{note}*")
+        lines.append("")
+    else:
+        lines.append(
+            f"Subgroups with at least {subgroup_status.min_samples} labeled "
+            f"ECGs (rolling {status.window_days}-day window):"
+        )
+        lines.append("")
+        lines.append("| Subgroup | Task | AUC | F1 | ECE | Samples |")
+        lines.append("|----------|------|-----|----|----|---------|")
+        for sm in subgroup_status.subgroups:
+            lines.append(
+                f"| {sm.subgroup} | {sm.task_name} | {sm.auc:.4f} "
+                f"| {sm.f1:.4f} | {sm.ece:.4f} | {sm.n_samples} |"
+            )
+        lines.append("")
+        if subgroup_status.drift_alerts:
+            lines.append(
+                f"**⚠ {len(subgroup_status.drift_alerts)} equity deviation(s):**"
+            )
+            for alert in subgroup_status.drift_alerts:
+                lines.append(f"- {alert.message}")
+            lines.append("")
+
     # Footer
     lines.append("---")
     lines.append("")
@@ -205,13 +237,14 @@ def _generate_csv(
     status: MonitorStatus,
     quarter: int,
     year: int,
+    subgroup_status: Optional[Any] = None,
 ) -> str:
     """Generate the CSV content for the quarterly report."""
     buf = io.StringIO()
     writer = csv.writer(buf)
 
     writer.writerow([
-        "quarter", "year", "task", "auc", "f1", "ece",
+        "quarter", "year", "subgroup", "task", "auc", "f1", "ece",
         "n_samples", "total_predictions", "total_labeled",
         "drift_detected",
     ])
@@ -221,6 +254,7 @@ def _generate_csv(
         writer.writerow([
             f"Q{quarter}",
             year,
+            "overall",
             task_name,
             f"{snap.auc:.4f}",
             f"{snap.f1:.4f}",
@@ -231,11 +265,31 @@ def _generate_csv(
             status.has_drift(),
         ])
 
+    # Demographic subgroup rows (US-130)
+    if subgroup_status is not None and getattr(
+        subgroup_status, "has_demographics", False
+    ):
+        for sm in subgroup_status.subgroups:
+            writer.writerow([
+                f"Q{quarter}",
+                year,
+                sm.subgroup,
+                sm.task_name,
+                f"{sm.auc:.4f}",
+                f"{sm.f1:.4f}",
+                f"{sm.ece:.4f}",
+                sm.n_samples,
+                status.total_predictions,
+                status.total_labeled,
+                len(subgroup_status.drift_alerts) > 0,
+            ])
+
     # If no task metrics, write a summary row
     if not status.task_metrics:
         writer.writerow([
             f"Q{quarter}",
             year,
+            "overall",
             "",
             "",
             "",
@@ -298,14 +352,19 @@ def generate_quarterly_report(
     if previous_monitor is not None:
         previous_status = previous_monitor.get_status()
 
+    # Demographic-stratified status (US-130)
+    subgroup_status = monitor.get_subgroup_status()
+
     # Generate markdown
-    md_content = _generate_markdown(status, quarter, year, previous_status)
+    md_content = _generate_markdown(
+        status, quarter, year, previous_status, subgroup_status
+    )
     md_filename = f"QUARTERLY_REPORT_{year}_Q{quarter}.md"
     md_path = output_path / md_filename
     md_path.write_text(md_content, encoding="utf-8")
 
     # Generate CSV
-    csv_content = _generate_csv(status, quarter, year)
+    csv_content = _generate_csv(status, quarter, year, subgroup_status)
     csv_filename = f"quarterly_report_{year}_Q{quarter}.csv"
     csv_path = output_path / csv_filename
     csv_path.write_text(csv_content, encoding="utf-8")

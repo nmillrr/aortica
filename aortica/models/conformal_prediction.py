@@ -54,18 +54,11 @@ def _check_torch() -> None:
         )
 
 
-# Task output sizes matching AorticaModel conventions. Must stay in sync with
-# the head class constants (RHYTHM_CLASSES=28, STRUCTURAL_CLASSES=19,
-# ISCHAEMIA_CLASSES=19, RISK_OUTPUTS=6) and benchmark.TASK_NUM_OUTPUTS.
-TASK_NUM_OUTPUTS: dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
-
-CLASSIFICATION_TASKS: list[str] = ["rhythm", "structural", "ischaemia"]
-ALL_TASKS: list[str] = ["rhythm", "structural", "ischaemia", "risk"]
+# Single source of truth (US-129), derived from the head class-list constants.
+from aortica.models.task_dims import (  # noqa: E402
+    CLASSIFICATION_TASKS,
+    TASK_NUM_OUTPUTS,
+)
 
 
 @dataclass

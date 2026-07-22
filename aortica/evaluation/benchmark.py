@@ -52,19 +52,13 @@ def _check_torch() -> None:
         )
 
 
-# Task output sizes — updated for expanded heads (Phase 3).
-# Matches train_multitask._TASK_NUM_OUTPUTS and the canonical head
-# class lists in rhythm_head, structural_head, ischaemia_head, risk_head.
-TASK_NUM_OUTPUTS: dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
-
-CLASSIFICATION_TASKS: list[str] = ["rhythm", "structural", "ischaemia"]
-ALL_TASKS: list[str] = ["rhythm", "structural", "ischaemia", "risk"]
-
+# Task output sizes — single source of truth (US-129), derived from the
+# head class-list constants so they can never drift out of sync.
+from aortica.models.task_dims import (  # noqa: E402
+    ALL_TASKS,
+    CLASSIFICATION_TASKS,
+    TASK_NUM_OUTPUTS,
+)
 
 # ---------------------------------------------------------------------------
 # Dataclasses
@@ -546,10 +540,10 @@ def _load_class_names() -> dict[str, list[str]]:
     importable (e.g. torch not installed).
     """
     try:
-        from aortica.models.rhythm_head import RHYTHM_CLASSES
-        from aortica.models.structural_head import STRUCTURAL_CLASSES
         from aortica.models.ischaemia_head import ISCHAEMIA_CLASSES
+        from aortica.models.rhythm_head import RHYTHM_CLASSES
         from aortica.models.risk_head import RISK_OUTPUTS
+        from aortica.models.structural_head import STRUCTURAL_CLASSES
         return {
             "rhythm": list(RHYTHM_CLASSES),
             "structural": list(STRUCTURAL_CLASSES),

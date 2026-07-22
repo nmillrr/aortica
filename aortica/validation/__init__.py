@@ -9,6 +9,8 @@ from aortica.validation.performance_monitor import (
     DriftAlert,
     MonitorStatus,
     PerformanceMonitor,
+    SubgroupMetric,
+    SubgroupStatus,
     TaskMetricSnapshot,
 )
 from aortica.validation.prospective_collector import (
@@ -28,6 +30,8 @@ __all__ = [
     "DriftAlert",
     "MonitorStatus",
     "PerformanceMonitor",
+    "SubgroupMetric",
+    "SubgroupStatus",
     "ProspectiveCollector",
     "QuarterlyReportResult",
     "StudyRecord",

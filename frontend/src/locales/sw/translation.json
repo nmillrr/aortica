@@ -18,7 +18,6 @@
     "optional": "(si lazima)",
     "footer": "Inajihifadhi · Hakuna data inayoondoka kwenye mfumo wako"
   },
-
   "nav": {
     "dashboard": "Dashibodi",
     "uploadEcg": "Pakia ECG",
@@ -27,9 +26,13 @@
     "reportEvent": "Ripoti Tukio",
     "admin": "Usimamizi",
     "federated": "Kujifunza kwa ushirikiano",
-    "validation": "Uthibitishaji wa tovuti"
+    "validation": "Uthibitishaji wa tovuti",
+    "compare": "Linganisha Miundo",
+    "worklist": "Orodha ya kazi",
+    "prospective": "Utafiti wa mbele",
+    "monitor": "Kifuatiliaji cha Utendaji",
+    "siteAnalytics": "Uchambuzi wa Tovuti"
   },
-
   "header": {
     "dashboard": "Dashibodi",
     "uploadEcg": "Pakia ECG",
@@ -37,7 +40,6 @@
     "analysisResults": "Matokeo ya Uchambuzi",
     "userMenu": "Menyu ya mtumiaji"
   },
-
   "dashboard": {
     "heroTitle": "Karibu kwenye <accent>Aortica</accent>",
     "heroSubtitle": "Jukwaa la uchambuzi wa ECG linalotumia AI — kujifunza kwa kina kwa kazi nyingi na utabiri unaofafanuliwa.",
@@ -59,7 +61,6 @@
       "risk": "Hatari"
     }
   },
-
   "login": {
     "title": "Aortica",
     "subtitle": "Jukwaa la Uchambuzi wa ECG linalotumia AI",
@@ -76,7 +77,6 @@
     "apiKeyFailed": "Uthibitishaji wa ufunguo wa API umeshindikana",
     "enterApiKey": "Tafadhali weka ufunguo wa API"
   },
-
   "upload": {
     "title": "Pakia Faili ya ECG",
     "subtitle": "Buruta na udondoshe faili yako ya ECG hapa, au bofya kuvinjari",
@@ -97,7 +97,6 @@
       "generatingReport": "Inaunda ripoti"
     }
   },
-
   "copilot": {
     "title": "Msaidizi wa AI",
     "findingsCount": "matokeo {{count}}",
@@ -117,7 +116,6 @@
       "emergent": "Ya Hatari"
     }
   },
-
   "connection": {
     "server": "Seva — Modeli Kamili",
     "serverDetail": "Imeunganishwa na seva ya ndani",
@@ -126,7 +124,6 @@
     "checking": "Inakagua muunganisho…",
     "checkingDetail": "Inajaribu kuwasiliana na seva"
   },
-
   "feedback": {
     "accepted": "✓ Imekubaliwa",
     "rejected": "✗ Imekataliwa",
@@ -137,7 +134,6 @@
     "rejectTitle": "Kataa tokeo hili",
     "modifyTitle": "Rekebisha tokeo hili"
   },
-
   "adverseEvent": {
     "title": "⚠ Ripoti ya Tukio Baya",
     "description": "Ripoti tukio baya ambapo matokeo ya AI yanaweza kuwa yamechangia wasiwasi wa usalama wa mgonjwa. Ripoti zote zinahifadhiwa katika rekodi ya ukaguzi isiyobadilika kwa ufuatiliaji baada ya soko.",
@@ -166,19 +162,15 @@
       "critical": "Muhimu Sana"
     }
   },
-
   "results": {
     "title": "Matokeo ya Uchambuzi"
   },
-
   "batch": {
     "title": "Uchambuzi wa Kundi"
   },
-
   "history": {
     "title": "Historia ya ECG"
   },
-
   "admin": {
     "title": "Dashibodi ya Usimamizi",
     "tabs": {
@@ -188,7 +180,6 @@
       "activityLog": "Kumbukumbu ya Shughuli"
     }
   },
-
   "conditions": {
     "AF": "Fibrilesheni ya Atriamu",
     "AFL": "Flateri ya Atriamu",
@@ -244,7 +235,6 @@
     "Digitalis Effect": "Athari ya Digitali",
     "QTc Prolongation": "Kurefuka kwa QTc"
   },
-
   "suggestions": {
     "AF": "Tathmini hatari ya kiharusi (CHA₂DS₂-VASc) na uzingatie kuzuia damu kuganda",
     "AFL": "Rufaa ya moyo inapendekezwa kwa udhibiti wa mdundo/mapigo",
@@ -257,12 +247,161 @@
     "Hyperkalaemia": "Elektroliti za dharura — kalsiamu gluconate ikiwa ni kali",
     "Normal Sinus": "Mdundo wa kawaida wa sinus — hakuna hatua maalum inayohitajika"
   },
-
   "languageSelector": {
     "label": "Lugha",
     "en": "English",
     "fr": "Français",
     "es": "Español",
     "sw": "Kiswahili"
+  },
+  "compare": {
+    "title": "Ulinganishaji wa Matoleo ya Muundo",
+    "subtitle": "Pakia ripoti mbili za benchmark (JSON) ili kulinganisha matoleo ya muundo pamoja.",
+    "uploadA": "Ripoti ya benchmark A",
+    "uploadB": "Ripoti ya benchmark B",
+    "summary": "Muhtasari",
+    "task": "Kazi",
+    "class": "Darasa",
+    "regressions": "Marejesho",
+    "noRegressions": "Hakuna marejesho yaliyogunduliwa",
+    "regressionsFound": "Marejesho ya darasa {{count}} yamegunduliwa",
+    "hint": "Tengeneza ripoti kwa: aortica benchmark <dataset> --format json"
+  },
+  "worklist": {
+    "title": "Orodha ya kazi ya ECG",
+    "pending": "Inasubiri",
+    "critical": "Hatari",
+    "completed": "Imekamilika",
+    "avgReview": "Wastani wa muda wa kukagua",
+    "allStatuses": "Hali zote",
+    "allTiers": "Viwango vyote",
+    "allFindings": "Matokeo yote",
+    "urgency": "Uharaka",
+    "acquired": "Ilipatikana",
+    "patient": "Mgonjwa",
+    "topFinding": "Matokeo makuu",
+    "action": "Hatua iliyopendekezwa",
+    "status": "Hali",
+    "actions": "Vitendo",
+    "markReviewed": "Weka alama kama imekaguliwa",
+    "assignTo": "Kabidhi kwa…",
+    "generateReport": "Tengeneza ripoti",
+    "empty": "Hakuna ECG katika orodha ya kazi."
+  },
+  "reports": {
+    "title": "Ripoti ya kiafya",
+    "forResult": "Matokeo",
+    "csvBatch": "CSV (Kundi)",
+    "generate": "Tengeneza hakikisho",
+    "generating": "Inatengeneza…",
+    "download": "Pakua",
+    "copy": "Nakili",
+    "copied": "Imenakiliwa!",
+    "generatingHint": "Inatengeneza ripoti — inaweza kuchukua sekunde chache…",
+    "csvNote": "Usafirishaji wa CSV hutengenezwa kwa makundi ya matokeo. Chagua matokeo mengi katika Historia ya ECG au Uchambuzi wa Kundi.",
+    "pdfFallback": "Hakikisho la PDF halipatikani. Tumia kitufe cha Pakua.",
+    "placeholder": "Chagua muundo kisha bofya “Tengeneza hakikisho”.",
+    "history": "Historia ya ripoti",
+    "noHistory": "Hakuna ripoti zilizotengenezwa bado."
+  },
+  "prospective": {
+    "title": "Ukusanyaji wa Data ya Mbele",
+    "submitted": "ECG zilizowasilishwa",
+    "linked": "Zenye ukweli wa msingi",
+    "concordance": "Ukamilishaji",
+    "enrollment": "Uandikishaji",
+    "upload": "Pakia ECG",
+    "running": "Inaendesha…",
+    "export": "Hamisha CSV",
+    "aiResults": "Utabiri wa AI",
+    "groundTruth": "Ingizo la Ukweli wa Msingi",
+    "incomplete": "Hakuna hali iliyochaguliwa",
+    "outcomeCategory": "Aina ya matokeo",
+    "followUp": "Tarehe ya ufuatiliaji",
+    "notes": "Maelezo",
+    "submit": "Wasilisha Ukweli wa Msingi",
+    "submittedOk": "Ukweli wa msingi umeunganishwa."
+  },
+  "monitor": {
+    "title": "Ufuatiliaji wa Utendaji",
+    "refresh": "Onyesha upya",
+    "predictions": "Jumla ya utabiri",
+    "labeled": "Zilizoandikwa",
+    "window": "Dirisha",
+    "overview": "Muhtasari wa Vipimo",
+    "noData": "Hakuna data ya ufuatiliaji.",
+    "baseline": "F1 ya msingi",
+    "alerts": "Tahadhari za Mtelemko",
+    "task": "Kazi",
+    "metric": "Kipimo",
+    "current": "Sasa",
+    "threshold": "Kizingiti",
+    "type": "Aina",
+    "noDrift": "Hakuna mtelemko uliogunduliwa"
+  },
+  "adverseWizard": {
+    "title": "Ripoti tukio baya",
+    "history": "Historia",
+    "historyTitle": "Historia ya matukio mabaya",
+    "newReport": "New report",
+    "draftFound": "A saved draft was found.",
+    "resume": "Resume",
+    "discard": "Discard",
+    "step_identification": "Identification",
+    "step_details": "Details",
+    "step_outcome": "Outcome",
+    "step_review": "Review",
+    "ecgRef": "ECG reference",
+    "eventDate": "Event date",
+    "reporter": "Reporter",
+    "description": "Event description",
+    "severity": "Severity",
+    "aiFinding": "Contributing AI finding",
+    "outcome": "Patient outcome",
+    "followUp": "Follow-up status",
+    "harm": "Was clinical harm prevented?",
+    "yes": "Yes",
+    "no": "No",
+    "unknown": "Unknown",
+    "confirm": "I confirm this report is accurate",
+    "back": "Rudi",
+    "next": "Ifuatayo",
+    "submit": "Wasilisha ripoti",
+    "submitted": "Ripoti imewasilishwa",
+    "reference": "Event reference",
+    "downloadCopy": "Download a copy",
+    "viewHistory": "View history",
+    "id": "ID",
+    "timestamp": "Submitted",
+    "noEvents": "No reports submitted yet."
+  },
+  "finalize": {
+    "button": "Kamilisha na Wasilisha",
+    "attestTitle": "Thibitisha na Wasilisha",
+    "included": "Matokeo yaliyojumuishwa",
+    "none": "Hakuna matokeo chanya.",
+    "channels": "Njia za matokeo",
+    "clinician": "Daktari",
+    "confirm": "Nathibitisha ripoti hii ni sahihi",
+    "cancel": "Ghairi",
+    "attestSubmit": "Thibitisha na Wasilisha",
+    "submitting": "Inawasilisha…",
+    "submitted": "Imewasilishwa kwa EHR",
+    "ref": "Rejeleo"
+  },
+  "siteAnalytics": {
+    "title": "Uchambuzi wa Tovuti Mbalimbali",
+    "sites": "Tovuti",
+    "devices": "Vifaa",
+    "ecgs": "ECG zilizosawazishwa",
+    "anomalies": "Hitilafu",
+    "anomalyAlerts": "Tahadhari za Hitilafu",
+    "perSite": "Vipimo kwa Tovuti",
+    "site": "Tovuti",
+    "quality": "Ubora wastani",
+    "critical": "Kiwango cha hatari",
+    "topFindings": "Matokeo makuu",
+    "lastSync": "Usawazishaji wa mwisho",
+    "empty": "Hakuna tovuti iliyosawazisha data bado."
   }
 }

@@ -1,0 +1,40 @@
+# Example configuration for the Aortica ECG-management-system plugin daemon.
+#
+# Run with:  aortica plugin run --config plugins.example.yaml
+#
+# Each entry instantiates one registered plugin (see `aortica plugin list`)
+# and connects it with the given per-plugin config.
+
+plugins:
+  # Watch a directory for new ECG files (SCP-ECG, WFDB, CSV, …), run
+  # inference, and write result JSON to an output directory.
+  - name: incoming-ecgs
+    type: file_watcher
+    poll_interval: 15
+    config:
+      watch_dir: /var/spool/aortica/incoming
+      output_dir: /var/spool/aortica/results
+      processed_dir: /var/spool/aortica/processed
+
+  # Poll a GE MUSE / DICOM archive via C-FIND and write DICOM SR results
+  # back via C-STORE.
+  - name: muse-prod
+    type: muse
+    poll_interval: 60
+    config:
+      remote_ae: MUSE
+      remote_host: 10.0.0.5
+      remote_port: 104
+      local_ae_title: AORTICA
+      local_port: 11113
+      query:
+        Modality: ECG
+
+  # Poll a FHIR R4 server for ECG Observations and submit DiagnosticReport
+  # resources back.
+  - name: fhir-ehr
+    type: fhir
+    poll_interval: 30
+    config:
+      fhir_server_url: https://fhir.hospital.example/r4
+      search_query: Observation?category=procedure&code=11524-6

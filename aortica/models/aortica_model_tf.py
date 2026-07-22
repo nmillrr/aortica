@@ -26,13 +26,9 @@ def _check_tf() -> None:
         )
 
 
-# Number of classes/outputs per task head.
-_TASK_OUTPUTS: dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
+# Number of classes/outputs per task head — single source of truth (US-129),
+# derived from the head class-list constants.
+from aortica.models.task_dims import TASK_NUM_OUTPUTS as _TASK_OUTPUTS  # noqa: E402
 
 
 def _build_head_tf(

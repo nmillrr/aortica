@@ -360,7 +360,6 @@ export function FLDashboard() {
 
 function OverviewPanel({
   campaign,
-  rounds,
   sitesData,
   lossData,
 }: {

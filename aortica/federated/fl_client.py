@@ -100,6 +100,8 @@ class FLClientConfig:
         seed: Random seed for reproducibility.
         base_checkpoint: Path to a local checkpoint to initialise from.
             If ``None``, uses ``load_pretrained('latest')``.
+        run_data_quality_gate: Run the pre-training data-quality gate on
+            the first fit round and report the result to the server.
     """
 
     data_path: str = ""
@@ -119,6 +121,7 @@ class FLClientConfig:
     head_dropout: float = 0.3
     seed: int = 42
     base_checkpoint: Optional[str] = None
+    run_data_quality_gate: bool = True
 
     def __post_init__(self) -> None:
         if self.local_epochs < 1:
@@ -209,16 +212,10 @@ class FLClientConfig:
 # Task output dimensions
 # ---------------------------------------------------------------------------
 
-# Must stay in sync with the task-head class constants
-# (RHYTHM_CLASSES, STRUCTURAL_CLASSES, ISCHAEMIA_CLASSES, RISK_OUTPUTS) and with
-# aortica.models.train_multitask._TASK_NUM_OUTPUTS.
-_TASK_NUM_OUTPUTS: Dict[str, int] = {
-    "rhythm": 28,
-    "structural": 19,
-    "ischaemia": 19,
-    "risk": 6,
-}
-
+# Single source of truth (US-129), derived from the head class-list constants.
+# task_dims imports only the (torch-guarded) class-list constants, so this
+# does not force a heavyweight ML import at module load.
+from aortica.models.task_dims import TASK_NUM_OUTPUTS as _TASK_NUM_OUTPUTS  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Helper: split concatenated labels
@@ -347,6 +344,8 @@ class AorticaFlowerClient:
         self._train_loader = train_loader
         self._val_loader = val_loader
         self._device: Any = None
+        self._dq_report: Any = None
+        self._dq_checked = False
 
     # -- Properties ----------------------------------------------------------
 
@@ -416,6 +415,76 @@ class AorticaFlowerClient:
             "cuda" if torch.cuda.is_available() else "cpu"
         )
         self._model.to(self._device)
+
+    # -- Data quality gate ---------------------------------------------------
+
+    def check_data_quality(self, gate: Optional[Any] = None) -> Any:
+        """Run the pre-training data-quality gate on site-local data.
+
+        Builds a :class:`~aortica.federated.data_quality.DataQualityReport`
+        from the client's training dataset (which must expose ``.records``
+        and ``.labels``, e.g. an ``ECGDataset``).  The result is cached so
+        repeated calls return the same report.
+
+        Args:
+            gate: Optional pre-configured
+                :class:`~aortica.federated.data_quality.DataQualityGate`.
+                Defaults to a gate with the canonical thresholds.
+
+        Returns:
+            A ``DataQualityReport``, or ``None`` if no dataset is available
+            to validate.
+        """
+        if self._dq_checked:
+            return self._dq_report
+
+        self._dq_checked = True
+        dataset = (
+            self._train_loader.dataset
+            if self._train_loader is not None
+            else None
+        )
+        if dataset is None or not (
+            hasattr(dataset, "records") and hasattr(dataset, "labels")
+        ):
+            logger.info(
+                "No inspectable dataset available; skipping data quality gate"
+            )
+            self._dq_report = None
+            return None
+
+        if gate is None:
+            from aortica.federated.data_quality import DataQualityGate
+
+            gate = DataQualityGate()
+        self._dq_report = gate.validate(dataset)
+        if self._dq_report.blocking:
+            logger.warning(
+                "Data quality gate BLOCKED this site:\n%s",
+                self._dq_report.summary(),
+            )
+        elif not self._dq_report.passed:
+            logger.warning(
+                "Data quality gate raised warnings:\n%s",
+                self._dq_report.summary(),
+            )
+        else:
+            logger.info("Data quality gate passed")
+        return self._dq_report
+
+    def _data_quality_metrics(self) -> Dict[str, float]:
+        """Return fit-metric fields describing the data-quality result."""
+        report = self.check_data_quality()
+        if report is None:
+            return {}
+        return {
+            "dq_passed": 1.0 if report.passed else 0.0,
+            "dq_blocking": 1.0 if report.blocking else 0.0,
+            "dq_num_ecgs": float(report.statistics.get("num_ecgs", 0)),
+            "dq_mean_quality": float(
+                report.statistics.get("mean_quality_score", 0.0)
+            ),
+        }
 
     # -- NumPyClient interface -----------------------------------------------
 
@@ -554,6 +623,11 @@ class AorticaFlowerClient:
         metrics.update(per_task_losses)
         if proximal_mu > 0:
             metrics["proximal_mu"] = proximal_mu
+
+        # Run the data-quality gate once (first fit round) and report the
+        # result to the server, which can exclude failing sites per policy.
+        if self._config.run_data_quality_gate and not self._dq_checked:
+            metrics.update(self._data_quality_metrics())
 
         updated_params = self.get_parameters()
         return updated_params, num_examples, metrics

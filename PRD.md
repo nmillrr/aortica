@@ -1599,19 +1599,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-063 defines the FL client wrapper that trains on site-local data, but there's no validation that the local data meets minimum quality standards. A site with noisy data, too few samples, or missing labels could degrade the aggregated model. This story adds pre-training quality gates that run at the client before joining an FL round.
 
 **Acceptance Criteria:**
-- [ ] `aortica.federated.DataQualityGate` class performing pre-training validation on site-local data
-- [ ] Quality checks:
+- [x] `aortica.federated.DataQualityGate` class performing pre-training validation on site-local data
+- [x] Quality checks:
   - Minimum sample size: configurable threshold (default 500 ECGs), warns below 200, blocks below 100
   - Signal quality distribution: ≥70% of ECGs must have quality score ≥ 40 ("marginal" or better)
   - Label completeness: ≥80% of ECGs must have at least one diagnostic label
   - Label diversity: at least 3 of 4 task superclasses (rhythm, structural, ischaemia, risk) must have ≥10 positive examples
   - Format consistency: all ECGs must successfully pass through the preprocessing pipeline without error
-- [ ] `gate.validate(dataset)` returns `DataQualityReport` with pass/fail per check, detailed statistics, and recommendations
-- [ ] FL client (US-063) runs data quality gate before first FL round; reports results to server; server can be configured to exclude failing sites
-- [ ] `aortica federated validate-data <data_path>` CLI command for sites to pre-check their data before joining a campaign
-- [ ] Server-side configurable policy: `strict` (exclude failing sites), `warn` (include with warning), `permissive` (include all)
-- [ ] Unit tests with synthetic datasets hitting each quality threshold
-- [ ] Typecheck passes
+- [x] `gate.validate(dataset)` returns `DataQualityReport` with pass/fail per check, detailed statistics, and recommendations
+- [x] FL client (US-063) runs data quality gate before first FL round; reports results to server; server can be configured to exclude failing sites
+- [x] `aortica federated validate-data <data_path>` CLI command for sites to pre-check their data before joining a campaign
+- [x] Server-side configurable policy: `strict` (exclude failing sites), `warn` (include with warning), `permissive` (include all)
+- [x] Unit tests with synthetic datasets hitting each quality threshold
+- [x] Typecheck passes
 
 ---
 
@@ -1619,17 +1619,17 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As an ML engineer, I want to compare two model versions side-by-side so that I can quantify the impact of federated training, expanded task heads, or any model update before releasing it.
 
 **Acceptance Criteria:**
-- [ ] `aortica.evaluation.compare_models(model_a_path, model_b_path, dataset, tasks='all')` returns a `ModelComparisonReport`
-- [ ] Per-task delta metrics: ΔAUC, ΔF1, Δsensitivity, Δspecificity, ΔC-index for risk tasks
-- [ ] Statistical significance testing: paired bootstrap test per class, reporting p-values and 95% confidence intervals for each delta
-- [ ] Demographic subgroup comparison: per-group delta metrics (age decile, sex) to detect equity regressions
-- [ ] Regression detection: flags any class where model B performs statistically worse than model A (p < 0.05)
-- [ ] Generates `MODEL_COMPARISON.md` report with: version IDs, summary table of deltas, per-task breakdown, regression warnings, recommendation (upgrade/hold/investigate)
-- [ ] CLI command `aortica compare --model-a <path> --model-b <path> --dataset <path>` generates the comparison report
-- [ ] React page at `/compare` allowing upload of two benchmark reports (JSON) and displaying side-by-side metrics with delta highlighting (green for improvement, red for regression)
-- [ ] Unit tests with synthetic predictions showing improvement, regression, and mixed scenarios
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `aortica.evaluation.compare_models(model_a_path, model_b_path, dataset, tasks='all')` returns a `ModelComparisonReport`
+- [x] Per-task delta metrics: ΔAUC, ΔF1, Δsensitivity, Δspecificity, ΔC-index for risk tasks
+- [x] Statistical significance testing: paired bootstrap test per class, reporting p-values and 95% confidence intervals for each delta
+- [x] Demographic subgroup comparison: per-group delta metrics (age decile, sex) to detect equity regressions
+- [x] Regression detection: flags any class where model B performs statistically worse than model A (p < 0.05)
+- [x] Generates `MODEL_COMPARISON.md` report with: version IDs, summary table of deltas, per-task breakdown, regression warnings, recommendation (upgrade/hold/investigate)
+- [x] CLI command `aortica compare --model-a <path> --model-b <path> --dataset <path>` generates the comparison report
+- [x] React page at `/compare` allowing upload of two benchmark reports (JSON) and displaying side-by-side metrics with delta highlighting (green for improvement, red for regression)
+- [x] Unit tests with synthetic predictions showing improvement, regression, and mixed scenarios
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -1748,18 +1748,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a hospital integrator, I want FHIR Subscription resources and webhook notifications so that the EHR is automatically alerted when Aortica detects critical findings, without polling the API.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.fhir_subscription.SubscriptionManager` class managing FHIR R4 Subscription resources
-- [ ] Supports `rest-hook` channel type: sends HTTP POST to a configured EHR webhook URL when a matching event occurs
-- [ ] Subscription criteria: configurable filters by finding severity (critical/warning), specific conditions (STEMI, VT, VF, Brugada), urgency score threshold
-- [ ] `POST /api/v1/subscriptions` creates a new subscription with criteria and webhook URL
-- [ ] `GET /api/v1/subscriptions` lists active subscriptions
-- [ ] `DELETE /api/v1/subscriptions/:id` removes a subscription
-- [ ] When a `POST /api/v1/predict` result matches a subscription's criteria, the system sends a FHIR Bundle (type: `subscription-notification`) to the webhook URL within 5 seconds
-- [ ] Webhook payload includes: FHIR DiagnosticReport reference, matched finding(s), urgency score, and timestamp
-- [ ] Retry logic: 3 retries with exponential backoff on webhook delivery failure; dead-letter queue for persistently failed notifications
-- [ ] `GET /api/v1/subscriptions/:id/notifications` returns delivery history for a subscription (sent, failed, pending)
-- [ ] Unit tests: subscription CRUD, matching logic, webhook delivery (mock server), retry behavior
-- [ ] Typecheck passes
+- [x] `aortica.integration.fhir_subscription.SubscriptionManager` class managing FHIR R4 Subscription resources
+- [x] Supports `rest-hook` channel type: sends HTTP POST to a configured EHR webhook URL when a matching event occurs
+- [x] Subscription criteria: configurable filters by finding severity (critical/warning), specific conditions (STEMI, VT, VF, Brugada), urgency score threshold
+- [x] `POST /api/v1/subscriptions` creates a new subscription with criteria and webhook URL
+- [x] `GET /api/v1/subscriptions` lists active subscriptions
+- [x] `DELETE /api/v1/subscriptions/:id` removes a subscription
+- [x] When a `POST /api/v1/predict` result matches a subscription's criteria, the system sends a FHIR Bundle (type: `subscription-notification`) to the webhook URL within 5 seconds
+- [x] Webhook payload includes: FHIR DiagnosticReport reference, matched finding(s), urgency score, and timestamp
+- [x] Retry logic: 3 retries with exponential backoff on webhook delivery failure; dead-letter queue for persistently failed notifications
+- [x] `GET /api/v1/subscriptions/:id/notifications` returns delivery history for a subscription (sent, failed, pending)
+- [x] Unit tests: subscription CRUD, matching logic, webhook delivery (mock server), retry behavior
+- [x] Typecheck passes
 
 ---
 
@@ -1769,18 +1769,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** PRD-2 Phase 4 mentions "FHIR ECG management system plugin" and "national programme support." Individual integration protocols exist (DICOM DIMSE in US-083, SCP-ECG in US-084, FHIR in US-080), but there's no pluggable architecture that ties them together into a coherent plugin interface that ECG management system vendors or hospital IT teams can adapt.
 
 **Acceptance Criteria:**
-- [ ] `aortica/integration/plugins/` subpackage with `base.py` defining `ECGSystemPlugin` abstract base class
-- [ ] Plugin interface methods: `connect(config)`, `poll_for_ecgs()`, `submit_result(ecg_id, result)`, `get_worklist()`, `health_check()`
-- [ ] Reference plugin implementations:
+- [x] `aortica/integration/plugins/` subpackage with `base.py` defining `ECGSystemPlugin` abstract base class
+- [x] Plugin interface methods: `connect(config)`, `poll_for_ecgs()`, `submit_result(ecg_id, result)`, `get_worklist()`, `health_check()`
+- [x] Reference plugin implementations:
   - `MusePlugin`: DIMSE C-FIND to poll for new ECGs, C-STORE to write back DICOM SR results (wraps US-083)
   - `FHIRPlugin`: FHIR R4 search to poll for ECGs, DiagnosticReport POST to submit results (wraps US-080)
   - `FileWatcherPlugin`: watches a configurable directory for new ECG files (SCP-ECG, WFDB, CSV), processes them automatically, writes results to output directory
-- [ ] Plugin registry: `aortica.integration.plugins.register_plugin(name, cls)` and `get_plugin(name)` for discovery
-- [ ] Plugin configuration via YAML (`plugins.yaml`) with per-plugin connection parameters
-- [ ] Daemon mode: `aortica plugin run --config plugins.yaml` starts a long-running service that polls the configured ECG management system, processes new ECGs, and submits results back
-- [ ] Event hooks: `on_ecg_received`, `on_result_generated`, `on_critical_finding` for custom post-processing
-- [ ] Unit tests for plugin registry, base class contract, and FileWatcherPlugin with synthetic ECG files
-- [ ] Typecheck passes
+- [x] Plugin registry: `aortica.integration.plugins.register_plugin(name, cls)` and `get_plugin(name)` for discovery
+- [x] Plugin configuration via YAML (`plugins.yaml`) with per-plugin connection parameters
+- [x] Daemon mode: `aortica plugin run --config plugins.yaml` starts a long-running service that polls the configured ECG management system, processes new ECGs, and submits results back
+- [x] Event hooks: `on_ecg_received`, `on_result_generated`, `on_critical_finding` for custom post-processing
+- [x] Unit tests for plugin registry, base class contract, and FileWatcherPlugin with synthetic ECG files
+- [x] Typecheck passes
 
 ---
 
@@ -1788,19 +1788,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a cardiologist, I want a web dashboard showing the AI-prioritized ECG worklist so that I can review the most urgent ECGs first and work through my queue efficiently.
 
 **Acceptance Criteria:**
-- [ ] `WorklistDashboard` React page at route `/worklist`
-- [ ] Table view with columns: urgency score (0–100) with color-coded badge, ECG ID, acquisition timestamp, patient identifier (if available), top finding, recommended action, review status (pending/in-progress/completed)
-- [ ] Default sort by urgency score (highest first); sortable by all columns
-- [ ] Filter controls: urgency tier (critical/moderate/routine), finding type, date range, review status
-- [ ] Critical findings row styling: red left border + animated urgency indicator for scores ≥80
-- [ ] Click row to open full results page with ECG waveform, predictions, and copilot panel
-- [ ] Inline actions: "Mark as Reviewed", "Assign to" (dropdown of registered clinicians), "Generate Report"
-- [ ] `PATCH /api/v1/worklist/:ecg_id` API endpoint for updating review status and assignee
-- [ ] `GET /api/v1/worklist` API endpoint returning prioritized worklist with status filters
-- [ ] Real-time update: new ECGs appear in the worklist automatically (polling or WebSocket, configurable interval default 30s)
-- [ ] Worklist summary bar: total pending, critical count, average time-to-review
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `WorklistDashboard` React page at route `/worklist`
+- [x] Table view with columns: urgency score (0–100) with color-coded badge, ECG ID, acquisition timestamp, patient identifier (if available), top finding, recommended action, review status (pending/in-progress/completed)
+- [x] Default sort by urgency score (highest first); sortable by all columns
+- [x] Filter controls: urgency tier (critical/moderate/routine), finding type, date range, review status
+- [x] Critical findings row styling: red left border + animated urgency indicator for scores ≥80
+- [x] Click row to open full results page with ECG waveform, predictions, and copilot panel
+- [x] Inline actions: "Mark as Reviewed", "Assign to" (dropdown of registered clinicians), "Generate Report"
+- [x] `PATCH /api/v1/worklist/:ecg_id` API endpoint for updating review status and assignee
+- [x] `GET /api/v1/worklist` API endpoint returning prioritized worklist with status filters
+- [x] Real-time update: new ECGs appear in the worklist automatically (polling or WebSocket, configurable interval default 30s)
+- [x] Worklist summary bar: total pending, critical count, average time-to-review
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -1870,18 +1870,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a clinician, I want a web page for generating and downloading clinical reports so that I can produce PDF, FHIR, HL7, and JSON-LD reports from the UI without using the API directly.
 
 **Acceptance Criteria:**
-- [ ] `ReportPage` React page at route `/reports/:result_id` accessible from results page and worklist
-- [ ] **Format selector:** radio buttons or tabs for: PDF Clinical Report, FHIR R4 Bundle, HL7 v2.x Message, JSON-LD, CSV (for batch)
-- [ ] **PDF preview:** inline preview of the PDF report using a PDF viewer component (e.g., `react-pdf`), with download button
-- [ ] **FHIR/HL7/JSON-LD preview:** syntax-highlighted JSON/text view of the report content with copy-to-clipboard button
-- [ ] **Download button:** triggers file download with appropriate filename and MIME type for each format
-- [ ] **Batch report generation:** from the result browser (US-105) or batch dashboard (US-047), select multiple results and generate a combined CSV analytics export or individual PDF reports as a ZIP archive
-- [ ] **Report history:** list of previously generated reports for a given result, with timestamp and download link
-- [ ] `GET /api/v1/reports/:result_id` API endpoint listing available/generated reports for a result
-- [ ] Loading state with progress indicator for PDF generation (which may take 2–5 seconds)
-- [ ] Error handling: clear message if report generation fails (e.g., missing XAI data, incomplete result)
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `ReportPage` React page at route `/reports/:result_id` accessible from results page and worklist
+- [x] **Format selector:** radio buttons or tabs for: PDF Clinical Report, FHIR R4 Bundle, HL7 v2.x Message, JSON-LD, CSV (for batch)
+- [x] **PDF preview:** inline preview of the PDF report using a PDF viewer component (e.g., `react-pdf`), with download button
+- [x] **FHIR/HL7/JSON-LD preview:** syntax-highlighted JSON/text view of the report content with copy-to-clipboard button
+- [x] **Download button:** triggers file download with appropriate filename and MIME type for each format
+- [x] **Batch report generation:** from the result browser (US-105) or batch dashboard (US-047), select multiple results and generate a combined CSV analytics export or individual PDF reports as a ZIP archive
+- [x] **Report history:** list of previously generated reports for a given result, with timestamp and download link
+- [x] `GET /api/v1/reports/:result_id` API endpoint listing available/generated reports for a result
+- [x] Loading state with progress indicator for PDF generation (which may take 2–5 seconds)
+- [x] Error handling: clear message if report generation fails (e.g., missing XAI data, incomplete result)
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -1997,19 +1997,19 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** Individual audit logging exists in the Android app (US-061c) and clinician feedback (US-053), but there's no centralized, tamper-evident audit trail covering the full lifecycle: ECG ingestion → AI prediction → clinician review → report generation → EHR submission. Regulatory frameworks (IEC 62304, FDA SaMD guidance) require traceability of AI-assisted clinical decisions.
 
 **Acceptance Criteria:**
-- [ ] `aortica/audit/` subpackage with `__init__.py`
-- [ ] `aortica.audit.AuditLogger` class recording immutable audit events to an append-only SQLite table with HMAC integrity verification per row
-- [ ] Audit event types: `ecg_ingested`, `prediction_generated`, `xai_computed`, `finding_accepted`, `finding_rejected`, `finding_modified`, `report_generated`, `report_exported`, `ehr_submitted`, `adverse_event_reported`, `model_loaded`, `model_updated`
-- [ ] Each event includes: timestamp (UTC), event_type, user_id (if authenticated), ecg_reference_id, model_version, session_id, IP address, event_details (JSON), HMAC signature
-- [ ] HMAC chain: each row's HMAC includes the previous row's hash, creating a tamper-evident chain (any modification to a past row invalidates all subsequent HMACs)
-- [ ] `aortica.audit.verify_integrity(audit_db_path)` validates the HMAC chain and reports any broken links
-- [ ] FastAPI middleware that automatically logs `prediction_generated`, `report_generated`, and `ehr_submitted` events without requiring manual instrumentation in each endpoint
-- [ ] `GET /api/v1/audit/events` API endpoint with filters: date range, event type, user, ECG reference (admin-only)
-- [ ] `GET /api/v1/audit/verify` API endpoint that runs integrity verification and returns pass/fail with details
-- [ ] CLI command `aortica audit export --from <date> --to <date> --format csv|json` exports audit log for regulatory submission
-- [ ] Audit log rotation: configurable max database size with archival to compressed files
-- [ ] Unit tests: event logging, HMAC chain verification (valid and tampered), integrity check, export
-- [ ] Typecheck passes
+- [x] `aortica/audit/` subpackage with `__init__.py`
+- [x] `aortica.audit.AuditLogger` class recording immutable audit events to an append-only SQLite table with HMAC integrity verification per row
+- [x] Audit event types: `ecg_ingested`, `prediction_generated`, `xai_computed`, `finding_accepted`, `finding_rejected`, `finding_modified`, `report_generated`, `report_exported`, `ehr_submitted`, `adverse_event_reported`, `model_loaded`, `model_updated`
+- [x] Each event includes: timestamp (UTC), event_type, user_id (if authenticated), ecg_reference_id, model_version, session_id, IP address, event_details (JSON), HMAC signature
+- [x] HMAC chain: each row's HMAC includes the previous row's hash, creating a tamper-evident chain (any modification to a past row invalidates all subsequent HMACs)
+- [x] `aortica.audit.verify_integrity(audit_db_path)` validates the HMAC chain and reports any broken links
+- [x] FastAPI middleware that automatically logs `prediction_generated`, `report_generated`, and `ehr_submitted` events without requiring manual instrumentation in each endpoint
+- [x] `GET /api/v1/audit/events` API endpoint with filters: date range, event type, user, ECG reference (admin-only)
+- [x] `GET /api/v1/audit/verify` API endpoint that runs integrity verification and returns pass/fail with details
+- [x] CLI command `aortica audit export --from <date> --to <date> --format csv|json` exports audit log for regulatory submission
+- [x] Audit log rotation: configurable max database size with archival to compressed files
+- [x] Unit tests: event logging, HMAC chain verification (valid and tampered), integrity check, export
+- [x] Typecheck passes
 
 ---
 
@@ -2090,17 +2090,17 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a site coordinator running a prospective validation study, I want a web interface for submitting ECGs with ground-truth outcomes so that data collection is systematic and doesn't require API scripting.
 
 **Acceptance Criteria:**
-- [ ] `ProspectiveDataPage` React page at route `/validation/prospective` (protected: requires authenticated site coordinator role)
-- [ ] **ECG submission form:** upload ECG file, auto-runs prediction pipeline, displays results for clinician review
-- [ ] **Ground-truth entry form:** structured input for clinician-verified diagnosis at follow-up — checkbox list of conditions (matching Aortica's class taxonomy), free-text notes, follow-up date, outcome category (confirmed/ruled-out/indeterminate)
-- [ ] **Outcome linkage:** pairs the AI prediction with the ground-truth entry for the same ECG, auto-computing per-class concordance (TP/FP/TN/FN)
-- [ ] **Collection progress dashboard:** total ECGs submitted per site, target vs. actual enrollment, per-class label distribution, concordance summary
-- [ ] **Data quality indicators:** flags incomplete submissions (missing ground-truth, missing demographics), highlights outlier predictions for review
-- [ ] Export button: generates de-identified CSV (reuses US-099 `export_study_data`) downloadable from the UI
-- [ ] `GET /api/v1/validation/prospective/progress` API endpoint returning collection progress stats
-- [ ] Multi-site support: each authenticated user is associated with a site ID; data is tagged and filterable by site
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `ProspectiveDataPage` React page at route `/validation/prospective` (protected: requires authenticated site coordinator role)
+- [x] **ECG submission form:** upload ECG file, auto-runs prediction pipeline, displays results for clinician review
+- [x] **Ground-truth entry form:** structured input for clinician-verified diagnosis at follow-up — checkbox list of conditions (matching Aortica's class taxonomy), free-text notes, follow-up date, outcome category (confirmed/ruled-out/indeterminate)
+- [x] **Outcome linkage:** pairs the AI prediction with the ground-truth entry for the same ECG, auto-computing per-class concordance (TP/FP/TN/FN)
+- [x] **Collection progress dashboard:** total ECGs submitted per site, target vs. actual enrollment, per-class label distribution, concordance summary
+- [x] **Data quality indicators:** flags incomplete submissions (missing ground-truth, missing demographics), highlights outlier predictions for review
+- [x] Export button: generates de-identified CSV (reuses US-099 `export_study_data`) downloadable from the UI
+- [x] `GET /api/v1/validation/prospective/progress` API endpoint returning collection progress stats
+- [x] Multi-site support: each authenticated user is associated with a site ID; data is tagged and filterable by site
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -2108,18 +2108,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a deployment administrator, I want a web dashboard showing live performance monitoring metrics so that I can detect model drift, track accuracy trends, and respond to degradation without running CLI commands.
 
 **Acceptance Criteria:**
-- [ ] `PerformanceMonitorPage` React page at route `/validation/monitor` (protected: requires admin role)
-- [ ] **Metrics overview panel:** current rolling AUC, F1, and calibration (ECE) per task head, with trend arrows (↑↓↔) vs. previous period
-- [ ] **Time-series charts:** line charts of per-task AUC and F1 over the monitoring window (default 30 days), with configurable window selector
-- [ ] **Drift alert panel:** list of active drift alerts with: alert timestamp, affected task/class, metric value, threshold, deviation percentage, severity (warning/critical)
-- [ ] **Demographic breakdown:** per-subgroup (age decile, sex) metric cards showing current performance vs. baseline, with equity gate status
-- [ ] **Volume metrics:** total ECGs processed (daily/weekly/monthly), inference latency trends, error rate
-- [ ] **Baseline comparison:** overlay baseline metrics (from original benchmark) on the time-series chart for visual drift assessment
-- [ ] `GET /api/v1/validation/monitor/metrics` API endpoint returning current monitoring metrics with time-series data
-- [ ] `GET /api/v1/validation/monitor/alerts` API endpoint returning active drift alerts
-- [ ] Auto-refresh with configurable interval (default 5 minutes)
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `PerformanceMonitorPage` React page at route `/validation/monitor` (protected: requires admin role)
+- [x] **Metrics overview panel:** current rolling AUC, F1, and calibration (ECE) per task head, with trend arrows (↑↓↔) vs. previous period
+- [x] **Time-series charts:** line charts of per-task AUC and F1 over the monitoring window (default 30 days), with configurable window selector
+- [x] **Drift alert panel:** list of active drift alerts with: alert timestamp, affected task/class, metric value, threshold, deviation percentage, severity (warning/critical)
+- [x] **Demographic breakdown:** per-subgroup (age decile, sex) metric cards showing current performance vs. baseline, with equity gate status
+- [x] **Volume metrics:** total ECGs processed (daily/weekly/monthly), inference latency trends, error rate
+- [x] **Baseline comparison:** overlay baseline metrics (from original benchmark) on the time-series chart for visual drift assessment
+- [x] `GET /api/v1/validation/monitor/metrics` API endpoint returning current monitoring metrics with time-series data
+- [x] `GET /api/v1/validation/monitor/alerts` API endpoint returning active drift alerts
+- [x] Auto-refresh with configurable interval (default 5 minutes)
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -2129,16 +2129,16 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-102 defines the backend API and mentions "React form component" as an acceptance criterion. However, adverse event reporting is a safety-critical workflow that deserves a dedicated, carefully designed frontend story ensuring the form guides clinicians through a complete report with required fields, severity classification, and confirmation flow — not just a checkbox item on a backend story.
 
 **Acceptance Criteria:**
-- [ ] `AdverseEventForm` React page at route `/report-event` accessible from the copilot panel, results page, and sidebar navigation
-- [ ] **Guided form flow:** multi-step wizard with: (1) Event identification — ECG reference (auto-populated if navigated from results page), event date, reporter information; (2) Event details — description (free-text, required, min 50 characters), severity classification (minor/moderate/serious/critical with tooltip definitions), AI finding that contributed (auto-populated from predictions if available); (3) Patient outcome — outcome description, follow-up status, was clinical harm prevented; (4) Review and submit — summary of all fields with edit links, confirmation checkbox ("I confirm this report is accurate")
-- [ ] **Severity guidance:** tooltip/popover for each severity level with clinical definitions and examples (e.g., "Serious: resulted in hospitalization or significant intervention")
-- [ ] **Auto-population:** when accessed from a results page, pre-fills ECG reference, AI findings, and confidence levels
-- [ ] **Draft saving:** form state persisted to `localStorage` to prevent data loss on accidental navigation; draft indicator with resume option
-- [ ] **Submission confirmation:** success modal with event reference number and option to download a copy of the report
-- [ ] **Event history page:** at `/report-event/history`, list of previously submitted reports by the current user with status indicators
-- [ ] Accessibility: all form fields properly labeled, keyboard-navigable, screen reader tested
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `AdverseEventForm` React page at route `/report-event` accessible from the copilot panel, results page, and sidebar navigation
+- [x] **Guided form flow:** multi-step wizard with: (1) Event identification — ECG reference (auto-populated if navigated from results page), event date, reporter information; (2) Event details — description (free-text, required, min 50 characters), severity classification (minor/moderate/serious/critical with tooltip definitions), AI finding that contributed (auto-populated from predictions if available); (3) Patient outcome — outcome description, follow-up status, was clinical harm prevented; (4) Review and submit — summary of all fields with edit links, confirmation checkbox ("I confirm this report is accurate")
+- [x] **Severity guidance:** tooltip/popover for each severity level with clinical definitions and examples (e.g., "Serious: resulted in hospitalization or significant intervention")
+- [x] **Auto-population:** when accessed from a results page, pre-fills ECG reference, AI findings, and confidence levels
+- [x] **Draft saving:** form state persisted to `localStorage` to prevent data loss on accidental navigation; draft indicator with resume option
+- [x] **Submission confirmation:** success modal with event reference number and option to download a copy of the report
+- [x] **Event history page:** at `/report-event/history`, list of previously submitted reports by the current user with status indicators
+- [x] Accessibility: all form fields properly labeled, keyboard-navigable, screen reader tested
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -2152,15 +2152,15 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** Individual integration components exist in isolation: DICOM DIMSE (US-083), FHIR output (US-080), HL7 output (US-081), DICOM SR (US-082), worklist (US-086), and SMART on FHIR (US-085). But no story connects them into a complete automated workflow: ECG arrives → Aortica processes → results written to PACS + EHR + worklist + notifications. This orchestration story provides that glue layer.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.orchestrator.IntegrationOrchestrator` class managing the full EHR integration loop
-- [ ] Workflow steps: (1) ECG ingestion — via DIMSE C-STORE listener, FHIR Subscription, or file watcher (configurable); (2) AI processing — full inference pipeline + XAI; (3) Result storage — persist to local SQLite (US-054); (4) PACS write-back — DICOM SR via C-STORE (US-082/083); (5) EHR submission — FHIR DiagnosticReport or HL7 ORU^R01 (US-080/081); (6) Worklist update — add to prioritized worklist (US-086); (7) Notification — trigger FHIR Subscription notifications for matching criteria (US-117)
-- [ ] Configurable via `integration.yaml`: which output channels are enabled, EHR connection parameters, PACS connection parameters, notification rules
-- [ ] Error handling: per-step failure isolation (e.g., PACS write-back failure doesn't block EHR submission), retry queue for failed steps, dead-letter log for persistently failed integrations
-- [ ] `aortica integration run --config integration.yaml` CLI command starting the orchestrator as a long-running daemon
-- [ ] `GET /api/v1/integration/status` API endpoint showing: orchestrator status, queue depth, per-channel success/failure counts, last error per channel
-- [ ] Integration health monitoring: alerts if any channel error rate exceeds configurable threshold (default 5% over 1 hour)
-- [ ] Unit tests with mock EHR/PACS endpoints verifying full workflow execution, per-step error isolation, and retry logic
-- [ ] Typecheck passes
+- [x] `aortica.integration.orchestrator.IntegrationOrchestrator` class managing the full EHR integration loop
+- [x] Workflow steps: (1) ECG ingestion — via DIMSE C-STORE listener, FHIR Subscription, or file watcher (configurable); (2) AI processing — full inference pipeline + XAI; (3) Result storage — persist to local SQLite (US-054); (4) PACS write-back — DICOM SR via C-STORE (US-082/083); (5) EHR submission — FHIR DiagnosticReport or HL7 ORU^R01 (US-080/081); (6) Worklist update — add to prioritized worklist (US-086); (7) Notification — trigger FHIR Subscription notifications for matching criteria (US-117)
+- [x] Configurable via `integration.yaml`: which output channels are enabled, EHR connection parameters, PACS connection parameters, notification rules
+- [x] Error handling: per-step failure isolation (e.g., PACS write-back failure doesn't block EHR submission), retry queue for failed steps, dead-letter log for persistently failed integrations
+- [x] `aortica integration run --config integration.yaml` CLI command starting the orchestrator as a long-running daemon
+- [x] `GET /api/v1/integration/status` API endpoint showing: orchestrator status, queue depth, per-channel success/failure counts, last error per channel
+- [x] Integration health monitoring: alerts if any channel error rate exceeds configurable threshold (default 5% over 1 hour)
+- [x] Unit tests with mock EHR/PACS endpoints verifying full workflow execution, per-step error isolation, and retry logic
+- [x] Typecheck passes
 
 ---
 
@@ -2168,18 +2168,18 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a cardiologist, I want urgent AI findings to automatically trigger notifications in my EHR so that critical ECGs are flagged for immediate review without me checking the Aortica worklist manually.
 
 **Acceptance Criteria:**
-- [ ] `aortica.integration.notifications.UrgentFindingNotifier` class monitoring worklist for critical findings and pushing alerts to configured EHR channels
-- [ ] Notification channels:
+- [x] `aortica.integration.notifications.UrgentFindingNotifier` class monitoring worklist for critical findings and pushing alerts to configured EHR channels
+- [x] Notification channels:
   - FHIR CommunicationRequest resource sent to the FHIR server (for EHRs supporting FHIR R4 communication)
   - HL7 v2.x ADT^A08 (patient update) or ORU^R01 (unsolicited result) with ORC segment flagging urgency
   - Webhook POST to configurable URL (generic, for EHRs with custom alert endpoints)
   - Email notification via SMTP (configurable, for fallback alerting)
-- [ ] Notification trigger rules (configurable in `notification_rules.yaml`): condition list, minimum confidence threshold, urgency score threshold, de-duplication window (don't re-notify for same patient + finding within configurable hours)
-- [ ] Notification payload: patient identifier (if available), finding name, confidence, urgency score, Aortica result URL, recommended action
-- [ ] Delivery tracking: per-notification status (sent/delivered/failed/acknowledged), stored in SQLite
-- [ ] `GET /api/v1/notifications` API endpoint returning notification history with delivery status
-- [ ] Unit tests with mock EHR endpoints verifying: trigger logic, de-duplication, multi-channel delivery, failure handling
-- [ ] Typecheck passes
+- [x] Notification trigger rules (configurable in `notification_rules.yaml`): condition list, minimum confidence threshold, urgency score threshold, de-duplication window (don't re-notify for same patient + finding within configurable hours)
+- [x] Notification payload: patient identifier (if available), finding name, confidence, urgency score, Aortica result URL, recommended action
+- [x] Delivery tracking: per-notification status (sent/delivered/failed/acknowledged), stored in SQLite
+- [x] `GET /api/v1/notifications` API endpoint returning notification history with delivery status
+- [x] Unit tests with mock EHR endpoints verifying: trigger logic, de-duplication, multi-channel delivery, failure handling
+- [x] Typecheck passes
 
 ---
 
@@ -2187,15 +2187,15 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Description:** As a cardiologist, I want a single-click workflow that takes my reviewed AI findings, generates a clinical report, and submits it to the EHR so that the entire AI-assisted interpretation cycle is completed without leaving the Aortica interface.
 
 **Acceptance Criteria:**
-- [ ] **"Finalize & Submit" button** on the copilot panel (US-049) visible after the clinician has accepted/rejected/modified all AI findings
-- [ ] Workflow on click: (1) Collect clinician-reviewed findings (accepted findings + modifications from US-053 feedback); (2) Generate PDF clinical report incorporating clinician decisions (US-087); (3) Generate FHIR DiagnosticReport with clinician attestation (US-080); (4) Submit to configured EHR channel (orchestrator from US-125); (5) Update worklist status to "completed" (US-119)
-- [ ] **Attestation step:** before submission, display summary modal with: report preview, findings included, excluded findings, clinician name + timestamp; require explicit "Attest and Submit" confirmation
-- [ ] **Configurable output channels:** checkboxes for which outputs to generate (PDF, FHIR, HL7, DICOM SR) — pre-configured per deployment
-- [ ] **Post-submission state:** results page shows "Submitted to EHR" badge with timestamp, EHR reference ID, and link to download the finalized report
-- [ ] `POST /api/v1/workflow/finalize` API endpoint accepting: result_id, reviewed_findings, attestation, output_channels; orchestrates the full workflow
-- [ ] Audit trail: `finalize_and_submit` event logged with clinician ID, all reviewed findings, generated report references, EHR submission status (US-121)
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] **"Finalize & Submit" button** on the copilot panel (US-049) visible after the clinician has accepted/rejected/modified all AI findings
+- [x] Workflow on click: (1) Collect clinician-reviewed findings (accepted findings + modifications from US-053 feedback); (2) Generate PDF clinical report incorporating clinician decisions (US-087); (3) Generate FHIR DiagnosticReport with clinician attestation (US-080); (4) Submit to configured EHR channel (orchestrator from US-125); (5) Update worklist status to "completed" (US-119)
+- [x] **Attestation step:** before submission, display summary modal with: report preview, findings included, excluded findings, clinician name + timestamp; require explicit "Attest and Submit" confirmation
+- [x] **Configurable output channels:** checkboxes for which outputs to generate (PDF, FHIR, HL7, DICOM SR) — pre-configured per deployment
+- [x] **Post-submission state:** results page shows "Submitted to EHR" badge with timestamp, EHR reference ID, and link to download the finalized report
+- [x] `POST /api/v1/workflow/finalize` API endpoint accepting: result_id, reviewed_findings, attestation, output_channels; orchestrates the full workflow
+- [x] Audit trail: `finalize_and_submit` event logged with clinician ID, all reviewed findings, generated report references, EHR submission status (US-121)
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -2205,17 +2205,17 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** Edge sites store results locally (US-054) and sync them to a central server (US-055/US-056). The performance monitor (US-100) tracks accuracy against labeled data. But there's no story connecting synced edge data into the central monitoring pipeline. Without this, edge deployments are invisible to the central performance tracking system.
 
 **Acceptance Criteria:**
-- [ ] `aortica.sync.CentralAggregator` class that receives synced results from edge devices and ingests them into the central analytics pipeline
-- [ ] Sync receiver: `POST /api/v1/sync/receive` endpoint (authenticated per-device) accepting batch result uploads from edge sync engines (US-055)
-- [ ] Per-site tagging: each synced result tagged with source device_id and site_id for site-level analytics
-- [ ] Performance monitor integration: synced results automatically fed into `PerformanceMonitor` (US-100) when ground-truth labels are available (from prospective collection US-099)
-- [ ] Site-level analytics: `GET /api/v1/analytics/sites` API endpoint returning per-site metrics: total ECGs processed, finding distribution, quality score distribution, sync status, last sync timestamp
-- [ ] Cross-site dashboard: `SiteAnalyticsPage` React page at route `/analytics/sites` showing all edge sites with per-site metrics, geographic distribution (if location configured), and aggregate performance
-- [ ] Anomaly detection: flag sites with significantly different finding distributions or quality scores vs. fleet average (z-score > 2.0)
-- [ ] Data reconciliation: detect and report sync gaps (expected vs. received result count per device based on inference timestamps)
-- [ ] Unit tests with synthetic multi-site sync data verifying aggregation, site-level metrics, and anomaly detection
-- [ ] Verify changes work in browser
-- [ ] Typecheck passes
+- [x] `aortica.sync.CentralAggregator` class that receives synced results from edge devices and ingests them into the central analytics pipeline
+- [x] Sync receiver: `POST /api/v1/sync/receive` endpoint (authenticated per-device) accepting batch result uploads from edge sync engines (US-055)
+- [x] Per-site tagging: each synced result tagged with source device_id and site_id for site-level analytics
+- [x] Performance monitor integration: synced results automatically fed into `PerformanceMonitor` (US-100) when ground-truth labels are available (from prospective collection US-099)
+- [x] Site-level analytics: `GET /api/v1/analytics/sites` API endpoint returning per-site metrics: total ECGs processed, finding distribution, quality score distribution, sync status, last sync timestamp
+- [x] Cross-site dashboard: `SiteAnalyticsPage` React page at route `/analytics/sites` showing all edge sites with per-site metrics, geographic distribution (if location configured), and aggregate performance
+- [x] Anomaly detection: flag sites with significantly different finding distributions or quality scores vs. fleet average (z-score > 2.0)
+- [x] Data reconciliation: detect and report sync gaps (expected vs. received result count per device based on inference timestamps)
+- [x] Unit tests with synthetic multi-site sync data verifying aggregation, site-level metrics, and anomaly detection
+- [x] Verify changes work in browser
+- [x] Typecheck passes
 
 ---
 
@@ -2229,12 +2229,12 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** The task-head expansion (US-072–US-079) raised the head sizes to rhythm=28, structural=19, ischaemia=19, risk=6 (72 total). However, the per-task dimension map (`TASK_NUM_OUTPUTS` / `_TASK_NUM_OUTPUTS`) is **duplicated across at least seven modules** — `models/train_multitask.py`, `models/conformal_prediction.py`, `models/temperature_scaling.py`, `evaluation/benchmark.py`, `edge/distillation.py`, `edge/validation.py`, and `federated/fl_client.py`. Several copies were not updated during the expansion and remained at the old 22/15/10/3 values. This caused real, silent correctness bugs: the federated client trained against mis-sized labels, and the conformal predictor, temperature-scaling calibrator, INT8 distillation, and edge-validation harness all split concatenated labels at the wrong offsets when run against the real (expanded) model. The acceptance criterion "Update all downstream code referencing RHYTHM_CLASSES count" was checked off without these copies being caught, because each module's unit tests built synthetic data sized to its own stale copy and therefore stayed self-consistently green.
 
 **Acceptance Criteria:**
-- [ ] A single canonical definition of per-task output dimensions, derived from the head class constants (`len(RHYTHM_CLASSES)`, `len(STRUCTURAL_CLASSES)`, `len(ISCHAEMIA_CLASSES)`, `len(RISK_OUTPUTS)`), exposed as e.g. `aortica.models.task_dims.TASK_NUM_OUTPUTS`
-- [ ] All seven (or more) existing copies replaced by an import of the canonical map; no module hardcodes the integers
-- [ ] The canonical map is importable without forcing a heavyweight (torch/tf) import at module load, preserving the existing lazy-import behaviour of `federated/fl_client.py`
-- [ ] A regression test asserts the canonical map equals the actual head class-list lengths, so any future head expansion that forgets a downstream update fails CI immediately
-- [ ] A test that exercises conformal prediction, temperature scaling, distillation label-splitting, and the FL client against a real `AorticaModel` (not synthetic fixed-width data) so dimension drift is caught end-to-end
-- [ ] Typecheck passes
+- [x] A single canonical definition of per-task output dimensions, derived from the head class constants (`len(RHYTHM_CLASSES)`, `len(STRUCTURAL_CLASSES)`, `len(ISCHAEMIA_CLASSES)`, `len(RISK_OUTPUTS)`), exposed as e.g. `aortica.models.task_dims.TASK_NUM_OUTPUTS`
+- [x] All seven (or more) existing copies replaced by an import of the canonical map; no module hardcodes the integers
+- [x] The canonical map is importable without forcing a heavyweight (torch/tf) import at module load, preserving the existing lazy-import behaviour of `federated/fl_client.py`
+- [x] A regression test asserts the canonical map equals the actual head class-list lengths, so any future head expansion that forgets a downstream update fails CI immediately
+- [x] A test that exercises conformal prediction, temperature scaling, distillation label-splitting, and the FL client against a real `AorticaModel` (not synthetic fixed-width data) so dimension drift is caught end-to-end
+- [x] Typecheck passes
 
 ---
 
@@ -2244,12 +2244,12 @@ Every feature in this PRD — from edge deployment to federated learning — ser
 **Background and rationale:** US-100 and US-101 are marked complete, and US-101's acceptance criteria promise "demographic subgroup breakdowns" in the quarterly report. In practice `PerformanceMonitor` records only `(ecg_id, task, class_name, prediction, ground_truth, timestamp)` — it stores **no demographic attributes**, so neither the monitor nor `generate_quarterly_report` can produce any subgroup stratification. The report's "demographic subgroup breakdowns" criterion is therefore unsatisfiable as built. This story closes the gap between the stated criterion and the implementation.
 
 **Acceptance Criteria:**
-- [ ] `PerformanceMonitor.record_prediction(...)` accepts optional demographic attributes (at minimum `age` and `sex`), persisted alongside each prediction
-- [ ] `get_status()` / a new `get_subgroup_status()` computes rolling AUC/F1/ECE stratified by sex and age decile for subgroups with sufficient sample size (configurable minimum, default N≥30)
-- [ ] `generate_quarterly_report` renders a real demographic-subgroup section (markdown table + CSV rows) instead of omitting it; when demographics are absent it states so explicitly rather than implying a breakdown exists
-- [ ] Drift detection optionally runs per subgroup so an equity regression in one group is flagged even when the aggregate metric looks stable
-- [ ] Unit tests with synthetic demographic-tagged production data verifying subgroup stratification, the minimum-sample guard, and the "no demographics available" path
-- [ ] Typecheck passes
+- [x] `PerformanceMonitor.record_prediction(...)` accepts optional demographic attributes (at minimum `age` and `sex`), persisted alongside each prediction
+- [x] `get_status()` / a new `get_subgroup_status()` computes rolling AUC/F1/ECE stratified by sex and age decile for subgroups with sufficient sample size (configurable minimum, default N≥30)
+- [x] `generate_quarterly_report` renders a real demographic-subgroup section (markdown table + CSV rows) instead of omitting it; when demographics are absent it states so explicitly rather than implying a breakdown exists
+- [x] Drift detection optionally runs per subgroup so an equity regression in one group is flagged even when the aggregate metric looks stable
+- [x] Unit tests with synthetic demographic-tagged production data verifying subgroup stratification, the minimum-sample guard, and the "no demographics available" path
+- [x] Typecheck passes
 
 ---
 

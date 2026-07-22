@@ -1,0 +1,227 @@
+/* ============================================================
+   ReportPage — clinical report generation & download (US-120)
+   ============================================================ */
+
+.report-page {
+  padding: var(--space-8);
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: rpFadeIn 0.4s ease;
+}
+
+@keyframes rpFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rp-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.rp-header h1 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.rp-subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+
+.rp-tabs {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-surface-border);
+  margin-bottom: var(--space-4);
+}
+
+.rp-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.rp-tab:hover {
+  color: var(--color-text-primary);
+}
+
+.rp-tab.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ── Actions ──────────────────────────────────────────────── */
+
+.rp-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.rp-btn {
+  background: var(--color-bg-hover);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.rp-btn:hover:not(:disabled) {
+  background: var(--color-surface);
+}
+
+.rp-btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+.rp-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.rp-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Loading ──────────────────────────────────────────────── */
+
+.rp-loading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-4);
+}
+
+.rp-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-surface-border);
+  border-top-color: var(--color-accent);
+  border-radius: var(--radius-full);
+  animation: rpSpin 0.8s linear infinite;
+}
+
+@keyframes rpSpin {
+  to { transform: rotate(360deg); }
+}
+
+.rp-error {
+  background: var(--color-danger-muted);
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+/* ── Preview ──────────────────────────────────────────────── */
+
+.rp-preview {
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  min-height: 320px;
+  margin-bottom: var(--space-6);
+  overflow: hidden;
+}
+
+.rp-pdf {
+  width: 100%;
+  height: 600px;
+  border: none;
+}
+
+.rp-code {
+  margin: 0;
+  padding: var(--space-4);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+  white-space: pre;
+  overflow-x: auto;
+  max-height: 600px;
+}
+
+.rp-placeholder,
+.rp-csv-note {
+  padding: var(--space-8);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  text-align: center;
+}
+
+.rp-csv-note {
+  font-style: normal;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* ── History ──────────────────────────────────────────────── */
+
+.rp-history h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.rp-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rp-history-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.rp-history-fmt {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent);
+  min-width: 56px;
+}
+
+.rp-history-file {
+  color: var(--color-text-primary);
+  flex: 1;
+}
+
+.rp-history-time {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.rp-history-empty {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+}

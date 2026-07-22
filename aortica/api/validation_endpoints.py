@@ -602,4 +602,108 @@ def create_validation_router(
             western_sites=readiness.western_sites,
         )
 
+    # -- Prospective data-collection progress (US-122) --------------------
+
+    @router.get(
+        "/prospective/progress",
+        summary="Prospective study collection progress",
+    )
+    async def prospective_progress(site_id: Optional[str] = None) -> Any:
+        """Return collection-progress stats for a prospective study.
+
+        Reports total ECGs submitted, how many have linked ground-truth,
+        completion rate, and (when a site filter is given) per-site counts.
+        """
+        if collector is None:
+            return {
+                "total": 0,
+                "linked": 0,
+                "unlinked": 0,
+                "completion_rate": 0.0,
+                "site_id": site_id,
+            }
+        total = collector.count(site_id=site_id)
+        linked = collector.count(site_id=site_id, linked_only=True)
+        return {
+            "total": total,
+            "linked": linked,
+            "unlinked": total - linked,
+            "completion_rate": (linked / total) if total else 0.0,
+            "site_id": site_id,
+        }
+
+    # -- Performance-monitoring dashboard endpoints (US-123) --------------
+
+    @router.get(
+        "/monitor/metrics",
+        summary="Current monitoring metrics with baselines",
+    )
+    async def monitor_metrics() -> Any:
+        """Return current rolling metrics per task plus baseline comparison.
+
+        Includes a trend indicator (up/down/flat) derived from the delta
+        against each task-metric baseline, and volume metrics.
+        """
+        if monitor is None:
+            return {
+                "task_metrics": {},
+                "window_days": 30,
+                "volume": {"total_predictions": 0, "total_labeled": 0},
+                "last_updated": 0.0,
+            }
+        status = monitor.get_status()
+        status_dict = status.to_dict()
+        task_metrics = status_dict.get("task_metrics", {})
+
+        enriched: dict[str, Any] = {}
+        for task, snap in task_metrics.items():
+            baselines = {}
+            trends = {}
+            for metric in ("auc", "f1", "ece"):
+                base = None
+                try:
+                    base = monitor.get_baseline(task, metric)
+                except Exception:  # noqa: BLE001
+                    base = None
+                baselines[metric] = base
+                current = snap.get(metric, 0.0)
+                if base is None:
+                    trends[metric] = "flat"
+                else:
+                    delta = current - base
+                    trends[metric] = (
+                        "up" if delta > 0.005
+                        else "down" if delta < -0.005
+                        else "flat"
+                    )
+            enriched[task] = {
+                **snap,
+                "baseline": baselines,
+                "trend": trends,
+            }
+
+        return {
+            "task_metrics": enriched,
+            "window_days": status.window_days,
+            "volume": {
+                "total_predictions": status.total_predictions,
+                "total_labeled": status.total_labeled,
+            },
+            "last_updated": status.last_updated,
+        }
+
+    @router.get(
+        "/monitor/alerts",
+        summary="Active drift alerts",
+    )
+    async def monitor_alerts() -> Any:
+        """Return active drift alerts from the performance monitor."""
+        if monitor is None:
+            return {"alerts": [], "has_drift": False}
+        status = monitor.get_status()
+        return {
+            "alerts": status.to_dict().get("drift_alerts", []),
+            "has_drift": status.has_drift(),
+        }
+
     return router

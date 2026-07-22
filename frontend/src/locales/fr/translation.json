@@ -18,7 +18,6 @@
     "optional": "(facultatif)",
     "footer": "Auto-hébergé · Aucune donnée ne quitte votre déploiement"
   },
-
   "nav": {
     "dashboard": "Tableau de bord",
     "uploadEcg": "Téléverser un ECG",
@@ -27,9 +26,13 @@
     "reportEvent": "Signaler un événement",
     "admin": "Administration",
     "federated": "Apprentissage fédéré",
-    "validation": "Validation de sites"
+    "validation": "Validation de sites",
+    "compare": "Comparer les modèles",
+    "worklist": "Liste de travail",
+    "prospective": "Étude prospective",
+    "monitor": "Suivi des performances",
+    "siteAnalytics": "Analytique des sites"
   },
-
   "header": {
     "dashboard": "Tableau de bord",
     "uploadEcg": "Téléverser un ECG",
@@ -37,7 +40,6 @@
     "analysisResults": "Résultats d'analyse",
     "userMenu": "Menu utilisateur"
   },
-
   "dashboard": {
     "heroTitle": "Bienvenue sur <accent>Aortica</accent>",
     "heroSubtitle": "Plateforme d'analyse ECG par IA — apprentissage profond multi-tâche avec prédictions explicables.",
@@ -59,7 +61,6 @@
       "risk": "Risque"
     }
   },
-
   "login": {
     "title": "Aortica",
     "subtitle": "Plateforme d'analyse ECG par IA",
@@ -76,7 +77,6 @@
     "apiKeyFailed": "Échec de la validation de la clé API",
     "enterApiKey": "Veuillez entrer une clé API"
   },
-
   "upload": {
     "title": "Téléverser un fichier ECG",
     "subtitle": "Glissez-déposez votre fichier ECG ici, ou cliquez pour parcourir",
@@ -97,7 +97,6 @@
       "generatingReport": "Génération du rapport"
     }
   },
-
   "copilot": {
     "title": "Copilote IA",
     "findingsCount": "{{count}} résultat",
@@ -117,7 +116,6 @@
       "emergent": "Émergent"
     }
   },
-
   "connection": {
     "server": "Serveur — Modèle complet",
     "serverDetail": "Connecté au serveur local",
@@ -126,7 +124,6 @@
     "checking": "Vérification de la connexion…",
     "checkingDetail": "Tentative de contact du serveur"
   },
-
   "feedback": {
     "accepted": "✓ Accepté",
     "rejected": "✗ Rejeté",
@@ -137,7 +134,6 @@
     "rejectTitle": "Rejeter ce résultat",
     "modifyTitle": "Modifier ce résultat"
   },
-
   "adverseEvent": {
     "title": "⚠ Rapport d'événement indésirable",
     "description": "Signalez un événement indésirable où les résultats de l'IA ont pu contribuer à un problème de sécurité du patient. Tous les rapports sont stockés dans un journal d'audit immuable pour la surveillance post-commercialisation.",
@@ -166,19 +162,15 @@
       "critical": "Critique"
     }
   },
-
   "results": {
     "title": "Résultats d'analyse"
   },
-
   "batch": {
     "title": "Analyse par lots"
   },
-
   "history": {
     "title": "Historique ECG"
   },
-
   "admin": {
     "title": "Tableau de bord d'administration",
     "tabs": {
@@ -188,7 +180,6 @@
       "activityLog": "Journal d'activité"
     }
   },
-
   "conditions": {
     "AF": "Fibrillation auriculaire",
     "AFL": "Flutter auriculaire",
@@ -244,7 +235,6 @@
     "Digitalis Effect": "Effet digitalique",
     "QTc Prolongation": "Allongement du QTc"
   },
-
   "suggestions": {
     "AF": "Évaluer le risque d'AVC (CHA₂DS₂-VASc) et envisager une anticoagulation",
     "AFL": "Consultation de cardiologie recommandée pour le contrôle du rythme/fréquence",
@@ -294,12 +284,161 @@
     "Digitalis": "Vérifier la digoxinémie — évaluer les signes de toxicité",
     "QTc Prolongation": "Réviser les médicaments allongeant le QT ; vérifier les électrolytes"
   },
-
   "languageSelector": {
     "label": "Langue",
     "en": "English",
     "fr": "Français",
     "es": "Español",
     "sw": "Kiswahili"
+  },
+  "compare": {
+    "title": "Comparaison de versions de modèle",
+    "subtitle": "Importez deux rapports de benchmark (JSON) pour comparer les versions côte à côte.",
+    "uploadA": "Rapport de benchmark A",
+    "uploadB": "Rapport de benchmark B",
+    "summary": "Résumé",
+    "task": "Tâche",
+    "class": "Classe",
+    "regressions": "Régressions",
+    "noRegressions": "Aucune régression détectée",
+    "regressionsFound": "{{count}} régression(s) de classe détectée(s)",
+    "hint": "Générez les rapports avec : aortica benchmark <dataset> --format json"
+  },
+  "worklist": {
+    "title": "Liste de travail ECG",
+    "pending": "En attente",
+    "critical": "Critique",
+    "completed": "Terminé",
+    "avgReview": "Délai moyen de revue",
+    "allStatuses": "Tous les statuts",
+    "allTiers": "Tous les niveaux",
+    "allFindings": "Tous les résultats",
+    "urgency": "Urgence",
+    "acquired": "Acquis",
+    "patient": "Patient",
+    "topFinding": "Résultat principal",
+    "action": "Action recommandée",
+    "status": "Statut",
+    "actions": "Actions",
+    "markReviewed": "Marquer revu",
+    "assignTo": "Assigner à…",
+    "generateReport": "Générer un rapport",
+    "empty": "Aucun ECG dans la liste de travail."
+  },
+  "reports": {
+    "title": "Rapport clinique",
+    "forResult": "Résultat",
+    "csvBatch": "CSV (Lot)",
+    "generate": "Générer l’aperçu",
+    "generating": "Génération…",
+    "download": "Télécharger",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "generatingHint": "Génération du rapport — cela peut prendre quelques secondes…",
+    "csvNote": "L’export CSV est généré pour des lots de résultats. Sélectionnez plusieurs résultats dans l’historique ECG ou l’analyse par lots.",
+    "pdfFallback": "Aperçu PDF indisponible. Utilisez le bouton Télécharger.",
+    "placeholder": "Sélectionnez un format et cliquez sur « Générer l’aperçu ».",
+    "history": "Historique des rapports",
+    "noHistory": "Aucun rapport généré."
+  },
+  "prospective": {
+    "title": "Collecte de données prospective",
+    "submitted": "ECG soumis",
+    "linked": "Avec vérité terrain",
+    "concordance": "Achèvement",
+    "enrollment": "Recrutement",
+    "upload": "Importer un ECG",
+    "running": "En cours…",
+    "export": "Exporter CSV",
+    "aiResults": "Prédictions IA",
+    "groundTruth": "Saisie de la vérité terrain",
+    "incomplete": "Aucune condition sélectionnée",
+    "outcomeCategory": "Catégorie de résultat",
+    "followUp": "Date de suivi",
+    "notes": "Notes",
+    "submit": "Soumettre la vérité terrain",
+    "submittedOk": "Vérité terrain liée avec succès."
+  },
+  "monitor": {
+    "title": "Suivi des performances",
+    "refresh": "Actualisation",
+    "predictions": "Prédictions totales",
+    "labeled": "Étiquetées",
+    "window": "Fenêtre",
+    "overview": "Vue d’ensemble",
+    "noData": "Aucune donnée de suivi.",
+    "baseline": "F1 de référence",
+    "alerts": "Alertes de dérive",
+    "task": "Tâche",
+    "metric": "Métrique",
+    "current": "Actuel",
+    "threshold": "Seuil",
+    "type": "Type",
+    "noDrift": "Aucune dérive détectée"
+  },
+  "adverseWizard": {
+    "title": "Signaler un événement indésirable",
+    "history": "Historique",
+    "historyTitle": "Historique des événements indésirables",
+    "newReport": "New report",
+    "draftFound": "A saved draft was found.",
+    "resume": "Resume",
+    "discard": "Discard",
+    "step_identification": "Identification",
+    "step_details": "Details",
+    "step_outcome": "Outcome",
+    "step_review": "Review",
+    "ecgRef": "ECG reference",
+    "eventDate": "Event date",
+    "reporter": "Reporter",
+    "description": "Event description",
+    "severity": "Severity",
+    "aiFinding": "Contributing AI finding",
+    "outcome": "Patient outcome",
+    "followUp": "Follow-up status",
+    "harm": "Was clinical harm prevented?",
+    "yes": "Yes",
+    "no": "No",
+    "unknown": "Unknown",
+    "confirm": "I confirm this report is accurate",
+    "back": "Retour",
+    "next": "Suivant",
+    "submit": "Soumettre le rapport",
+    "submitted": "Rapport soumis",
+    "reference": "Event reference",
+    "downloadCopy": "Download a copy",
+    "viewHistory": "View history",
+    "id": "ID",
+    "timestamp": "Submitted",
+    "noEvents": "No reports submitted yet."
+  },
+  "finalize": {
+    "button": "Finaliser et soumettre",
+    "attestTitle": "Attester et soumettre",
+    "included": "Résultats inclus",
+    "none": "Aucun résultat positif.",
+    "channels": "Canaux de sortie",
+    "clinician": "Clinicien",
+    "confirm": "J’atteste que ce rapport est exact",
+    "cancel": "Annuler",
+    "attestSubmit": "Attester et soumettre",
+    "submitting": "Envoi…",
+    "submitted": "Soumis au DME",
+    "ref": "Référence"
+  },
+  "siteAnalytics": {
+    "title": "Analytique multi-sites",
+    "sites": "Sites",
+    "devices": "Appareils",
+    "ecgs": "ECG synchronisés",
+    "anomalies": "Anomalies",
+    "anomalyAlerts": "Alertes d’anomalie",
+    "perSite": "Métriques par site",
+    "site": "Site",
+    "quality": "Qualité moyenne",
+    "critical": "Taux critique",
+    "topFindings": "Principaux résultats",
+    "lastSync": "Dernière sync",
+    "empty": "Aucun site n’a encore synchronisé de données."
   }
 }

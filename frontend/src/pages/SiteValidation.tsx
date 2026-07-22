@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useTranslation } from 'react-i18next';
 import './SiteValidation.css';
 
 // ---------------------------------------------------------------------------
@@ -168,7 +167,6 @@ function WorldMap({ sites }: { sites: SiteValidation[] }) {
 
 export function SiteValidationPage() {
   const { getAuthHeader } = useAuth();
-  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);

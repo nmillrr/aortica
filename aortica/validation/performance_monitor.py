@@ -83,6 +83,32 @@ class DriftAlert:
 
 
 @dataclass
+class SubgroupMetric:
+    """Rolling metrics for one demographic subgroup on one task (US-130)."""
+
+    subgroup: str = ""  # e.g. "sex_M", "age_50-59"
+    task_name: str = ""
+    auc: float = 0.0
+    f1: float = 0.0
+    ece: float = 0.0
+    n_samples: int = 0
+
+
+@dataclass
+class SubgroupStatus:
+    """Demographic-stratified monitoring status (US-130)."""
+
+    has_demographics: bool = False
+    min_samples: int = 30
+    subgroups: list[SubgroupMetric] = field(default_factory=list)
+    drift_alerts: list[DriftAlert] = field(default_factory=list)
+    note: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class MonitorStatus:
     """Overall performance monitoring status.
 
@@ -249,7 +275,9 @@ CREATE TABLE IF NOT EXISTS monitor_predictions (
     class_name TEXT NOT NULL,
     prediction REAL NOT NULL,
     ground_truth INTEGER DEFAULT NULL,
-    timestamp REAL NOT NULL
+    timestamp REAL NOT NULL,
+    age INTEGER DEFAULT NULL,
+    sex TEXT DEFAULT NULL
 );
 """
 
@@ -311,6 +339,7 @@ class PerformanceMonitor:
         min_thresholds: Optional[dict[str, float]] = None,
         webhook_url: Optional[str] = None,
         db_filename: str = "monitor.db",
+        subgroup_min_samples: int = 30,
     ) -> None:
         self._db_dir = Path(db_dir)
         self._db_dir.mkdir(parents=True, exist_ok=True)
@@ -320,14 +349,33 @@ class PerformanceMonitor:
         self.drift_deviation = drift_deviation
         self.min_thresholds = min_thresholds or {}
         self.webhook_url = webhook_url
+        self.subgroup_min_samples = subgroup_min_samples
 
-        self._conn = sqlite3.connect(str(self._db_path))
+        self._conn = sqlite3.connect(str(self._db_path), check_same_thread=False)
         self._conn.execute("PRAGMA journal_mode=WAL;")
         self._conn.execute(_CREATE_PREDICTIONS_TABLE)
         self._conn.execute(_CREATE_BASELINES_TABLE)
         self._conn.execute(_CREATE_IDX_TASK_TS)
         self._conn.execute(_CREATE_IDX_ECG_ID)
+        self._migrate_demographics()
         self._conn.commit()
+
+    def _migrate_demographics(self) -> None:
+        """Add age/sex columns to a pre-existing table (US-130)."""
+        existing = {
+            row[1]
+            for row in self._conn.execute(
+                "PRAGMA table_info(monitor_predictions)"
+            ).fetchall()
+        }
+        if "age" not in existing:
+            self._conn.execute(
+                "ALTER TABLE monitor_predictions ADD COLUMN age INTEGER DEFAULT NULL"
+            )
+        if "sex" not in existing:
+            self._conn.execute(
+                "ALTER TABLE monitor_predictions ADD COLUMN sex TEXT DEFAULT NULL"
+            )
 
     # ------------------------------------------------------------------
     # Recording
@@ -340,6 +388,8 @@ class PerformanceMonitor:
         predictions: dict[str, float],
         ground_truth: Optional[dict[str, int]] = None,
         timestamp: Optional[float] = None,
+        age: Optional[int] = None,
+        sex: Optional[str] = None,
     ) -> int:
         """Record predictions and optional ground-truth for one ECG/task.
 
@@ -370,10 +420,11 @@ class PerformanceMonitor:
             self._conn.execute(
                 """
                 INSERT INTO monitor_predictions
-                    (ecg_id, task, class_name, prediction, ground_truth, timestamp)
-                VALUES (?, ?, ?, ?, ?, ?)
+                    (ecg_id, task, class_name, prediction, ground_truth,
+                     timestamp, age, sex)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (ecg_id, task, class_name, pred_value, gt_value, ts),
+                (ecg_id, task, class_name, pred_value, gt_value, ts, age, sex),
             )
             rows_inserted += 1
 
@@ -467,17 +518,22 @@ class PerformanceMonitor:
     # ------------------------------------------------------------------
 
     def _compute_task_metrics(
-        self, task: str, since_ts: float
+        self,
+        task: str,
+        since_ts: float,
+        extra_where: str = "",
+        extra_params: tuple[Any, ...] = (),
     ) -> Optional[TaskMetricSnapshot]:
-        """Compute rolling metrics for a single task."""
+        """Compute rolling metrics for a single task (optionally a subgroup)."""
         rows = self._conn.execute(
-            """
+            f"""
             SELECT class_name, prediction, ground_truth
             FROM monitor_predictions
             WHERE task = ? AND timestamp >= ? AND ground_truth IS NOT NULL
+            {extra_where}
             ORDER BY class_name
             """,
-            (task, since_ts),
+            (task, since_ts, *extra_params),
         ).fetchall()
 
         if not rows:
@@ -509,11 +565,12 @@ class PerformanceMonitor:
 
         n_samples = len(set(
             r[0] for r in self._conn.execute(
-                """
+                f"""
                 SELECT DISTINCT ecg_id FROM monitor_predictions
                 WHERE task = ? AND timestamp >= ? AND ground_truth IS NOT NULL
+                {extra_where}
                 """,
-                (task, since_ts),
+                (task, since_ts, *extra_params),
             ).fetchall()
         ))
 
@@ -675,6 +732,137 @@ class PerformanceMonitor:
             total_predictions=total_preds,
             total_labeled=total_labeled,
             last_updated=last_updated,
+        )
+
+    # ------------------------------------------------------------------
+    # Demographic-stratified monitoring (US-130)
+    # ------------------------------------------------------------------
+
+    def _has_demographics(self) -> bool:
+        """Return True if any labeled prediction carries age or sex."""
+        row = self._conn.execute(
+            "SELECT COUNT(*) FROM monitor_predictions "
+            "WHERE (age IS NOT NULL OR sex IS NOT NULL) "
+            "AND ground_truth IS NOT NULL"
+        ).fetchone()
+        return bool(row and row[0] > 0)
+
+    @staticmethod
+    def _age_decile(age: int) -> str:
+        decade = (int(age) // 10) * 10
+        return "age_90+" if decade >= 90 else f"age_{decade}-{decade + 9}"
+
+    def get_subgroup_status(
+        self, min_samples: Optional[int] = None
+    ) -> SubgroupStatus:
+        """Compute rolling metrics stratified by sex and age decile.
+
+        Only subgroups with at least ``min_samples`` labeled ECGs are
+        reported.  When no demographics have been recorded, returns a status
+        with ``has_demographics=False`` and an explanatory note rather than
+        implying a breakdown exists.
+
+        Args:
+            min_samples: Minimum labeled ECGs per subgroup (default from the
+                monitor's ``subgroup_min_samples``, i.e. 30).
+        """
+        threshold = min_samples if min_samples is not None else self.subgroup_min_samples
+
+        if not self._has_demographics():
+            return SubgroupStatus(
+                has_demographics=False,
+                min_samples=threshold,
+                subgroups=[],
+                note="No demographic attributes recorded; subgroup "
+                "stratification is unavailable.",
+            )
+
+        since_ts = time.time() - self.window_days * 86400
+        tasks = [
+            r[0]
+            for r in self._conn.execute(
+                "SELECT DISTINCT task FROM monitor_predictions"
+            ).fetchall()
+        ]
+
+        # Discover the distinct sex values and age deciles present.
+        sex_values = [
+            r[0]
+            for r in self._conn.execute(
+                "SELECT DISTINCT sex FROM monitor_predictions WHERE sex IS NOT NULL"
+            ).fetchall()
+        ]
+        ages = [
+            r[0]
+            for r in self._conn.execute(
+                "SELECT DISTINCT age FROM monitor_predictions WHERE age IS NOT NULL"
+            ).fetchall()
+        ]
+        age_deciles = sorted({self._age_decile(a) for a in ages})
+
+        results: list[SubgroupMetric] = []
+        for task in tasks:
+            for sex in sex_values:
+                snap = self._compute_task_metrics(
+                    task, since_ts, "AND sex = ?", (sex,)
+                )
+                if snap and snap.n_samples >= threshold:
+                    results.append(self._as_subgroup(f"sex_{sex}", snap))
+            for decile in age_deciles:
+                low = int(decile.split("_")[1].split("-")[0].rstrip("+"))
+                high = low + 9 if not decile.endswith("+") else 200
+                snap = self._compute_task_metrics(
+                    task, since_ts, "AND age >= ? AND age <= ?", (low, high)
+                )
+                if snap and snap.n_samples >= threshold:
+                    results.append(self._as_subgroup(decile, snap))
+
+        # Optional per-subgroup drift: flag subgroups whose F1 falls below the
+        # aggregate task F1 by more than the configured deviation.
+        aggregate = {
+            t: s for t, s in (
+                (task, self._compute_task_metrics(task, since_ts))
+                for task in tasks
+            ) if s is not None
+        }
+        subgroup_alerts: list[DriftAlert] = []
+        for sm in results:
+            agg = aggregate.get(sm.task_name)
+            if agg and agg.f1 - sm.f1 > self.drift_deviation:
+                subgroup_alerts.append(
+                    DriftAlert(
+                        task_name=sm.task_name,
+                        metric_name="f1",
+                        current_value=sm.f1,
+                        baseline_value=agg.f1,
+                        threshold=self.drift_deviation,
+                        alert_type="subgroup_equity_deviation",
+                        timestamp=time.time(),
+                        message=(
+                            f"Subgroup {sm.subgroup} F1 {sm.f1:.3f} is "
+                            f"{agg.f1 - sm.f1:.3f} below the aggregate "
+                            f"{sm.task_name} F1 ({agg.f1:.3f})"
+                        ),
+                    )
+                )
+
+        return SubgroupStatus(
+            has_demographics=True,
+            min_samples=threshold,
+            subgroups=results,
+            drift_alerts=subgroup_alerts,
+            note="",
+        )
+
+    @staticmethod
+    def _as_subgroup(name: str, snap: TaskMetricSnapshot) -> SubgroupMetric:
+        return SubgroupMetric(
+            subgroup=name,
+            task_name=snap.task_name,
+            auc=snap.auc,
+            f1=snap.f1,
+            ece=snap.ece,
+            n_samples=snap.n_samples,
         )
 
     # ------------------------------------------------------------------
