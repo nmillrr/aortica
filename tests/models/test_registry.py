@@ -331,6 +331,8 @@ class TestChecksumValidation:
 
         with mock.patch(
             "aortica.models.registry._resolve_version", return_value="0.2.0"
+        ), mock.patch.dict(
+            "aortica.models.registry._KNOWN_CHECKSUMS", {}, clear=True
         ):
             # No checksums registered; should proceed to load
             # Will fail at torch.load but the checksum step should pass
@@ -365,6 +367,8 @@ class TestLoadPretrained:
 
         with mock.patch(
             "aortica.models.registry._resolve_version", return_value="0.2.0"
+        ), mock.patch.dict(
+            "aortica.models.registry._KNOWN_CHECKSUMS", {}, clear=True
         ):
             result = load_pretrained(
                 "0.2.0",
@@ -382,6 +386,8 @@ class TestLoadPretrained:
 
         with mock.patch(
             "aortica.models.registry._resolve_version", return_value="0.2.0"
+        ), mock.patch.dict(
+            "aortica.models.registry._KNOWN_CHECKSUMS", {}, clear=True
         ):
             with mock.patch(
                 "aortica.models.registry._download_file"
@@ -404,6 +410,8 @@ class TestLoadPretrained:
 
         with mock.patch(
             "aortica.models.registry._resolve_version", return_value="0.2.0"
+        ), mock.patch.dict(
+            "aortica.models.registry._KNOWN_CHECKSUMS", {}, clear=True
         ):
             with mock.patch(
                 "aortica.models.registry._download_file",
@@ -443,6 +451,8 @@ class TestLoadPretrained:
 
         with mock.patch(
             "aortica.models.registry._resolve_version", return_value="0.2.0"
+        ), mock.patch.dict(
+            "aortica.models.registry._KNOWN_CHECKSUMS", {}, clear=True
         ):
             load_pretrained(
                 "0.2.0",
@@ -466,6 +476,8 @@ class TestLoadPretrained:
 
         with mock.patch(
             "aortica.models.registry._resolve_version", return_value="0.2.0"
+        ), mock.patch.dict(
+            "aortica.models.registry._KNOWN_CHECKSUMS", {}, clear=True
         ):
             result = load_pretrained(
                 "latest",

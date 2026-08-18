@@ -46,13 +46,36 @@ _VARIANT_FILENAME: Dict[str, str] = {
     "federated": "aortica-federated-v{version}.pt",
 }
 
-# Mapping from version tags to SHA-256 checksums.
+# Mapping from "{version}/{variant}" to SHA-256 checksums.
 # Updated by the release CI workflow.
-_KNOWN_CHECKSUMS: Dict[str, Dict[str, str]] = {}
+#
+# NOTE: no released checkpoint trains all 72 model outputs — v0.2.0 covers 26
+# (PTB-XL), v0.3.0 covers 28 (PTB-XL + Chapman-Shaoxing).  The remainder,
+# including the entire risk head, are untrained and emit meaningless values.
+# Callers must gate them via
+# ``aortica.edge.simplified_output.load_trained_outputs()`` before using
+# predictions for anything user-facing, and should additionally apply
+# ``load_class_thresholds()`` — the heads are not calibrated to the clinical
+# tier thresholds in ``simplified_output``.  See the model card.
+_KNOWN_CHECKSUMS: Dict[str, Dict[str, str]] = {
+    "0.2.0/full": {
+        "sha256": "003f24cadaed86019aa86df42605451d00b6cbeb0aa94cbf28b3225cf977b111",
+    },
+    "0.2.0/edge": {
+        "sha256": "8a60a35cda61e846712b3199718298952342213e3f0ffb7547390805bf0cebf4",
+    },
+    "0.3.0/full": {
+        "sha256": "550492ff8338c2119813114b746505c474ac93695bd07d1f651b85f1b623a51e",
+    },
+    "0.3.0/edge": {
+        "sha256": "ad193c665a5ee1af277417687928abc84961a958604b91bfe1aff46147c50fc3",
+    },
+}
 
 # Data provenance statement included in model card and CLI info.
 DATA_PROVENANCE = (
-    "Trained on PTB-XL (CC BY 4.0, Wagner et al. 2020, PhysioNet). "
+    "Trained on PTB-XL (CC BY 4.0, Wagner et al. 2020, PhysioNet) and, from "
+    "v0.3.0, Chapman-Shaoxing (Zheng et al. 2020, PhysioNet). "
     "No proprietary data used. No patient data leaves this deployment."
 )
 

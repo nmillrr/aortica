@@ -43,6 +43,137 @@ TIER_URGENT: str = "urgent"
 
 VALID_TIERS: list[str] = [TIER_LOW, TIER_REFER, TIER_URGENT]
 
+# ---------------------------------------------------------------------------
+# Trained-output gating
+# ---------------------------------------------------------------------------
+#
+# A checkpoint may only have been trained on a subset of the 72 model outputs
+# (PTB-XL, for example, supplies ground truth for 26 of them — it has no
+# echocardiography, serum chemistry, or follow-up data).  An untrained head
+# still emits a number, and that number would otherwise flow straight into
+# tier assignment and escalate a CHW to 'urgent' on noise.
+#
+# When an allowlist is active, any class outside it is dropped before tier
+# logic runs.  Default is ``None`` (no gating) for backwards compatibility;
+# the model-loading path is responsible for switching it on.
+
+_TRAINED_OUTPUTS: Optional[set[str]] = None
+
+
+def set_trained_outputs(names: Optional[Any]) -> None:
+    """Restrict tier assignment to model outputs that were actually trained.
+
+    Args:
+        names: Iterable of trained output/class names, or ``None`` to clear
+            the restriction and consider every output.
+    """
+    global _TRAINED_OUTPUTS
+    _TRAINED_OUTPUTS = None if names is None else set(names)
+
+
+def get_trained_outputs() -> Optional[set[str]]:
+    """Return the active trained-output allowlist, or ``None`` if unset."""
+    return _TRAINED_OUTPUTS
+
+
+def load_trained_outputs(path: str | Path) -> set[str]:
+    """Load and activate a ``trained_outputs.json`` sidecar written at training.
+
+    Args:
+        path: Path to the JSON sidecar containing a ``trained_outputs`` list.
+
+    Returns:
+        The set of trained output names that was activated.
+    """
+    with open(path) as f:
+        data = json.load(f)
+    names = set(data.get("trained_outputs", []))
+    set_trained_outputs(names)
+    return names
+
+
+# ---------------------------------------------------------------------------
+# Per-class probability calibration
+# ---------------------------------------------------------------------------
+#
+# The tier thresholds below (`_URGENT_CONDITIONS`, `_REFER_CONDITIONS`) express
+# *clinical* confidence — "escalate when the model is 60% sure of a STEMI".
+# They assume a calibrated model whose raw sigmoid output means what it says.
+#
+# A multi-label model trained on imbalanced data is not calibrated that way.
+# Rare classes peak well below 0.5, so their measured operating point may be
+# 0.10-0.30.  Comparing a raw probability against a 0.60 clinical threshold
+# would silently never fire for those classes.
+#
+# `set_class_thresholds` supplies each class's measured operating point, and
+# raw probabilities are rescaled piecewise-linearly so the operating point maps
+# to 0.5.  The mapping is monotonic, so ranking is preserved; it only restores
+# the meaning the clinical thresholds already assume.
+
+_CLASS_THRESHOLDS: Optional[dict[str, float]] = None
+
+
+def set_class_thresholds(thresholds: Optional[dict[str, float]]) -> None:
+    """Set per-class operating points used to calibrate raw probabilities.
+
+    Args:
+        thresholds: Mapping of class name → operating-point probability
+            (typically tuned to maximise F1 on a validation split), or
+            ``None`` to disable calibration and use raw model output.
+    """
+    global _CLASS_THRESHOLDS
+    _CLASS_THRESHOLDS = None if thresholds is None else dict(thresholds)
+
+
+def get_class_thresholds() -> Optional[dict[str, float]]:
+    """Return the active per-class operating points, or ``None`` if unset."""
+    return _CLASS_THRESHOLDS
+
+
+def load_class_thresholds(path: str | Path) -> dict[str, float]:
+    """Load and activate per-class operating points from a metrics JSON.
+
+    Accepts either ``{class: {"threshold_int8"|"threshold": float, ...}}`` as
+    written by the evaluation scripts, or a flat ``{class: float}`` mapping.
+
+    Args:
+        path: Path to the metrics/thresholds JSON.
+
+    Returns:
+        The flat mapping of class name → operating point that was activated.
+    """
+    with open(path) as f:
+        data = json.load(f)
+
+    flat: dict[str, float] = {}
+    for name, value in data.items():
+        if isinstance(value, dict):
+            for key in ("threshold_int8", "threshold", "threshold_fp32"):
+                if key in value:
+                    flat[name] = float(value[key])
+                    break
+        elif isinstance(value, (int, float)):
+            flat[name] = float(value)
+
+    set_class_thresholds(flat)
+    return flat
+
+
+def _calibrate(class_name: str, probability: float) -> float:
+    """Rescale a raw probability so the class's operating point maps to 0.5.
+
+    Monotonic piecewise-linear: ``[0, t] → [0, 0.5]`` and ``[t, 1] → [0.5, 1]``.
+    Returns the input unchanged when no operating point is known.
+    """
+    if _CLASS_THRESHOLDS is None:
+        return probability
+    t = _CLASS_THRESHOLDS.get(class_name)
+    if t is None or not 0.0 < t < 1.0:
+        return probability
+    if probability <= t:
+        return 0.5 * probability / t
+    return 0.5 + 0.5 * (probability - t) / (1.0 - t)
+
 #: Task head class lists — kept in sync with the model head modules.
 _RHYTHM_CLASSES: list[str] = [
     "AF", "AFL", "SVT", "AVNRT", "AVRT", "VT", "VF", "idioventricular",
@@ -383,6 +514,7 @@ def _extract_predictions(
         ``{task_name: {class_name: confidence, ...}, ...}``
     """
     result: dict[str, dict[str, float]] = {}
+    allowed = _TRAINED_OUTPUTS
 
     task_class_lists: dict[str, list[str]] = {
         "rhythm": _RHYTHM_CLASSES,
@@ -427,6 +559,18 @@ def _extract_predictions(
 
         result[task_name] = {
             cls: float(val) for cls, val in zip(class_list, values)
+        }
+
+    if allowed is not None:
+        result = {
+            task: {k: v for k, v in preds.items() if k in allowed}
+            for task, preds in result.items()
+        }
+
+    if _CLASS_THRESHOLDS is not None:
+        result = {
+            task: {k: _calibrate(k, v) for k, v in preds.items()}
+            for task, preds in result.items()
         }
 
     return result

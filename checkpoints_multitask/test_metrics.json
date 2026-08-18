@@ -1,0 +1,210 @@
+{
+  "AF": {
+    "task": "rhythm",
+    "test_pos": 152,
+    "auroc": 0.985166821011473,
+    "f1_at_0.5": 0.8829431438127091,
+    "f1_tuned": 0.8851351351351351,
+    "threshold": 0.55
+  },
+  "AFL": {
+    "task": "rhythm",
+    "test_pos": 7,
+    "auroc": 0.9449696811632001,
+    "f1_at_0.5": 0.5,
+    "f1_tuned": 0.5454545454545454,
+    "threshold": 0.7500000000000001
+  },
+  "SVT": {
+    "task": "rhythm",
+    "test_pos": 5,
+    "auroc": 0.9970816233470132,
+    "f1_at_0.5": 0.0,
+    "f1_tuned": 0.1818181818181818,
+    "threshold": 0.3
+  },
+  "sinus_brady": {
+    "task": "rhythm",
+    "test_pos": 64,
+    "auroc": 0.9554606958762887,
+    "f1_at_0.5": 0.5490196078431372,
+    "f1_tuned": 0.5871559633027522,
+    "threshold": 0.4
+  },
+  "sinus_tachy": {
+    "task": "rhythm",
+    "test_pos": 82,
+    "auroc": 0.9897182903776107,
+    "f1_at_0.5": 0.8735632183908046,
+    "f1_tuned": 0.8735632183908046,
+    "threshold": 0.5
+  },
+  "PAC": {
+    "task": "rhythm",
+    "test_pos": 40,
+    "auroc": 0.9791705282669139,
+    "f1_at_0.5": 0.04347826086956522,
+    "f1_tuned": 0.44444444444444453,
+    "threshold": 0.1
+  },
+  "PVC": {
+    "task": "rhythm",
+    "test_pos": 122,
+    "auroc": 0.9922257493919581,
+    "f1_at_0.5": 0.8095238095238095,
+    "f1_tuned": 0.8031496062992125,
+    "threshold": 0.45
+  },
+  "av_block_1st": {
+    "task": "rhythm",
+    "test_pos": 79,
+    "auroc": 0.968028864821596,
+    "f1_at_0.5": 0.5039370078740157,
+    "f1_tuned": 0.5142857142857143,
+    "threshold": 0.25
+  },
+  "av_block_2nd": {
+    "task": "rhythm",
+    "test_pos": 1,
+    "auroc": 0.9949931725079654,
+    "f1_at_0.5": 0.0,
+    "f1_tuned": 0.0,
+    "threshold": 0.05
+  },
+  "av_block_3rd": {
+    "task": "rhythm",
+    "test_pos": 2,
+    "auroc": 0.8693078324225865,
+    "f1_at_0.5": 0.0,
+    "f1_tuned": 0.0,
+    "threshold": 0.2
+  },
+  "LBBB": {
+    "task": "rhythm",
+    "test_pos": 62,
+    "auroc": 0.9829421891989851,
+    "f1_at_0.5": 0.8474576271186439,
+    "f1_tuned": 0.8666666666666666,
+    "threshold": 0.45
+  },
+  "RBBB": {
+    "task": "rhythm",
+    "test_pos": 166,
+    "auroc": 0.988165259463049,
+    "f1_at_0.5": 0.8035190615835776,
+    "f1_tuned": 0.7975830815709971,
+    "threshold": 0.55
+  },
+  "LAFB": {
+    "task": "rhythm",
+    "test_pos": 162,
+    "auroc": 0.9836886657449854,
+    "f1_at_0.5": 0.7432432432432432,
+    "f1_tuned": 0.7499999999999999,
+    "threshold": 0.25
+  },
+  "LPFB": {
+    "task": "rhythm",
+    "test_pos": 18,
+    "auroc": 0.9759683995922528,
+    "f1_at_0.5": 0.4666666666666666,
+    "f1_tuned": 0.4666666666666666,
+    "threshold": 0.5
+  },
+  "WPW": {
+    "task": "rhythm",
+    "test_pos": 8,
+    "auroc": 0.918093607305936,
+    "f1_at_0.5": 0.6666666666666666,
+    "f1_tuned": 0.6666666666666666,
+    "threshold": 0.5
+  },
+  "pacemaker_rhythm": {
+    "task": "rhythm",
+    "test_pos": 28,
+    "auroc": 0.9690915075707702,
+    "f1_at_0.5": 0.7659574468085106,
+    "f1_tuned": 0.7916666666666667,
+    "threshold": 0.35000000000000003
+  },
+  "normal_sinus_rhythm": {
+    "task": "rhythm",
+    "test_pos": 1674,
+    "auroc": 0.9140423358596222,
+    "f1_at_0.5": 0.9313976658126957,
+    "f1_tuned": 0.9308571428571428,
+    "threshold": 0.55
+  },
+  "LVH": {
+    "task": "structural",
+    "test_pos": 234,
+    "auroc": 0.9402666805925461,
+    "f1_at_0.5": 0.6015037593984962,
+    "f1_tuned": 0.6529774127310061,
+    "threshold": 0.35000000000000003
+  },
+  "RVH": {
+    "task": "structural",
+    "test_pos": 12,
+    "auroc": 0.951357121073498,
+    "f1_at_0.5": 0.13333333333333333,
+    "f1_tuned": 0.10526315789473685,
+    "threshold": 0.4
+  },
+  "LA_enlargement": {
+    "task": "structural",
+    "test_pos": 42,
+    "auroc": 0.8375408605000442,
+    "f1_at_0.5": 0.0,
+    "f1_tuned": 0.16,
+    "threshold": 0.1
+  },
+  "RA_enlargement": {
+    "task": "structural",
+    "test_pos": 10,
+    "auroc": 0.9402650822669104,
+    "f1_at_0.5": 0.18181818181818182,
+    "f1_tuned": 0.28571428571428575,
+    "threshold": 0.3
+  },
+  "STEMI": {
+    "task": "ischaemia",
+    "test_pos": 31,
+    "auroc": 0.9725501287643092,
+    "f1_at_0.5": 0.4,
+    "f1_tuned": 0.41509433962264153,
+    "threshold": 0.3
+  },
+  "posterior_MI": {
+    "task": "ischaemia",
+    "test_pos": 10,
+    "auroc": 0.9109232175502743,
+    "f1_at_0.5": 0.0,
+    "f1_tuned": 0.20000000000000004,
+    "threshold": 0.15000000000000002
+  },
+  "old_MI": {
+    "task": "ischaemia",
+    "test_pos": 526,
+    "auroc": 0.9162145014281297,
+    "f1_at_0.5": 0.701716738197425,
+    "f1_tuned": 0.723037100949094,
+    "threshold": 0.2
+  },
+  "digitalis_effect": {
+    "task": "ischaemia",
+    "test_pos": 18,
+    "auroc": 0.912920489296636,
+    "f1_at_0.5": 0.0,
+    "f1_tuned": 0.20512820512820512,
+    "threshold": 0.15000000000000002
+  },
+  "QTc_prolongation": {
+    "task": "ischaemia",
+    "test_pos": 11,
+    "auroc": 0.7998087874631085,
+    "f1_at_0.5": 0.0,
+    "f1_tuned": 0.09523809523809523,
+    "threshold": 0.1
+  }
+}

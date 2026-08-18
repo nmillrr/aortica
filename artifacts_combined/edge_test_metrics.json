@@ -1,0 +1,284 @@
+{
+  "ptbxl/AF": {
+    "test_pos": 152,
+    "auroc": 0.985073571024335,
+    "f1": 0.9133333333333332,
+    "threshold_int8": 0.15000000000000002
+  },
+  "ptbxl/AFL": {
+    "test_pos": 7,
+    "auroc": 0.941448783986438,
+    "f1": 0.3333333333333333,
+    "threshold_int8": 0.8500000000000001
+  },
+  "ptbxl/SVT": {
+    "test_pos": 5,
+    "auroc": 0.9312357501139991,
+    "f1": 0.5454545454545454,
+    "threshold_int8": 0.15000000000000002
+  },
+  "ptbxl/sinus_brady": {
+    "test_pos": 64,
+    "auroc": 0.9526490745079662,
+    "f1": 0.5692307692307692,
+    "threshold_int8": 0.5
+  },
+  "ptbxl/sinus_tachy": {
+    "test_pos": 82,
+    "auroc": 0.9921446355295311,
+    "f1": 0.8539325842696629,
+    "threshold_int8": 0.5
+  },
+  "ptbxl/PAC": {
+    "test_pos": 40,
+    "auroc": 0.9812210379981464,
+    "f1": 0.5166666666666667,
+    "threshold_int8": 0.15000000000000002
+  },
+  "ptbxl/PVC": {
+    "test_pos": 122,
+    "auroc": 0.9789080514229761,
+    "f1": 0.7777777777777778,
+    "threshold_int8": 0.15000000000000002
+  },
+  "ptbxl/av_block_1st": {
+    "test_pos": 79,
+    "auroc": 0.9757528330177239,
+    "f1": 0.5376344086021505,
+    "threshold_int8": 0.2
+  },
+  "ptbxl/av_block_2nd": {
+    "test_pos": 1,
+    "auroc": 0.999089667728721,
+    "f1": 0.0,
+    "threshold_int8": 0.05
+  },
+  "ptbxl/av_block_3rd": {
+    "test_pos": 2,
+    "auroc": 0.8333333333333334,
+    "f1": 0.5,
+    "threshold_int8": 0.05
+  },
+  "ptbxl/LBBB": {
+    "test_pos": 62,
+    "auroc": 0.9920185453666788,
+    "f1": 0.8852459016393444,
+    "threshold_int8": 0.25
+  },
+  "ptbxl/RBBB": {
+    "test_pos": 166,
+    "auroc": 0.9839466132245518,
+    "f1": 0.7329842931937173,
+    "threshold_int8": 0.15000000000000002
+  },
+  "ptbxl/LAFB": {
+    "test_pos": 162,
+    "auroc": 0.9814450993232918,
+    "f1": 0.7595628415300547,
+    "threshold_int8": 0.3
+  },
+  "ptbxl/LPFB": {
+    "test_pos": 18,
+    "auroc": 0.8879204892966361,
+    "f1": 0.3902439024390244,
+    "threshold_int8": 0.15000000000000002
+  },
+  "ptbxl/WPW": {
+    "test_pos": 8,
+    "auroc": 0.9156963470319635,
+    "f1": 0.5,
+    "threshold_int8": 0.05
+  },
+  "ptbxl/pacemaker_rhythm": {
+    "test_pos": 28,
+    "auroc": 0.9146148782093483,
+    "f1": 0.7916666666666667,
+    "threshold_int8": 0.2
+  },
+  "ptbxl/normal_sinus_rhythm": {
+    "test_pos": 1674,
+    "auroc": 0.9091550612419856,
+    "f1": 0.93048128342246,
+    "threshold_int8": 0.1
+  },
+  "ptbxl/LVH": {
+    "test_pos": 234,
+    "auroc": 0.9321505039427647,
+    "f1": 0.650103519668737,
+    "threshold_int8": 0.2
+  },
+  "ptbxl/RVH": {
+    "test_pos": 12,
+    "auroc": 0.9317627325404086,
+    "f1": 0.3428571428571428,
+    "threshold_int8": 0.15000000000000002
+  },
+  "ptbxl/LA_enlargement": {
+    "test_pos": 42,
+    "auroc": 0.8182370350737698,
+    "f1": 0.22556390977443608,
+    "threshold_int8": 0.1
+  },
+  "ptbxl/RA_enlargement": {
+    "test_pos": 10,
+    "auroc": 0.9551188299817185,
+    "f1": 0.15384615384615383,
+    "threshold_int8": 0.1
+  },
+  "ptbxl/STEMI": {
+    "test_pos": 31,
+    "auroc": 0.9643479166976793,
+    "f1": 0.43137254901960786,
+    "threshold_int8": 0.45
+  },
+  "ptbxl/posterior_MI": {
+    "test_pos": 10,
+    "auroc": 0.8046160877513712,
+    "f1": 0.11764705882352941,
+    "threshold_int8": 0.1
+  },
+  "ptbxl/old_MI": {
+    "test_pos": 526,
+    "auroc": 0.9088202921753051,
+    "f1": 0.6998011928429422,
+    "threshold_int8": 0.35000000000000003
+  },
+  "ptbxl/digitalis_effect": {
+    "test_pos": 18,
+    "auroc": 0.8675076452599388,
+    "f1": 0.2631578947368421,
+    "threshold_int8": 0.15000000000000002
+  },
+  "ptbxl/QTc_prolongation": {
+    "test_pos": 11,
+    "auroc": 0.8202186473791412,
+    "f1": 0.0,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/AF": {
+    "test_pos": 180,
+    "auroc": 0.9196637596151372,
+    "f1": 0.3340122199592668,
+    "threshold_int8": 0.1
+  },
+  "chapman/AFL": {
+    "test_pos": 838,
+    "auroc": 0.9740012607898907,
+    "f1": 0.8705501618122977,
+    "threshold_int8": 0.35000000000000003
+  },
+  "chapman/SVT": {
+    "test_pos": 105,
+    "auroc": 0.9903959945380064,
+    "f1": 0.6923076923076923,
+    "threshold_int8": 0.4
+  },
+  "chapman/AVRT": {
+    "test_pos": 3,
+    "auroc": 0.8790776986951364,
+    "f1": 0.0,
+    "threshold_int8": 0.05
+  },
+  "chapman/sinus_brady": {
+    "test_pos": 1650,
+    "auroc": 0.9988293606475425,
+    "f1": 0.9837349397590361,
+    "threshold_int8": 0.2
+  },
+  "chapman/sinus_tachy": {
+    "test_pos": 743,
+    "auroc": 0.9981832567219501,
+    "f1": 0.9699799866577717,
+    "threshold_int8": 0.2
+  },
+  "chapman/PAC": {
+    "test_pos": 143,
+    "auroc": 0.9608449401837832,
+    "f1": 0.7179487179487178,
+    "threshold_int8": 0.25
+  },
+  "chapman/PVC": {
+    "test_pos": 29,
+    "auroc": 0.9067499807143408,
+    "f1": 0.2696629213483146,
+    "threshold_int8": 0.1
+  },
+  "chapman/av_block_1st": {
+    "test_pos": 111,
+    "auroc": 0.9874514441515353,
+    "f1": 0.694980694980695,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/av_block_2nd": {
+    "test_pos": 13,
+    "auroc": 0.9707465962481566,
+    "f1": 0.41666666666666663,
+    "threshold_int8": 0.05
+  },
+  "chapman/av_block_3rd": {
+    "test_pos": 10,
+    "auroc": 0.8967253285809758,
+    "f1": 0.4000000000000001,
+    "threshold_int8": 0.05
+  },
+  "chapman/LBBB": {
+    "test_pos": 34,
+    "auroc": 0.9663790264145972,
+    "f1": 0.3947368421052631,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/RBBB": {
+    "test_pos": 65,
+    "auroc": 0.9827799174213248,
+    "f1": 0.4444444444444445,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/WPW": {
+    "test_pos": 10,
+    "auroc": 0.7623301403430608,
+    "f1": 0.0,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/normal_sinus_rhythm": {
+    "test_pos": 742,
+    "auroc": 0.9941281216661513,
+    "f1": 0.9088541666666667,
+    "threshold_int8": 0.45
+  },
+  "chapman/LVH": {
+    "test_pos": 58,
+    "auroc": 0.9771176109760927,
+    "f1": 0.4550898203592815,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/RVH": {
+    "test_pos": 8,
+    "auroc": 0.9925128033845468,
+    "f1": 0.14285714285714288,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/RA_enlargement": {
+    "test_pos": 4,
+    "auroc": 0.9138487208008899,
+    "f1": 0.0,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/old_MI": {
+    "test_pos": 12,
+    "auroc": 0.9430391501374341,
+    "f1": 0.1515151515151515,
+    "threshold_int8": 0.05
+  },
+  "chapman/QTc_prolongation": {
+    "test_pos": 38,
+    "auroc": 0.9231998961762172,
+    "f1": 0.2857142857142857,
+    "threshold_int8": 0.15000000000000002
+  },
+  "chapman/early_repol_vs_STEMI": {
+    "test_pos": 33,
+    "auroc": 0.970972601066645,
+    "f1": 0.3589743589743589,
+    "threshold_int8": 0.25
+  }
+}

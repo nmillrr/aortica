@@ -201,8 +201,10 @@ def compute_risk_loss(
 
     # MSE component
     if task_weights is not None:
-        # Per-task weighted MSE: weight each output column
-        mse = ((predictions - targets) ** 2 * task_weights.unsqueeze(0)).mean()
+        # Per-task weighted MSE: weight each output column.  Accepts either a
+        # ``[K]`` per-task weight or a ``[batch, K]`` per-sample validity mask.
+        w = task_weights if task_weights.dim() == 2 else task_weights.unsqueeze(0)
+        mse = ((predictions - targets) ** 2 * w).mean()
     else:
         mse = nn.functional.mse_loss(predictions, targets)
 

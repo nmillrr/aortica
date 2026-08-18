@@ -1,0 +1,198 @@
+{
+  "AF": {
+    "threshold": 0.1,
+    "test_pos": 180,
+    "source": "chapman",
+    "auroc": 0.9196637596151372,
+    "f1": 0.3340122199592668
+  },
+  "AFL": {
+    "threshold": 0.35000000000000003,
+    "test_pos": 838,
+    "source": "chapman",
+    "auroc": 0.9740012607898907,
+    "f1": 0.8705501618122977
+  },
+  "AVRT": {
+    "threshold": 0.05,
+    "test_pos": 3,
+    "source": "chapman",
+    "auroc": 0.8790776986951364,
+    "f1": 0.0
+  },
+  "LAFB": {
+    "threshold": 0.3,
+    "test_pos": 162,
+    "source": "ptbxl",
+    "auroc": 0.9814450993232918,
+    "f1": 0.7595628415300547
+  },
+  "LA_enlargement": {
+    "threshold": 0.1,
+    "test_pos": 42,
+    "source": "ptbxl",
+    "auroc": 0.8182370350737698,
+    "f1": 0.22556390977443608
+  },
+  "LBBB": {
+    "threshold": 0.25,
+    "test_pos": 62,
+    "source": "ptbxl",
+    "auroc": 0.9920185453666788,
+    "f1": 0.8852459016393444
+  },
+  "LPFB": {
+    "threshold": 0.15000000000000002,
+    "test_pos": 18,
+    "source": "ptbxl",
+    "auroc": 0.8879204892966361,
+    "f1": 0.3902439024390244
+  },
+  "LVH": {
+    "threshold": 0.2,
+    "test_pos": 234,
+    "source": "ptbxl",
+    "auroc": 0.9321505039427647,
+    "f1": 0.650103519668737
+  },
+  "PAC": {
+    "threshold": 0.25,
+    "test_pos": 143,
+    "source": "chapman",
+    "auroc": 0.9608449401837832,
+    "f1": 0.7179487179487178
+  },
+  "PVC": {
+    "threshold": 0.15000000000000002,
+    "test_pos": 122,
+    "source": "ptbxl",
+    "auroc": 0.9789080514229761,
+    "f1": 0.7777777777777778
+  },
+  "QTc_prolongation": {
+    "threshold": 0.15000000000000002,
+    "test_pos": 38,
+    "source": "chapman",
+    "auroc": 0.9231998961762172,
+    "f1": 0.2857142857142857
+  },
+  "RA_enlargement": {
+    "threshold": 0.1,
+    "test_pos": 10,
+    "source": "ptbxl",
+    "auroc": 0.9551188299817185,
+    "f1": 0.15384615384615383
+  },
+  "RBBB": {
+    "threshold": 0.15000000000000002,
+    "test_pos": 166,
+    "source": "ptbxl",
+    "auroc": 0.9839466132245518,
+    "f1": 0.7329842931937173
+  },
+  "RVH": {
+    "threshold": 0.15000000000000002,
+    "test_pos": 12,
+    "source": "ptbxl",
+    "auroc": 0.9317627325404086,
+    "f1": 0.3428571428571428
+  },
+  "STEMI": {
+    "threshold": 0.45,
+    "test_pos": 31,
+    "source": "ptbxl",
+    "auroc": 0.9643479166976793,
+    "f1": 0.43137254901960786
+  },
+  "SVT": {
+    "threshold": 0.4,
+    "test_pos": 105,
+    "source": "chapman",
+    "auroc": 0.9903959945380064,
+    "f1": 0.6923076923076923
+  },
+  "WPW": {
+    "threshold": 0.15000000000000002,
+    "test_pos": 10,
+    "source": "chapman",
+    "auroc": 0.7623301403430608,
+    "f1": 0.0
+  },
+  "av_block_1st": {
+    "threshold": 0.15000000000000002,
+    "test_pos": 111,
+    "source": "chapman",
+    "auroc": 0.9874514441515353,
+    "f1": 0.694980694980695
+  },
+  "av_block_2nd": {
+    "threshold": 0.05,
+    "test_pos": 13,
+    "source": "chapman",
+    "auroc": 0.9707465962481566,
+    "f1": 0.41666666666666663
+  },
+  "av_block_3rd": {
+    "threshold": 0.05,
+    "test_pos": 10,
+    "source": "chapman",
+    "auroc": 0.8967253285809758,
+    "f1": 0.4000000000000001
+  },
+  "digitalis_effect": {
+    "threshold": 0.15000000000000002,
+    "test_pos": 18,
+    "source": "ptbxl",
+    "auroc": 0.8675076452599388,
+    "f1": 0.2631578947368421
+  },
+  "early_repol_vs_STEMI": {
+    "threshold": 0.25,
+    "test_pos": 33,
+    "source": "chapman",
+    "auroc": 0.970972601066645,
+    "f1": 0.3589743589743589
+  },
+  "normal_sinus_rhythm": {
+    "threshold": 0.1,
+    "test_pos": 1674,
+    "source": "ptbxl",
+    "auroc": 0.9091550612419856,
+    "f1": 0.93048128342246
+  },
+  "old_MI": {
+    "threshold": 0.35000000000000003,
+    "test_pos": 526,
+    "source": "ptbxl",
+    "auroc": 0.9088202921753051,
+    "f1": 0.6998011928429422
+  },
+  "pacemaker_rhythm": {
+    "threshold": 0.2,
+    "test_pos": 28,
+    "source": "ptbxl",
+    "auroc": 0.9146148782093483,
+    "f1": 0.7916666666666667
+  },
+  "posterior_MI": {
+    "threshold": 0.1,
+    "test_pos": 10,
+    "source": "ptbxl",
+    "auroc": 0.8046160877513712,
+    "f1": 0.11764705882352941
+  },
+  "sinus_brady": {
+    "threshold": 0.2,
+    "test_pos": 1650,
+    "source": "chapman",
+    "auroc": 0.9988293606475425,
+    "f1": 0.9837349397590361
+  },
+  "sinus_tachy": {
+    "threshold": 0.2,
+    "test_pos": 743,
+    "source": "chapman",
+    "auroc": 0.9981832567219501,
+    "f1": 0.9699799866577717
+  }
+}

@@ -1,0 +1,722 @@
+[
+  {
+    "epoch": 1,
+    "lr": 0.0002,
+    "train_loss": 1.3484263306154924,
+    "val_loss": 0.18971243160111564,
+    "per_task_train_loss": {
+      "rhythm": 0.856992278357639,
+      "structural": 0.2271043424604132,
+      "ischaemia": 0.26432970878394213,
+      "risk": 0.08391294236678411
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.12083730612482343,
+      "structural": 0.025736321488927516,
+      "ischaemia": 0.043138804073844635,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.050383351588170866,
+    "structural_f1": 0.004081632653061224,
+    "ischaemia_f1": 0.005363984674329502,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 2,
+    "lr": 0.0004,
+    "train_loss": 0.42118930608472405,
+    "val_loss": 0.1261440966810499,
+    "per_task_train_loss": {
+      "rhythm": 0.2701853323618279,
+      "structural": 0.06279058246325482,
+      "ischaemia": 0.08821339162943118,
+      "risk": 0.07806032378336086
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.07323655177439962,
+      "structural": 0.01801406407196607,
+      "ischaemia": 0.03489348092781646,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.10471292389340647,
+    "structural_f1": 0.11813186813186813,
+    "ischaemia_f1": 0.09201623815967523,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 3,
+    "lr": 0.0006000000000000001,
+    "train_loss": 0.25649536477730556,
+    "val_loss": 0.09150640666484833,
+    "per_task_train_loss": {
+      "rhythm": 0.158863633953254,
+      "structural": 0.03985898111097734,
+      "ischaemia": 0.05777274962405071,
+      "risk": 0.07834016630316482
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.04583644898874419,
+      "structural": 0.016920884272881916,
+      "ischaemia": 0.028749073536268304,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.3190076862763223,
+    "structural_f1": 0.16553860273029714,
+    "ischaemia_f1": 0.12741751990898748,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 4,
+    "lr": 0.0008,
+    "train_loss": 0.1860760156174793,
+    "val_loss": 0.08911183785114969,
+    "per_task_train_loss": {
+      "rhythm": 0.1092795148930129,
+      "structural": 0.030605100040488383,
+      "ischaemia": 0.04619140051962698,
+      "risk": 0.078756504390827
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.04112783196781363,
+      "structural": 0.016811715758272578,
+      "ischaemia": 0.031172290071845056,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.3817371053757638,
+    "structural_f1": 0.14987714987714987,
+    "ischaemia_f1": 0.10182841068917017,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 5,
+    "lr": 0.001,
+    "train_loss": 0.15591925363439849,
+    "val_loss": 0.08325026450412613,
+    "per_task_train_loss": {
+      "rhythm": 0.09084914575385697,
+      "structural": 0.026020438177511096,
+      "ischaemia": 0.03904966977151001,
+      "risk": 0.0788945793722044
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.036734696158341,
+      "structural": 0.01680541980479445,
+      "ischaemia": 0.02971014827489853,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.4266113055839675,
+    "structural_f1": 0.15596330275229356,
+    "ischaemia_f1": 0.12992930086410054,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 6,
+    "lr": 0.001,
+    "train_loss": 0.13384912028799162,
+    "val_loss": 0.08032080116016524,
+    "per_task_train_loss": {
+      "rhythm": 0.07698109903482392,
+      "structural": 0.022269475219004294,
+      "ischaemia": 0.03459854615057873,
+      "risk": 0.07966247003744631
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03700277650994914,
+      "structural": 0.016348716323929174,
+      "ischaemia": 0.026969308273068496,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.42383908438301576,
+    "structural_f1": 0.13451086956521738,
+    "ischaemia_f1": 0.16424657534246573,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 7,
+    "lr": 0.000996057350657239,
+    "train_loss": 0.12132907543769654,
+    "val_loss": 0.07886748537421226,
+    "per_task_train_loss": {
+      "rhythm": 0.06899733735960634,
+      "structural": 0.020876597116619128,
+      "ischaemia": 0.03145514091695933,
+      "risk": 0.08016046306447071
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03607384849871908,
+      "structural": 0.016403973062655754,
+      "ischaemia": 0.026389664145452636,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.4340040797685876,
+    "structural_f1": 0.14303178484107582,
+    "ischaemia_f1": 0.1577176211322553,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 8,
+    "lr": 0.0009842915805643156,
+    "train_loss": 0.11261554256848552,
+    "val_loss": 0.07516961864062718,
+    "per_task_train_loss": {
+      "rhythm": 0.06406197277829051,
+      "structural": 0.019542720997432136,
+      "ischaemia": 0.029010848566780194,
+      "risk": 0.08037220872938633
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03464707407568182,
+      "structural": 0.015886740958584205,
+      "ischaemia": 0.02463580338018281,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.4268670349842061,
+    "structural_f1": 0.14267015706806283,
+    "ischaemia_f1": 0.15034394496880502,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 9,
+    "lr": 0.0009648882429441257,
+    "train_loss": 0.10677036801900934,
+    "val_loss": 0.07430453045027596,
+    "per_task_train_loss": {
+      "rhythm": 0.06152360741158619,
+      "structural": 0.018016527992371908,
+      "ischaemia": 0.027230232700650746,
+      "risk": 0.08048502150375177
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03239781510617052,
+      "structural": 0.01617074990645051,
+      "ischaemia": 0.02573596571705171,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.452767936257329,
+    "structural_f1": 0.20368834223239257,
+    "ischaemia_f1": 0.14444717444717442,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 10,
+    "lr": 0.0009381533400219318,
+    "train_loss": 0.10206339185071342,
+    "val_loss": 0.07325202961053168,
+    "per_task_train_loss": {
+      "rhythm": 0.058488477446029294,
+      "structural": 0.01739587337600396,
+      "ischaemia": 0.026179040617802563,
+      "risk": 0.08053790361565702
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.032077784038015776,
+      "structural": 0.01596040857423629,
+      "ischaemia": 0.025213836027043208,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.44392917751763883,
+    "structural_f1": 0.1401098901098901,
+    "ischaemia_f1": 0.14863689776733255,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 11,
+    "lr": 0.0009045084971874737,
+    "train_loss": 0.09786007199984263,
+    "val_loss": 0.07506575307675771,
+    "per_task_train_loss": {
+      "rhythm": 0.05597678741768879,
+      "structural": 0.016942954998846876,
+      "ischaemia": 0.02494032943607582,
+      "risk": 0.08099799099213936
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03320265492158277,
+      "structural": 0.016060603902276073,
+      "ischaemia": 0.02580249352114541,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.45519762314578693,
+    "structural_f1": 0.12571428571428572,
+    "ischaemia_f1": 0.17070115409151537,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 12,
+    "lr": 0.0008644843137107057,
+    "train_loss": 0.09599103523856577,
+    "val_loss": 0.07205310006226812,
+    "per_task_train_loss": {
+      "rhythm": 0.05522617104682414,
+      "structural": 0.01641037147697609,
+      "ischaemia": 0.024354492533294594,
+      "risk": 0.08120938924634281
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.032076579545225414,
+      "structural": 0.016100191165293966,
+      "ischaemia": 0.02387632903243814,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.45357375705929426,
+    "structural_f1": 0.113905325443787,
+    "ischaemia_f1": 0.17906631896507644,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 13,
+    "lr": 0.0008187119948743449,
+    "train_loss": 0.09320641158367782,
+    "val_loss": 0.0715708991246564,
+    "per_task_train_loss": {
+      "rhythm": 0.05396824080825729,
+      "structural": 0.015898010501747623,
+      "ischaemia": 0.023340160321608624,
+      "risk": 0.08120554866378799
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03187428499971117,
+      "structural": 0.01596533054752009,
+      "ischaemia": 0.023731283417769842,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.504967094486743,
+    "structural_f1": 0.12750716332378223,
+    "ischaemia_f1": 0.19684175751569208,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 14,
+    "lr": 0.0007679133974894983,
+    "train_loss": 0.08947940389899646,
+    "val_loss": 0.07020722052880696,
+    "per_task_train_loss": {
+      "rhythm": 0.05173360745367758,
+      "structural": 0.015297759611926535,
+      "ischaemia": 0.022448036634801504,
+      "risk": 0.08100568536011611
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.031525738803403716,
+      "structural": 0.015494749202792134,
+      "ischaemia": 0.02318673200373139,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.48306154139489044,
+    "structural_f1": 0.1957136128120584,
+    "ischaemia_f1": 0.1841677406562903,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 15,
+    "lr": 0.0007128896457825364,
+    "train_loss": 0.08850250127451385,
+    "val_loss": 0.07195344758885247,
+    "per_task_train_loss": {
+      "rhythm": 0.051214676802320516,
+      "structural": 0.015080521739197566,
+      "ischaemia": 0.022207302685060045,
+      "risk": 0.08084864114575527
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03130885511636734,
+      "structural": 0.015996341966092585,
+      "ischaemia": 0.024648250426564898,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.519999741189926,
+    "structural_f1": 0.14150943396226415,
+    "ischaemia_f1": 0.20895348837209302,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 16,
+    "lr": 0.0006545084971874737,
+    "train_loss": 0.08442778830580852,
+    "val_loss": 0.07242318125707763,
+    "per_task_train_loss": {
+      "rhythm": 0.04834156810744282,
+      "structural": 0.014866793500807355,
+      "ischaemia": 0.021219426755766,
+      "risk": 0.0808056670734111
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.032350204406040056,
+      "structural": 0.015749057289212942,
+      "ischaemia": 0.02432391970817532,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.494591385113664,
+    "structural_f1": 0.16502463054187194,
+    "ischaemia_f1": 0.17652318569349137,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 17,
+    "lr": 0.0005936906572928624,
+    "train_loss": 0.08253953047096729,
+    "val_loss": 0.07119919444833483,
+    "per_task_train_loss": {
+      "rhythm": 0.04743720912922393,
+      "structural": 0.01425224813797018,
+      "ischaemia": 0.02085007315241348,
+      "risk": 0.08064001549364012
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.0316317544983966,
+      "structural": 0.015790736888136182,
+      "ischaemia": 0.02377670244979007,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5296635473817695,
+    "structural_f1": 0.14805194805194805,
+    "ischaemia_f1": 0.17265664094392794,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 18,
+    "lr": 0.0005313952597646568,
+    "train_loss": 0.08050204082118238,
+    "val_loss": 0.07265682156596864,
+    "per_task_train_loss": {
+      "rhythm": 0.0468516890781329,
+      "structural": 0.013834669662173837,
+      "ischaemia": 0.01981568185146898,
+      "risk": 0.08087302013026441
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03155191530074392,
+      "structural": 0.01614657649770379,
+      "ischaemia": 0.024958329940480844,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5211801176281812,
+    "structural_f1": 0.15721040189125296,
+    "ischaemia_f1": 0.16896285682795106,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 19,
+    "lr": 0.0004686047402353433,
+    "train_loss": 0.078814109088853,
+    "val_loss": 0.07057716058833259,
+    "per_task_train_loss": {
+      "rhythm": 0.04565043270807056,
+      "structural": 0.013404304411618368,
+      "ischaemia": 0.019759371931500295,
+      "risk": 0.08095508120844469
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03076261484197208,
+      "structural": 0.015752539091876575,
+      "ischaemia": 0.024062006787530014,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5476539965395179,
+    "structural_f1": 0.14473684210526316,
+    "ischaemia_f1": 0.17106195834950202,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 20,
+    "lr": 0.0004063093427071376,
+    "train_loss": 0.07708114486954667,
+    "val_loss": 0.06956618736897197,
+    "per_task_train_loss": {
+      "rhythm": 0.04459056307506912,
+      "structural": 0.013337513041572975,
+      "ischaemia": 0.019153068468714243,
+      "risk": 0.08077566799543359
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.030736589272107397,
+      "structural": 0.015768253324287277,
+      "ischaemia": 0.023061344639531203,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.536027389674379,
+    "structural_f1": 0.156479217603912,
+    "ischaemia_f1": 0.20775482406356413,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 21,
+    "lr": 0.00034549150281252633,
+    "train_loss": 0.07588169348480947,
+    "val_loss": 0.07061036676168442,
+    "per_task_train_loss": {
+      "rhythm": 0.04450080158216331,
+      "structural": 0.012769177059560795,
+      "ischaemia": 0.018611714784877702,
+      "risk": 0.08088333559606005
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.031201190873980524,
+      "structural": 0.015693066442119225,
+      "ischaemia": 0.02371610959193536,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5277348698454273,
+    "structural_f1": 0.15217391304347827,
+    "ischaemia_f1": 0.1842625944903861,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 22,
+    "lr": 0.0002871103542174636,
+    "train_loss": 0.07435346976853907,
+    "val_loss": 0.07146340810826847,
+    "per_task_train_loss": {
+      "rhythm": 0.04351950115661191,
+      "structural": 0.01263965480371981,
+      "ischaemia": 0.018194313811631325,
+      "risk": 0.08094613437595613
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.030935733233179365,
+      "structural": 0.016135441378823348,
+      "ischaemia": 0.024392233496265753,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5249808800817154,
+    "structural_f1": 0.1574074074074074,
+    "ischaemia_f1": 0.20193612561725108,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 23,
+    "lr": 0.00023208660251050161,
+    "train_loss": 0.07277546853155774,
+    "val_loss": 0.06973299831151962,
+    "per_task_train_loss": {
+      "rhythm": 0.04259749943637015,
+      "structural": 0.012503987109726843,
+      "ischaemia": 0.01767398211899597,
+      "risk": 0.08087962156380801
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.030832993877785545,
+      "structural": 0.015657148310648544,
+      "ischaemia": 0.02324285576386111,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5278394473670183,
+    "structural_f1": 0.15101522842639595,
+    "ischaemia_f1": 0.18219145607131004,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 24,
+    "lr": 0.00018128800512565518,
+    "train_loss": 0.07206087043125402,
+    "val_loss": 0.06972430380327362,
+    "per_task_train_loss": {
+      "rhythm": 0.04217294886406949,
+      "structural": 0.012420029191108531,
+      "ischaemia": 0.017467892519883153,
+      "risk": 0.08086140240159105
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.030627210225377764,
+      "structural": 0.01553819751633065,
+      "ischaemia": 0.023558896301048144,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5313738331887256,
+    "structural_f1": 0.15577889447236182,
+    "ischaemia_f1": 0.1650472983806317,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 25,
+    "lr": 0.00013551568628929433,
+    "train_loss": 0.07073204527499483,
+    "val_loss": 0.06897727879030364,
+    "per_task_train_loss": {
+      "rhythm": 0.041186116396120805,
+      "structural": 0.012201968369909617,
+      "ischaemia": 0.017343960555188137,
+      "risk": 0.08084251090665073
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03053727958883558,
+      "structural": 0.015678047109395264,
+      "ischaemia": 0.02276195263756173,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.523773499995796,
+    "structural_f1": 0.156479217603912,
+    "ischaemia_f1": 0.17637779247875426,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 26,
+    "lr": 9.549150281252633e-05,
+    "train_loss": 0.0697387260494425,
+    "val_loss": 0.06867543618593897,
+    "per_task_train_loss": {
+      "rhythm": 0.04077414010980112,
+      "structural": 0.011920405318960547,
+      "ischaemia": 0.01704418063780074,
+      "risk": 0.0807034581735292
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.02994850394981248,
+      "structural": 0.015589675427015339,
+      "ischaemia": 0.02313725631684065,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5439079610197043,
+    "structural_f1": 0.15194805194805194,
+    "ischaemia_f1": 0.18268301746562615,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 27,
+    "lr": 6.184665997806827e-05,
+    "train_loss": 0.06904565868899226,
+    "val_loss": 0.06937976639185633,
+    "per_task_train_loss": {
+      "rhythm": 0.040442513856653345,
+      "structural": 0.011834958314840846,
+      "ischaemia": 0.01676818637026693,
+      "risk": 0.08090563066413298
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.030611049649970874,
+      "structural": 0.015583092333482845,
+      "ischaemia": 0.023185624395098005,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5312607485250062,
+    "structural_f1": 0.1575,
+    "ischaemia_f1": 0.18883679613087895,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 28,
+    "lr": 3.5111757055874326e-05,
+    "train_loss": 0.06833908746621627,
+    "val_loss": 0.06887446120381355,
+    "per_task_train_loss": {
+      "rhythm": 0.040301413124646336,
+      "structural": 0.01154494725564933,
+      "ischaemia": 0.016492727044832838,
+      "risk": 0.08088751296129297
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.03006908478481429,
+      "structural": 0.015685640847576517,
+      "ischaemia": 0.02311973619673933,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5364145266716109,
+    "structural_f1": 0.1589242053789731,
+    "ischaemia_f1": 0.18816790218542406,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 29,
+    "lr": 1.5708419435684463e-05,
+    "train_loss": 0.06842943600050229,
+    "val_loss": 0.06890975417835372,
+    "per_task_train_loss": {
+      "rhythm": 0.0402765898650293,
+      "structural": 0.011602388323380557,
+      "ischaemia": 0.016550457851468203,
+      "risk": 0.08083091851542978
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.030059040976422174,
+      "structural": 0.015567159147134848,
+      "ischaemia": 0.023283553762095316,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.5399210663607283,
+    "structural_f1": 0.1569620253164557,
+    "ischaemia_f1": 0.20651515151515154,
+    "risk_c_index": 0.5
+  },
+  {
+    "epoch": 30,
+    "lr": 3.942649342761117e-06,
+    "train_loss": 0.06814094827346065,
+    "val_loss": 0.06906939830098834,
+    "per_task_train_loss": {
+      "rhythm": 0.03987827756688656,
+      "structural": 0.011622319746118806,
+      "ischaemia": 0.01664035109227852,
+      "risk": 0.08077234344776063
+    },
+    "per_task_val_loss": {
+      "rhythm": 0.029977993241378238,
+      "structural": 0.015656177912439617,
+      "ischaemia": 0.023435227918837752,
+      "risk": 0.0
+    },
+    "distillation_loss": 0.0,
+    "hard_loss": 0.0,
+    "rhythm_f1": 0.539864669590415,
+    "structural_f1": 0.14721485411140584,
+    "ischaemia_f1": 0.21555045286388572,
+    "risk_c_index": 0.5
+  }
+]

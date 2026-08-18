@@ -109,7 +109,9 @@ class MultiTaskTrainConfig:
     enabled_tasks: list[str] = field(
         default_factory=lambda: ["rhythm", "structural", "ischaemia", "risk"]
     )
-    feature_dim: int = 256
+    # NOTE: must be divisible by the 12 ECG leads — CrossLeadAttention splits
+    # the feature vector per lead and rejects anything else (256 does not work).
+    feature_dim: int = 240
     head_hidden_dim: int = 128
     head_dropout: float = 0.3
     save_metric: str = "val_loss"
@@ -200,17 +202,39 @@ def cosine_annealing_with_warmup(
 # ---------------------------------------------------------------------------
 
 def _compute_f1(
-    predictions: np.ndarray, targets: np.ndarray, threshold: float = 0.5,
+    predictions: np.ndarray,
+    targets: np.ndarray,
+    threshold: float = 0.5,
+    mask: Optional[np.ndarray] = None,
 ) -> tuple[float, list[float]]:
-    """Compute macro-F1 and per-class F1 from sigmoid outputs."""
+    """Compute macro-F1 and per-class F1 from sigmoid outputs.
+
+    Args:
+        predictions: Sigmoid outputs ``[N, C]``.
+        targets: Binary targets ``[N, C]``.
+        threshold: Decision threshold.
+        mask: Optional per-sample validity mask ``[N, C]``.  Rows where a
+            column is ``0`` are excluded from that column's score — required
+            when the evaluation set mixes datasets with different label
+            vocabularies, or unlabelable rows would count as false negatives.
+    """
     pred_bin = (predictions >= threshold).astype(np.float32)
     num_classes = targets.shape[1]
     f1_scores: list[float] = []
 
     for c in range(num_classes):
-        tp = float(np.sum((pred_bin[:, c] == 1) & (targets[:, c] == 1)))
-        fp = float(np.sum((pred_bin[:, c] == 1) & (targets[:, c] == 0)))
-        fn = float(np.sum((pred_bin[:, c] == 0) & (targets[:, c] == 1)))
+        if mask is not None:
+            keep = mask[:, c] > 0
+            if not keep.any():
+                f1_scores.append(0.0)
+                continue
+            p_c, t_c = pred_bin[keep, c], targets[keep, c]
+        else:
+            p_c, t_c = pred_bin[:, c], targets[:, c]
+
+        tp = float(np.sum((p_c == 1) & (t_c == 1)))
+        fp = float(np.sum((p_c == 1) & (t_c == 0)))
+        fn = float(np.sum((p_c == 0) & (t_c == 1)))
 
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
@@ -332,6 +356,7 @@ def _compute_multitask_loss(
     loss_weights: dict[str, float],
     structural_focal: bool = False,
     per_class_weights: Optional[dict[str, list[float]]] = None,
+    label_masks: Optional[dict[str, "torch.Tensor"]] = None,
 ) -> tuple["torch.Tensor", dict[str, float]]:
     """Compute weighted sum of per-task losses.
 
@@ -364,10 +389,22 @@ def _compute_multitask_loss(
     def _to_weight_tensor(
         task: str, device: "torch.device",
     ) -> Optional["torch.Tensor"]:
-        """Convert per-class weight list to a tensor, or return None."""
-        if task not in pcw:
-            return None
-        return torch.tensor(pcw[task], device=device, dtype=features.dtype)
+        """Build the loss weight for a task.
+
+        Combines the constant per-class weight ``[C]`` with the optional
+        per-sample validity mask ``[B, C]``.  The per-sample mask is what
+        makes mixing datasets safe: a column its source cannot label is
+        zeroed for that record rather than counted as a true negative.
+        Broadcasting yields ``[B, C]``, which the BCE ``weight`` argument
+        accepts directly.
+        """
+        w = None
+        if task in pcw:
+            w = torch.tensor(pcw[task], device=device, dtype=features.dtype)
+        m = (label_masks or {}).get(task)
+        if m is None:
+            return w
+        return m if w is None else m * w.unsqueeze(0)
 
     if "rhythm" in task_labels and model.rhythm_head is not None:
         logits = model.rhythm_head.forward_logits(features)
@@ -424,9 +461,11 @@ def train_one_epoch(
     running_per_task: dict[str, float] = {}
     num_batches = 0
 
-    for batch_x, batch_y in dataloader:
+    for batch in dataloader:
+        batch_x, batch_y = batch[0], batch[1]
         batch_x = batch_x.to(device)
         batch_y = batch_y.to(device).float()
+        batch_m = batch[2].to(device).float() if len(batch) > 2 else None
 
         optimizer.zero_grad()
 
@@ -435,10 +474,16 @@ def train_one_epoch(
         features = model.attention(features)
 
         task_labels = _split_labels(batch_y, config.enabled_tasks)
+        task_masks = (
+            _split_labels(batch_m, config.enabled_tasks)
+            if batch_m is not None
+            else None
+        )
         total_loss, per_task = _compute_multitask_loss(
             model, features, task_labels, config.loss_weights,
             structural_focal=config.structural_focal,
             per_class_weights=config.per_class_weights,
+            label_masks=task_masks,
         )
 
         total_loss.backward()
@@ -479,18 +524,26 @@ def evaluate(
     }
 
     with torch.no_grad():
-        for batch_x, batch_y in dataloader:
+        for batch in dataloader:
+            batch_x, batch_y = batch[0], batch[1]
             batch_x = batch_x.to(device)
             batch_y = batch_y.to(device).float()
+            batch_m = batch[2].to(device).float() if len(batch) > 2 else None
 
             features = model.backbone(batch_x)
             features = model.attention(features)
 
             task_labels = _split_labels(batch_y, config.enabled_tasks)
+            task_masks = (
+                _split_labels(batch_m, config.enabled_tasks)
+                if batch_m is not None
+                else None
+            )
             total_loss, per_task = _compute_multitask_loss(
                 model, features, task_labels, config.loss_weights,
                 structural_focal=config.structural_focal,
                 per_class_weights=config.per_class_weights,
+                label_masks=task_masks,
             )
 
             running_loss += total_loss.item()
@@ -507,6 +560,10 @@ def evaluate(
                     collectors[task]["targets"].append(
                         task_labels[task].cpu().numpy()
                     )
+                    if task_masks is not None:
+                        collectors[task].setdefault("masks", []).append(
+                            task_masks[task].cpu().numpy()
+                        )
 
     n = max(num_batches, 1)
     avg_loss = running_loss / n
@@ -519,10 +576,33 @@ def evaluate(
             continue
         preds_np = np.concatenate(collectors[task]["preds"], axis=0)
         tgts_np = np.concatenate(collectors[task]["targets"], axis=0)
+        masks_np = (
+            np.concatenate(collectors[task]["masks"], axis=0)
+            if collectors[task].get("masks")
+            else None
+        )
+
+        # Restrict scoring to columns that actually carry labels.  Averaging
+        # over masked-out columns would silently deflate every macro-F1 (a
+        # column with no positives scores 0.0 by construction).
+        weights = (config.per_class_weights or {}).get(task)
+        cols = (
+            [i for i, w in enumerate(weights) if w > 0]
+            if weights is not None
+            else list(range(tgts_np.shape[1]))
+        )
+        if not cols:
+            continue
+        preds_np = preds_np[:, cols]
+        tgts_np = tgts_np[:, cols]
+        if masks_np is not None:
+            masks_np = masks_np[:, cols]
 
         if task in ("rhythm", "structural", "ischaemia"):
-            macro_f1, _ = _compute_f1(preds_np, tgts_np)
+            macro_f1, per_class = _compute_f1(preds_np, tgts_np, mask=masks_np)
             task_metrics[f"{task}_f1"] = macro_f1
+            task_metrics[f"{task}_per_class_f1"] = per_class
+            task_metrics[f"{task}_scored_cols"] = cols
         elif task == "risk":
             c_idx = _compute_c_index(preds_np, tgts_np)
             task_metrics["risk_c_index"] = c_idx
@@ -534,15 +614,32 @@ def evaluate(
 # PyTorch training loop
 # ---------------------------------------------------------------------------
 
-def train_multitask(config: MultiTaskTrainConfig) -> list[MultiTaskEpochMetrics]:
+def train_multitask(
+    config: MultiTaskTrainConfig,
+    train_loader: Optional["DataLoader[Any]"] = None,
+    val_loader: Optional["DataLoader[Any]"] = None,
+) -> list[MultiTaskEpochMetrics]:
     """Run the full multi-task training loop (PyTorch).
 
     Args:
         config: Training configuration.
+        train_loader: Optional pre-built training loader.  Supply this (with
+            *val_loader*) to train on data the built-in PTB-XL loader cannot
+            express — for example a multi-dataset mix carrying per-sample
+            label masks.  When omitted, PTB-XL is loaded from
+            ``config.data_path``.
+        val_loader: Optional pre-built validation loader.
 
     Returns:
         List of :class:`MultiTaskEpochMetrics` for each epoch.
+
+    Raises:
+        ValueError: If only one of *train_loader* / *val_loader* is given.
     """
+    if (train_loader is None) != (val_loader is None):
+        raise ValueError(
+            "train_loader and val_loader must be supplied together."
+        )
     if not HAS_TORCH:
         raise ImportError(
             "PyTorch is required. Install with: pip install aortica[torch]"
@@ -556,39 +653,57 @@ def train_multitask(config: MultiTaskTrainConfig) -> list[MultiTaskEpochMetrics]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # ------ Data ---------------------------------------------------------
-    (train_records, train_labels), (val_records, val_labels), _ = load_ptbxl(
-        config.data_path, sampling_rate=config.sampling_rate,
-    )
+    use_supplied_loaders = train_loader is not None
 
-    train_ds = ECGDataset(
-        train_records,
-        train_labels,
-        target_hz=float(config.sampling_rate),
-        window_seconds=config.window_seconds,
-        augment=True,
-        random_seed=config.seed,
-    )
-    val_ds = ECGDataset(
-        val_records,
-        val_labels,
-        target_hz=float(config.sampling_rate),
-        window_seconds=config.window_seconds,
-        augment=False,
-    )
+    if not use_supplied_loaders:
+        (train_records, train_labels), (val_records, val_labels), _ = load_ptbxl(
+            config.data_path, sampling_rate=config.sampling_rate, multitask=True,
+        )
 
-    train_loader = DataLoader(
-        train_ds,
-        batch_size=config.batch_size,
-        shuffle=True,
-        num_workers=config.num_workers,
-        drop_last=True,
-    )
-    val_loader = DataLoader(
-        val_ds,
-        batch_size=config.batch_size,
-        shuffle=False,
-        num_workers=config.num_workers,
-    )
+    # PTB-XL supplies ground truth for only 26 of the 72 outputs.  Zero the
+    # per-class weight of every unlabelable column so it contributes no
+    # gradient — training them against all-zero targets would otherwise teach
+    # the heads to confidently rule those findings out.  Applied by default so
+    # a caller cannot silently omit it.
+    if config.per_class_weights is None:
+        from aortica.data.ptbxl_labels import per_task_weights
+
+        config.per_class_weights = per_task_weights()
+        # The risk head has no labelable output at all, and its ranking-loss
+        # term ignores per-task weights, so drop the task from the loss.
+        if not any(config.per_class_weights.get("risk", [])):
+            config.loss_weights = {**config.loss_weights, "risk": 0.0}
+
+    if not use_supplied_loaders:
+        train_ds = ECGDataset(
+            train_records,
+            train_labels,
+            target_hz=float(config.sampling_rate),
+            window_seconds=config.window_seconds,
+            augment=True,
+            random_seed=config.seed,
+        )
+        val_ds = ECGDataset(
+            val_records,
+            val_labels,
+            target_hz=float(config.sampling_rate),
+            window_seconds=config.window_seconds,
+            augment=False,
+        )
+
+        train_loader = DataLoader(
+            train_ds,
+            batch_size=config.batch_size,
+            shuffle=True,
+            num_workers=config.num_workers,
+            drop_last=True,
+        )
+        val_loader = DataLoader(
+            val_ds,
+            batch_size=config.batch_size,
+            shuffle=False,
+            num_workers=config.num_workers,
+        )
 
     # ------ Model --------------------------------------------------------
     model = AorticaModel(
@@ -643,7 +758,9 @@ def train_multitask(config: MultiTaskTrainConfig) -> list[MultiTaskEpochMetrics]
             f"{k}={v:.4f}" for k, v in val_per_task.items()
         )
         metric_str = "  ".join(
-            f"{k}={v:.4f}" for k, v in task_metrics.items()
+            f"{k}={v:.4f}"
+            for k, v in task_metrics.items()
+            if isinstance(v, (int, float))
         )
         print(
             f"Epoch {epoch + 1}/{config.epochs}  lr={lr:.6f}  "

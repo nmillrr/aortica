@@ -94,6 +94,10 @@ class DistillationConfig:
     max_grad_norm: float = 1.0
     warmup_epochs: int = 5
     save_metric: str = "val_loss"
+    #: Optional per-task, per-class weight lists.  A weight of ``0.0``
+    #: excludes that output column from the distillation loss entirely —
+    #: see :func:`aortica.data.ptbxl_labels.per_task_weights`.
+    per_class_weights: Optional[dict[str, list[float]]] = None
     enabled_tasks: list[str] = field(
         default_factory=lambda: ["rhythm", "structural", "ischaemia", "risk"]
     )
@@ -128,6 +132,7 @@ def distillation_loss_classification(
     hard_labels: "torch.Tensor",
     temperature: float,
     alpha: float,
+    class_weights: Optional["torch.Tensor"] = None,
 ) -> "torch.Tensor":
     """Compute distillation loss for a classification (multi-label) head.
 
@@ -141,6 +146,10 @@ def distillation_loss_classification(
         hard_labels: Binary ground-truth labels ``[batch, C]``.
         temperature: Temperature for softening logits.
         alpha: Weight in ``[0, 1]``.  ``alpha=1`` = pure distillation.
+        class_weights: Optional per-class weights ``[C]``.  A weight of
+            ``0.0`` removes that column from both the soft and hard loss —
+            used to stop the student spending capacity mimicking teacher
+            outputs that were never trained against real labels.
 
     Returns:
         Scalar loss tensor.
@@ -160,10 +169,15 @@ def distillation_loss_classification(
     q = student_soft.clamp(eps, 1 - eps)
 
     kl = p * torch.log(p / q) + (1 - p) * torch.log((1 - p) / (1 - q))
+    if class_weights is not None:
+        # ``[C]`` per-class weight, or ``[B, C]`` per-sample validity mask.
+        kl = kl * (class_weights if class_weights.dim() == 2 else class_weights.unsqueeze(0))
     soft_loss = kl.mean() * (temp * temp)  # scale by T^2 per Hinton et al.
 
     # Hard-label BCE loss
-    hard_loss = nn.functional.binary_cross_entropy_with_logits(student_logits, hard_labels)
+    hard_loss = nn.functional.binary_cross_entropy_with_logits(
+        student_logits, hard_labels, weight=class_weights,
+    )
 
     combined: torch.Tensor = alpha * soft_loss + (1 - alpha) * hard_loss
     return combined
@@ -411,9 +425,12 @@ def _distill_one_epoch(
     running_per_task: dict[str, float] = {}
     num_batches = 0
 
-    for batch_x, batch_y in dataloader:
+    for batch in dataloader:
+        batch_x, batch_y = batch[0], batch[1]
         batch_x = batch_x.to(device)
         batch_y = batch_y.to(device).float()
+        # Optional per-sample label validity mask (mixed-dataset training).
+        batch_m = batch[2].to(device).float() if len(batch) > 2 else None
 
         optimizer.zero_grad()
 
@@ -427,6 +444,11 @@ def _distill_one_epoch(
         student_features = student.attention(student_features)
 
         task_labels = _split_labels(batch_y, config.enabled_tasks)
+        task_masks = (
+            _split_labels(batch_m, config.enabled_tasks)
+            if batch_m is not None
+            else None
+        )
 
         total_loss = torch.tensor(0.0, device=device, dtype=batch_x.dtype)
         per_task: dict[str, float] = {}
@@ -440,6 +462,20 @@ def _distill_one_epoch(
 
             weight = config.loss_weights.get(task, 1.0)
 
+            cw = None
+            if config.per_class_weights and task in config.per_class_weights:
+                cw = torch.tensor(
+                    config.per_class_weights[task],
+                    device=device,
+                    dtype=batch_x.dtype,
+                )
+            # Combine the per-class weight with the per-sample validity mask
+            # so a column this record's source cannot label contributes no
+            # gradient, rather than being distilled as a confident negative.
+            tm = (task_masks or {}).get(task) if task_masks else None
+            if tm is not None:
+                cw = tm if cw is None else tm * cw.unsqueeze(0)
+
             if task in _CLASSIFICATION_TASKS:
                 with torch.no_grad():
                     teacher_logits = teacher_head.forward_logits(teacher_features)
@@ -451,6 +487,7 @@ def _distill_one_epoch(
                     task_labels[task],
                     temperature=config.temperature,
                     alpha=config.alpha,
+                    class_weights=cw,
                 )
             else:
                 # Risk head — regression
@@ -504,14 +541,21 @@ def _evaluate_student(
     }
 
     with torch.no_grad():
-        for batch_x, batch_y in dataloader:
+        for batch in dataloader:
+            batch_x, batch_y = batch[0], batch[1]
             batch_x = batch_x.to(device)
             batch_y = batch_y.to(device).float()
+            batch_m = batch[2].to(device).float() if len(batch) > 2 else None
 
             student_features = student.backbone(batch_x)
             student_features = student.attention(student_features)
 
             task_labels = _split_labels(batch_y, config.enabled_tasks)
+            task_masks = (
+                _split_labels(batch_m, config.enabled_tasks)
+                if batch_m is not None
+                else None
+            )
 
             total_loss = torch.tensor(0.0, device=device, dtype=batch_x.dtype)
             per_task: dict[str, float] = {}
@@ -523,15 +567,36 @@ def _evaluate_student(
 
                 weight = config.loss_weights.get(task, 1.0)
 
+                # Mask untrained columns out of the validation loss too.
+                # Without this the loss is dominated by columns that receive
+                # no gradient but still drift as the backbone trains — which
+                # would make `save_metric='val_loss'` select a checkpoint on
+                # noise rather than on real performance.
+                cw = None
+                if config.per_class_weights and task in config.per_class_weights:
+                    cw = torch.tensor(
+                        config.per_class_weights[task],
+                        device=device,
+                        dtype=batch_x.dtype,
+                    )
+                tm = (task_masks or {}).get(task) if task_masks else None
+                if tm is not None:
+                    cw = tm if cw is None else tm * cw.unsqueeze(0)
+
                 if task in _CLASSIFICATION_TASKS:
                     logits = head.forward_logits(student_features)
                     loss = nn.functional.binary_cross_entropy_with_logits(
-                        logits, task_labels[task],
+                        logits, task_labels[task], weight=cw,
                     )
                     preds = torch.sigmoid(logits)
                 else:
                     preds = head(student_features)
-                    loss = nn.functional.mse_loss(preds, task_labels[task])
+                    se = (preds - task_labels[task]) ** 2
+                    if cw is not None:
+                        # cw is [K] for a plain per-class weight, or [B, K]
+                        # when a per-sample validity mask is folded in.
+                        se = se * (cw if cw.dim() == 2 else cw.unsqueeze(0))
+                    loss = se.mean()
 
                 total_loss = total_loss + weight * loss
                 per_task[task] = loss.item()
@@ -556,6 +621,16 @@ def _evaluate_student(
             continue
         preds_np = np.concatenate(collectors[task]["preds"], axis=0)
         tgts_np = np.concatenate(collectors[task]["targets"], axis=0)
+
+        # Score only columns carrying labels — averaging in masked columns
+        # (which score 0.0 by construction) silently deflates macro-F1.
+        weights = (config.per_class_weights or {}).get(task)
+        if weights is not None:
+            cols = [i for i, w in enumerate(weights) if w > 0]
+            if not cols:
+                continue
+            preds_np = preds_np[:, cols]
+            tgts_np = tgts_np[:, cols]
 
         if task in _CLASSIFICATION_TASKS:
             macro_f1 = _compute_f1(preds_np, tgts_np)

@@ -83,12 +83,19 @@ class ECGDataset(Dataset):
         aug_time_shift_samples: int = 50,
         aug_amp_scale_range: tuple[float, float] = (0.8, 1.2),
         random_seed: int | None = None,
+        label_masks: NDArray[np.float32] | list[Any] | None = None,
     ) -> None:
         """Initialize the dataset.
 
         Args:
             records: List of ECGRecord objects.
             labels: Corresponding labels (numpy array or list).
+            label_masks: Optional per-sample label validity mask with the same
+                shape as *labels*.  A ``0.0`` marks a column this record's
+                source dataset cannot label, so it must not be treated as a
+                negative.  Required when mixing datasets whose label
+                vocabularies differ.  When given, ``__getitem__`` yields
+                ``(signal, label, mask)`` instead of ``(signal, label)``.
             target_hz: If provided, resample all records to this rate
                 during initialization.
             window_seconds: Target length in seconds for padding/truncation.
@@ -119,6 +126,15 @@ class ECGDataset(Dataset):
         self.labels = np.asarray(labels, dtype=np.float32)
         self.window_seconds = window_seconds
 
+        self.label_masks: NDArray[np.float32] | None = None
+        if label_masks is not None:
+            self.label_masks = np.asarray(label_masks, dtype=np.float32)
+            if self.label_masks.shape != self.labels.shape:
+                raise ValueError(
+                    f"label_masks shape {self.label_masks.shape} must match "
+                    f"labels shape {self.labels.shape}"
+                )
+
         self.target_hz = target_hz
         if self.target_hz is not None:
             self.records = [r.resample(self.target_hz) for r in self.records]
@@ -134,7 +150,7 @@ class ECGDataset(Dataset):
     def __len__(self) -> int:
         return len(self.records)
 
-    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, ...]:
         record = self.records[idx]
         signals = record.signals.copy()
 
@@ -154,6 +170,10 @@ class ECGDataset(Dataset):
 
         x = torch.from_numpy(signals).float()
         y = torch.as_tensor(self.labels[idx]).float()
+
+        if self.label_masks is not None:
+            m = torch.as_tensor(self.label_masks[idx]).float()
+            return x, y, m
 
         return x, y
 

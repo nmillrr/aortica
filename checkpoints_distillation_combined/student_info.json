@@ -1,0 +1,10 @@
+{
+  "teacher_params": 2393568,
+  "student_params": 319456,
+  "feature_dim": 240,
+  "sampling_rate": 100,
+  "datasets": [
+    "PTB-XL 1.0.3",
+    "Chapman-Shaoxing 1.0.0"
+  ]
+}

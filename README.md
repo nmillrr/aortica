@@ -172,10 +172,20 @@ Aortica is designed for **rural clinics with intermittent internet, a laptop, an
 - **No internet required** after initial setup
 
 ### Edge Model
-- **MobileNet-1D backbone** — depthwise-separable convolutions, ≤2.5M parameters
+- **MobileNet-1D backbone** — depthwise-separable convolutions, 0.32M parameters (7.5× smaller than the teacher's 2.39M)
 - **Knowledge distillation** — trained from the full ResNet model (KL divergence + hard labels)
 - **INT8 quantization** — static quantization via ONNX Runtime for ARM deployment
-- **Target**: AUC within 3% of full model, inference <350ms on Raspberry Pi 4
+
+Measured on the PTB-XL held-out test fold (macro-AUROC over trained classes):
+
+| model | params | size | macro-AUROC |
+|-------|--------|------|-------------|
+| teacher (ResNet-1D) | 2.39 M | 28 MB | 0.946 |
+| student (MobileNet-1D) | 0.32 M | 3.97 MB | 0.947 |
+| student INT8 (ONNX) | 0.32 M | 0.42 MB | 0.938 |
+
+The 3%-of-full-model AUC target is met with room to spare (0.8% drop after INT8).
+Raspberry Pi inference latency has **not** yet been measured on hardware.
 
 ### Raspberry Pi Deployment
 ```bash
@@ -316,9 +326,20 @@ pytest --cov=aortica --cov-report=term-missing
 |-------|-------|--------|
 | **Phase 0** | Foundation — format readers, signal processing, baseline model | ✅ Complete |
 | **Phase 1** | Core Engine — multi-task model, calibration, XAI, benchmarking | ✅ Complete |
-| **Phase 2** | Edge & Rural Deployment — API, CLI, Web UI, ONNX, offline sync, Docker | 🔄 In Progress |
-| **Phase 3** | Federated Learning & Equity — Flower SDK, DP, equity gating, expanded task heads | 📋 Planned |
-| **Phase 4** | Regulatory & Scale — FHIR/HL7/DICOM integration, reports, case retrieval, regulatory templates | 📋 Planned |
+| **Phase 2** | Edge & Rural Deployment — API, CLI, Web UI, ONNX, offline sync, Docker | ✅ Code complete |
+| **Phase 3** | Federated Learning & Equity — Flower SDK, DP, equity gating, expanded task heads | ✅ Code complete |
+| **Phase 4** | Regulatory & Scale — FHIR/HL7/DICOM integration, reports, case retrieval, regulatory templates | ✅ Code complete |
+
+> **Distribution status.** Code completeness is not the same as availability.
+> A trained checkpoint now exists (PTB-XL, teacher + distilled + INT8 edge) and
+> is published to a **private** HuggingFace repo at `nmillrr/aortica`. Not yet
+> published: PyPI, Docker Hub images, and a signed Android APK — so
+> `pip install aortica` and `docker run aortica/server:latest` do not work yet.
+> Build from source in the meantime.
+>
+> The trained model covers **26 of the model's 72 outputs**; the rest — including
+> the entire risk head — have no label source in PTB-XL and must be suppressed
+> via `simplified_output.load_trained_outputs()`. See the model card for detail.
 
 ---
 

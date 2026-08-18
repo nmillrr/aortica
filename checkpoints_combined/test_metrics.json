@@ -1,0 +1,284 @@
+{
+  "ptbxl/AF": {
+    "test_pos": 152,
+    "auroc": 0.9855912692287905,
+    "f1": 0.9060402684563759,
+    "threshold": 0.35000000000000003
+  },
+  "ptbxl/AFL": {
+    "test_pos": 7,
+    "auroc": 0.9409271695898807,
+    "f1": 0.5454545454545454,
+    "threshold": 0.8500000000000001
+  },
+  "ptbxl/SVT": {
+    "test_pos": 5,
+    "auroc": 0.9948928408572731,
+    "f1": 0.42857142857142855,
+    "threshold": 0.2
+  },
+  "ptbxl/sinus_brady": {
+    "test_pos": 64,
+    "auroc": 0.9521218955014058,
+    "f1": 0.5663716814159292,
+    "threshold": 0.4
+  },
+  "ptbxl/sinus_tachy": {
+    "test_pos": 82,
+    "auroc": 0.9844045368620038,
+    "f1": 0.8603351955307262,
+    "threshold": 0.4
+  },
+  "ptbxl/PAC": {
+    "test_pos": 40,
+    "auroc": 0.9787650602409639,
+    "f1": 0.5652173913043479,
+    "threshold": 0.35000000000000003
+  },
+  "ptbxl/PVC": {
+    "test_pos": 122,
+    "auroc": 0.9898093749012918,
+    "f1": 0.8220338983050847,
+    "threshold": 0.55
+  },
+  "ptbxl/av_block_1st": {
+    "test_pos": 79,
+    "auroc": 0.9766727797324987,
+    "f1": 0.6022727272727273,
+    "threshold": 0.35000000000000003
+  },
+  "ptbxl/av_block_2nd": {
+    "test_pos": 1,
+    "auroc": 0.997269003186163,
+    "f1": 0.0,
+    "threshold": 0.15000000000000002
+  },
+  "ptbxl/av_block_3rd": {
+    "test_pos": 2,
+    "auroc": 0.9961293260473588,
+    "f1": 0.4,
+    "threshold": 0.15000000000000002
+  },
+  "ptbxl/LBBB": {
+    "test_pos": 62,
+    "auroc": 0.9883487374652652,
+    "f1": 0.9105691056910569,
+    "threshold": 0.55
+  },
+  "ptbxl/RBBB": {
+    "test_pos": 166,
+    "auroc": 0.9886484916042121,
+    "f1": 0.8187134502923977,
+    "threshold": 0.4
+  },
+  "ptbxl/LAFB": {
+    "test_pos": 162,
+    "auroc": 0.9801595964005918,
+    "f1": 0.7839506172839507,
+    "threshold": 0.6000000000000001
+  },
+  "ptbxl/LPFB": {
+    "test_pos": 18,
+    "auroc": 0.9396024464831805,
+    "f1": 0.3636363636363637,
+    "threshold": 0.15000000000000002
+  },
+  "ptbxl/WPW": {
+    "test_pos": 8,
+    "auroc": 0.8722602739726028,
+    "f1": 0.7142857142857143,
+    "threshold": 0.05
+  },
+  "ptbxl/pacemaker_rhythm": {
+    "test_pos": 28,
+    "auroc": 0.9669848584595129,
+    "f1": 0.7755102040816326,
+    "threshold": 0.1
+  },
+  "ptbxl/normal_sinus_rhythm": {
+    "test_pos": 1674,
+    "auroc": 0.9119766158672832,
+    "f1": 0.9366053169734151,
+    "threshold": 0.6000000000000001
+  },
+  "ptbxl/LVH": {
+    "test_pos": 234,
+    "auroc": 0.937411875293749,
+    "f1": 0.6526806526806527,
+    "threshold": 0.3
+  },
+  "ptbxl/RVH": {
+    "test_pos": 12,
+    "auroc": 0.8978728270814272,
+    "f1": 0.2727272727272727,
+    "threshold": 0.1
+  },
+  "ptbxl/LA_enlargement": {
+    "test_pos": 42,
+    "auroc": 0.8176517360190829,
+    "f1": 0.19736842105263155,
+    "threshold": 0.1
+  },
+  "ptbxl/RA_enlargement": {
+    "test_pos": 10,
+    "auroc": 0.9830895795246801,
+    "f1": 0.3529411764705882,
+    "threshold": 0.25
+  },
+  "ptbxl/STEMI": {
+    "test_pos": 31,
+    "auroc": 0.9701385891004362,
+    "f1": 0.425,
+    "threshold": 0.25
+  },
+  "ptbxl/posterior_MI": {
+    "test_pos": 10,
+    "auroc": 0.8097349177330896,
+    "f1": 0.15384615384615383,
+    "threshold": 0.35000000000000003
+  },
+  "ptbxl/old_MI": {
+    "test_pos": 526,
+    "auroc": 0.9109568013535394,
+    "f1": 0.7181903864278981,
+    "threshold": 0.3
+  },
+  "ptbxl/digitalis_effect": {
+    "test_pos": 18,
+    "auroc": 0.9241590214067278,
+    "f1": 0.20833333333333334,
+    "threshold": 0.2
+  },
+  "ptbxl/QTc_prolongation": {
+    "test_pos": 11,
+    "auroc": 0.815646173670865,
+    "f1": 0.12121212121212123,
+    "threshold": 0.1
+  },
+  "chapman/AF": {
+    "test_pos": 180,
+    "auroc": 0.9182822669856705,
+    "f1": 0.33333333333333337,
+    "threshold": 0.1
+  },
+  "chapman/AFL": {
+    "test_pos": 838,
+    "auroc": 0.9733767330156804,
+    "f1": 0.8674062334918119,
+    "threshold": 0.15000000000000002
+  },
+  "chapman/SVT": {
+    "test_pos": 105,
+    "auroc": 0.9872011617573748,
+    "f1": 0.6703296703296704,
+    "threshold": 0.6000000000000001
+  },
+  "chapman/AVRT": {
+    "test_pos": 3,
+    "auroc": 0.9892497034400949,
+    "f1": 0.0,
+    "threshold": 0.05
+  },
+  "chapman/sinus_brady": {
+    "test_pos": 1650,
+    "auroc": 0.9993377793377793,
+    "f1": 0.9855072463768116,
+    "threshold": 0.4
+  },
+  "chapman/sinus_tachy": {
+    "test_pos": 743,
+    "auroc": 0.9990514951761346,
+    "f1": 0.9636002647253474,
+    "threshold": 0.2
+  },
+  "chapman/PAC": {
+    "test_pos": 143,
+    "auroc": 0.9826459123979785,
+    "f1": 0.7415730337078652,
+    "threshold": 0.6000000000000001
+  },
+  "chapman/PVC": {
+    "test_pos": 29,
+    "auroc": 0.9182905191699452,
+    "f1": 0.2352941176470588,
+    "threshold": 0.1
+  },
+  "chapman/av_block_1st": {
+    "test_pos": 111,
+    "auroc": 0.986956646710521,
+    "f1": 0.7385892116182573,
+    "threshold": 0.35000000000000003
+  },
+  "chapman/av_block_2nd": {
+    "test_pos": 13,
+    "auroc": 0.9879111080626908,
+    "f1": 0.4545454545454546,
+    "threshold": 0.15000000000000002
+  },
+  "chapman/av_block_3rd": {
+    "test_pos": 10,
+    "auroc": 0.9954110046781021,
+    "f1": 0.4444444444444445,
+    "threshold": 0.1
+  },
+  "chapman/LBBB": {
+    "test_pos": 34,
+    "auroc": 0.9809432843686187,
+    "f1": 0.3714285714285714,
+    "threshold": 0.3
+  },
+  "chapman/RBBB": {
+    "test_pos": 65,
+    "auroc": 0.9833107803337844,
+    "f1": 0.431578947368421,
+    "threshold": 0.25
+  },
+  "chapman/WPW": {
+    "test_pos": 10,
+    "auroc": 0.9106928046335486,
+    "f1": 0.15384615384615383,
+    "threshold": 0.7000000000000001
+  },
+  "chapman/normal_sinus_rhythm": {
+    "test_pos": 742,
+    "auroc": 0.9945341920598172,
+    "f1": 0.9115913555992141,
+    "threshold": 0.4
+  },
+  "chapman/LVH": {
+    "test_pos": 58,
+    "auroc": 0.9818579226486734,
+    "f1": 0.45925925925925926,
+    "threshold": 0.2
+  },
+  "chapman/RVH": {
+    "test_pos": 8,
+    "auroc": 0.9844132709864173,
+    "f1": 0.2,
+    "threshold": 0.4
+  },
+  "chapman/RA_enlargement": {
+    "test_pos": 4,
+    "auroc": 0.9421023359288098,
+    "f1": 0.0,
+    "threshold": 0.3
+  },
+  "chapman/old_MI": {
+    "test_pos": 12,
+    "auroc": 0.9545167520986554,
+    "f1": 0.16216216216216217,
+    "threshold": 0.25
+  },
+  "chapman/QTc_prolongation": {
+    "test_pos": 38,
+    "auroc": 0.9131655635389753,
+    "f1": 0.2935779816513761,
+    "threshold": 0.1
+  },
+  "chapman/early_repol_vs_STEMI": {
+    "test_pos": 33,
+    "auroc": 0.9712304414498771,
+    "f1": 0.39473684210526316,
+    "threshold": 0.3
+  }
+}
