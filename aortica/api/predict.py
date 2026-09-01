@@ -18,6 +18,7 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from aortica.io import UnsupportedFormatError, read_ecg
+from aortica.models.output_gating import kept_indices
 from aortica.signal import denoise, score_quality
 
 
@@ -56,12 +57,25 @@ class QualityReportResponse(BaseModel):
 
 
 class TaskPrediction(BaseModel):
-    """Prediction results for a single task head."""
+    """Prediction results for a single task head.
+
+    ``class_names`` and ``probabilities`` cover only outputs the loaded
+    checkpoint actually trained.  Untrained outputs are withheld rather than
+    reported as zero, and named in ``suppressed_classes`` so a consumer can
+    tell "not predicted" apart from "predicted negative".
+    """
 
     task: str = Field(..., description="Task head name")
     class_names: List[str] = Field(..., description="Class/output label names")
     probabilities: List[float] = Field(
         ..., description="Predicted probabilities per class"
+    )
+    suppressed_classes: List[str] = Field(
+        default_factory=list,
+        description=(
+            "Outputs withheld because the checkpoint never trained them. "
+            "These heads emit noise, not predictions."
+        ),
     )
 
 
@@ -220,6 +234,39 @@ def _quality_report_to_response(
     )
 
 
+def _gate_uncertainty(
+    uncertainty: UncertaintyResponse,
+    task_name: str,
+    keep: List[int],
+) -> None:
+    """Re-index one task's uncertainty data onto the kept outputs.
+
+    Conformal prediction sets are positional indices into the head's full
+    class list, so dropping classes from ``class_names`` without remapping
+    them would leave the sets pointing at the wrong conditions.  Confidence
+    intervals are positional too, and are filtered the same way.
+    """
+    position = {old: new for new, old in enumerate(keep)}
+
+    sets = uncertainty.prediction_sets.get(task_name)
+    if sets is not None:
+        uncertainty.prediction_sets[task_name] = [
+            [position[i] for i in one_set if i in position] for one_set in sets
+        ]
+
+    interval = uncertainty.confidence_intervals.get(task_name)
+    if interval is not None:
+        if keep:
+            uncertainty.confidence_intervals[task_name] = {
+                bound: [values[i] for i in keep if i < len(values)]
+                for bound, values in interval.items()
+            }
+        else:
+            # Nothing in this head was trained — an interval around noise is
+            # not a useful thing to report.
+            del uncertainty.confidence_intervals[task_name]
+
+
 def run_inference_pipeline(
     file_bytes: bytes,
     filename: str,
@@ -231,6 +278,7 @@ def run_inference_pipeline(
     include_xai: bool = False,
     include_suggestions: bool = False,
     retrieval_index_path: Optional[str] = None,
+    suppress_untrained: bool = True,
 ) -> PredictResponse:
     """Execute the full ECG inference pipeline on uploaded file bytes.
 
@@ -256,6 +304,12 @@ def run_inference_pipeline(
         A fitted ``ConformalPredictor``, or ``None``.
     enabled_tasks:
         Task heads to run.  Defaults to model's ``enabled_tasks``.
+    suppress_untrained:
+        Withhold outputs the checkpoint never trained (default).  No released
+        checkpoint trains all 72 — the untrained heads, including the whole
+        risk head, sit at initialisation and emit noise.  Pass ``False`` only
+        to inspect raw head behaviour; never for anything clinician- or
+        patient-facing.
 
     Returns
     -------
@@ -332,17 +386,43 @@ def run_inference_pipeline(
                     k: v for k, v in output.as_dict().items() if v is not None
                 }
 
-            # Convert to response
+            # Convert to response, withholding untrained outputs.  Gating
+            # happens here rather than in each caller because it is a safety
+            # property: an untrained risk head that reaches a triage UI can
+            # escalate on noise, and "the caller forgot" must not be a way to
+            # get there.  See aortica.models.output_gating.
             for task_name, probs_tensor in preds_dict.items():
                 probs_list = probs_tensor[0].tolist()
                 names = class_names.get(task_name, [])
+
+                # Without names there is nothing to match against an
+                # allowlist; report the head unfiltered rather than blanking
+                # it, and leave the caller to notice the empty name list.
+                if not (suppress_untrained and names):
+                    predictions.append(
+                        TaskPrediction(
+                            task=task_name,
+                            class_names=names,
+                            probabilities=probs_list,
+                        )
+                    )
+                    continue
+
+                keep, suppressed = kept_indices(names)
+                # A head whose output is narrower than its class list would
+                # otherwise index out of range; drop the overhang rather than
+                # raise, matching the zip-truncation the ungated path had.
+                keep = [i for i in keep if i < len(probs_list)]
                 predictions.append(
                     TaskPrediction(
                         task=task_name,
-                        class_names=names,
-                        probabilities=probs_list,
+                        class_names=[names[i] for i in keep],
+                        probabilities=[probs_list[i] for i in keep],
+                        suppressed_classes=suppressed,
                     )
                 )
+                if uncertainty_resp is not None:
+                    _gate_uncertainty(uncertainty_resp, task_name, keep)
 
         # ── 6. XAI attribution (optional) ────────────────────────────
         xai_results: Optional[List[XAIAttributionResponse]] = None

@@ -27,8 +27,31 @@ from aortica.edge.simplified_output import (
     _extract_predictions,
     _get_locale,
     load_locale,
+    set_class_thresholds,
+    set_trained_outputs,
     simplify_output,
 )
+
+
+# ── Isolation ──────────────────────────────────────────────────────────────
+
+
+@pytest.fixture(autouse=True)
+def _isolate_module_state() -> "object":
+    """Run every test against the module's own ungated defaults.
+
+    The trained-output allowlist and the per-class operating points are
+    module globals, and anything that builds an app or loads a checkpoint
+    installs them process-wide — deliberately, so untrained heads cannot
+    escalate a real CHW.  These tests exercise the tier logic itself with
+    synthetic findings, so they need the unfiltered behaviour regardless of
+    what ran before them in the same process.
+    """
+    set_trained_outputs(None)
+    set_class_thresholds(None)
+    yield
+    set_trained_outputs(None)
+    set_class_thresholds(None)
 
 
 # ── Constants ──────────────────────────────────────────────────────────────

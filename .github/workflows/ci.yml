@@ -1,0 +1,156 @@
+# Continuous integration — runs on every push and pull request.
+#
+# Until this existed the only workflow running pytest was release.yml, which
+# triggers on `v*` tags. A suite that runs after the tag is cut reports
+# breakage too late to prevent it: an unanchored `data/` rule in .gitignore
+# excluded aortica/data/ and nothing noticed that the package stopped
+# importing.
+#
+# The import job runs first, standalone, with no test dependencies, because
+# "a fresh clone can import the package" is the assumption every other job
+# rests on.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  import-smoke:
+    name: Fresh-clone import
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Base dependencies only — no dev extras, no torch. This is what
+      # `pip install aortica` gives a user, and it must be enough to import
+      # the package and run the CLI.
+      - name: Install the package as a user would
+        run: |
+          python -m pip install --upgrade pip
+          pip install '.[cli]'
+
+      # Import from a directory that is not the repository, so a module that
+      # only resolves because the source tree happens to be on sys.path
+      # fails here rather than in the field.
+      - name: Import every subpackage from outside the source tree
+        run: |
+          cd "$(mktemp -d)"
+          python - <<'PY'
+          import importlib
+
+          for name in [
+              "aortica",
+              "aortica.data",
+              "aortica.io",
+              "aortica.models",
+              "aortica.models.output_gating",
+              "aortica.edge.simplified_output",
+              "aortica.signal",
+          ]:
+              importlib.import_module(name)
+              print(f"ok  {name}")
+          PY
+
+      - name: CLI entry point responds
+        run: |
+          cd "$(mktemp -d)"
+          aortica --help > /dev/null
+          aortica --version
+
+  artifacts:
+    name: Release artifacts in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Catches a placeholder or stale edge model before it reaches a build.
+      - name: Verify edge model and gating sidecars
+        run: python scripts/sync_release_artifacts.py --check
+
+  test:
+    name: Tests and static analysis
+    needs: import-smoke
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      # Broad extras on purpose: a large share of the suite imports optional
+      # dependencies, and without them the failures look like broken code
+      # rather than a missing install. `tf` and `reports` are left out —
+      # TensorFlow and WeasyPrint are heavy and need system libraries, and
+      # nothing in the default suite needs them.
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev,cli,api,torch,edge,signal,hub,auth,retrieval,dimse,fhir,hl7,smart,sync,serial,grpc,jsonld,scan,federated]'
+
+      # Advisory for now. The tree carries several hundred pre-existing
+      # findings, mostly import order and line length; enforcing on day one
+      # would fail every PR for reasons unrelated to it. Burn the baseline
+      # down, then drop `continue-on-error`.
+      - name: Ruff
+        run: ruff check aortica tests scripts
+        continue-on-error: true
+
+      - name: Mypy
+        run: mypy aortica
+        continue-on-error: true
+
+      # No --maxfail: this suite has never run in CI, so the first runs need
+      # to show the whole picture rather than stopping at the first failure.
+      - name: Pytest
+        run: pytest -q -m "not slow"
+
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      # `prebuild` runs the edge-model size guard, so a placeholder model
+      # fails the build here rather than shipping a PWA whose offline
+      # fallback cannot load.
+      - name: Build
+        working-directory: frontend
+        run: npm run build

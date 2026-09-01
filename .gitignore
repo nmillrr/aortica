@@ -8,26 +8,26 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+/build/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/.eggs/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/wheels/
 *.egg-info/
 *.egg
 
 # Virtual environments
-.venv/
-venv/
-ENV/
-env/
+/.venv/
+/venv/
+/ENV/
+/env/
 
 # IDE
 .idea/
@@ -44,14 +44,16 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# Data files (users download separately)
-data/
+# Downloaded corpora (users fetch these separately).
+# Root-anchored on purpose: an unanchored `data/` also matches
+# `aortica/data/`, which silently excluded the dataset loaders.
+/data/
 *.hea
 *.dat
 *.mat
 
 # Model checkpoints
-checkpoints/
+/checkpoints/
 *.pt
 *.pth
 *.h5
@@ -62,11 +64,11 @@ checkpoints/
 
 # Logs
 *.log
-wandb/
-runs/
+/wandb/
+/runs/
 
 # MkDocs build output
-site/
+/site/
 
 # Docker / deployment
 .env

@@ -121,6 +121,12 @@ dev = [
 [tool.setuptools.packages.find]
 include = ["aortica*"]
 
+# The output-gating sidecars must travel with the wheel. Without them
+# aortica.models.output_gating cannot tell a trained output from an
+# untrained one, and it refuses to serve predictions rather than guess.
+[tool.setuptools.package-data]
+aortica = ["models/artifacts/*.json"]
+
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true

@@ -6,13 +6,17 @@ from aortica.data.mimic_iv_ecg import (
     load_combined,
     load_mimic_iv_ecg,
 )
-from aortica.data.ptbxl import load_ptbxl
+from aortica.data.ptbxl import DatasetLoaderUnavailableError, load_ptbxl
+from aortica.data.ptbxl_labels import LABELABLE_OUTPUTS, per_task_weights
 
 __all__ = [
     "load_ptbxl",
     "load_mimic_iv_ecg",
     "load_combined",
     "MIMICDataNotFoundError",
+    "DatasetLoaderUnavailableError",
+    "LABELABLE_OUTPUTS",
+    "per_task_weights",
     "ECGDataset",
     "create_tf_dataset",
 ]

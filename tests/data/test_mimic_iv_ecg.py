@@ -15,6 +15,7 @@ from aortica.data.mimic_iv_ecg import (
     load_combined,
     load_mimic_iv_ecg,
 )
+from aortica.data.ptbxl import DatasetLoaderUnavailableError
 from aortica.io.ecg_record import ECGRecord
 
 
@@ -420,6 +421,15 @@ def _create_synthetic_ptbxl(base_dir: Path) -> None:
         )
 
 
+@pytest.mark.xfail(
+    raises=DatasetLoaderUnavailableError,
+    strict=True,
+    reason=(
+        "load_combined() needs the PTB-XL loader, which was never committed "
+        "to this repository — see aortica/data/ptbxl.py. Strict, so these "
+        "turn back into ordinary passing tests the moment it is restored."
+    ),
+)
 class TestLoadCombined:
     """Test the combined PTB-XL + MIMIC-IV-ECG loader."""
 

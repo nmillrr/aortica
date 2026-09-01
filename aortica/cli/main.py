@@ -171,6 +171,19 @@ def _print_results_table(result_dict: Dict[str, Any]) -> None:
             )
 
         console.print(table)
+
+        # Say plainly why a head is short some rows.  A silently shorter
+        # table reads as "the model found nothing", which is the opposite of
+        # what an untrained output means.
+        suppressed: List[str] = task_pred.get("suppressed_classes", [])
+        if suppressed:
+            console.print(
+                Text(
+                    f"  {len(suppressed)} output(s) withheld — not trained in "
+                    f"this checkpoint: {', '.join(suppressed)}",
+                    style="dim",
+                )
+            )
         console.print()
 
     # ── Uncertainty ───────────────────────────────────────────────────

@@ -52,11 +52,10 @@ _VARIANT_FILENAME: Dict[str, str] = {
 # NOTE: no released checkpoint trains all 72 model outputs — v0.2.0 covers 26
 # (PTB-XL), v0.3.0 covers 28 (PTB-XL + Chapman-Shaoxing).  The remainder,
 # including the entire risk head, are untrained and emit meaningless values.
-# Callers must gate them via
-# ``aortica.edge.simplified_output.load_trained_outputs()`` before using
-# predictions for anything user-facing, and should additionally apply
-# ``load_class_thresholds()`` — the heads are not calibrated to the clinical
-# tier thresholds in ``simplified_output``.  See the model card.
+# They are suppressed by default: ``run_inference_pipeline`` withholds them
+# from every response, and ``load_pretrained`` below activates the allowlist
+# and per-class operating points for the CHW tier logic.  See
+# ``aortica.models.output_gating`` and the model card.
 _KNOWN_CHECKSUMS: Dict[str, Dict[str, str]] = {
     "0.2.0/full": {
         "sha256": "003f24cadaed86019aa86df42605451d00b6cbeb0aa94cbf28b3225cf977b111",
@@ -392,6 +391,14 @@ def load_pretrained(
         model.load_state_dict(checkpoint)
 
     model.eval()
+
+    # Activate the packaged trained-output allowlist and per-class operating
+    # points for the CHW tier logic.  A checkpoint arriving from the Hub is
+    # exactly the moment the warning above becomes live.
+    from aortica.models.output_gating import activate_simplified_output_gating
+
+    activate_simplified_output_gating()
+
     return model
 
 

@@ -14,12 +14,16 @@ import pytest
 torch = pytest.importorskip("torch")
 
 from aortica.models.conformal_prediction import (  # noqa: E402
-    ALL_TASKS,
     CLASSIFICATION_TASKS,
     TASK_NUM_OUTPUTS,
     ConformalPredictor,
     UncertaintyReport,
 )
+
+# ALL_TASKS moved to task_dims in US-129 and stopped being re-exported here,
+# which broke collection of this whole module — and so, on a --maxfail run,
+# every module after it.
+from aortica.models.task_dims import ALL_TASKS  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Helpers

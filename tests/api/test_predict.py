@@ -594,8 +594,18 @@ class TestPredictEndpointWithModel:
         preds = resp.json()["predictions"]
         assert len(preds) >= 1
         rhythm_pred = [p for p in preds if p["task"] == "rhythm"][0]
-        assert len(rhythm_pred["class_names"]) == 28
-        assert len(rhythm_pred["probabilities"]) == 28
+
+        # The rhythm head has 28 outputs, but only the trained ones are
+        # reported; the rest are named in suppressed_classes rather than
+        # served as if they were predictions.
+        assert len(rhythm_pred["class_names"]) == len(rhythm_pred["probabilities"])
+        assert (
+            len(rhythm_pred["class_names"]) + len(rhythm_pred["suppressed_classes"])
+            == 28
+        )
+        assert rhythm_pred["suppressed_classes"], (
+            "no released checkpoint trains all 28 rhythm outputs"
+        )
         # Check probabilities are all between 0 and 1
         for p in rhythm_pred["probabilities"]:
             assert 0.0 <= p <= 1.0

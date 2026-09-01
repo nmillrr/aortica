@@ -337,9 +337,18 @@ pytest --cov=aortica --cov-report=term-missing
 > `pip install aortica` and `docker run aortica/server:latest` do not work yet.
 > Build from source in the meantime.
 >
-> The trained model covers **26 of the model's 72 outputs**; the rest — including
-> the entire risk head — have no label source in PTB-XL and must be suppressed
-> via `simplified_output.load_trained_outputs()`. See the model card for detail.
+> The released v0.3.0 checkpoint covers **28 of the model's 72 outputs**
+> (PTB-XL + Chapman-Shaoxing); the rest — including the entire risk head — have
+> no label source in either cohort. They are **suppressed by default**: every
+> inference path withholds them and names them in `suppressed_classes`, and
+> re-enabling them takes an explicit `suppress_untrained=False`. See
+> `aortica/models/output_gating.py` and the model card for detail.
+>
+> **Training is not reproducible from this repository.** The PTB-XL loaders were
+> excluded by a `.gitignore` rule and never committed, so `aortica train` and
+> `aortica benchmark` cannot run until they are rewritten — see
+> `aortica/data/ptbxl.py` for the contract a replacement must satisfy.
+> Inference from a released checkpoint is unaffected.
 
 ---
 

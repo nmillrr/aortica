@@ -164,6 +164,15 @@ def create_app(
         allow_headers=["*"],
     )
 
+    # ---- output gating ----
+    # simplify_output() keeps its own module-level allowlist and calibration
+    # table, and its docstring puts the model-loading path in charge of
+    # switching them on.  Nothing ever did, so the CHW tier logic has been
+    # scoring 44 untrained heads.  Wire it up here, once, at app construction.
+    from aortica.models.output_gating import activate_simplified_output_gating
+
+    activate_simplified_output_gating()
+
     # ---- shared state ----
     app.state.enabled_tasks = list(enabled_tasks)  # type: ignore[attr-defined]
     app.state.model_loaded = model_loaded  # type: ignore[attr-defined]
