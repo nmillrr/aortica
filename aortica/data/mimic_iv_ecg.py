@@ -131,6 +131,45 @@ _ICD10_MAP: dict[str, tuple[int, int, int]] = {
 }
 
 
+class CombinedLabelSchemaError(ValueError):
+    """Two corpora produced label matrices that cannot be concatenated.
+
+    Raised by :func:`load_combined` when the loaders disagree on what a
+    label column *means*, which is not something concatenation can fix.
+
+    This is currently a real, open defect rather than a defensive check.
+    :func:`load_ptbxl` emits one column per model output, aligned to the
+    head class lists — 28 columns for the rhythm head, 72 for the full
+    multi-task concatenation.  :func:`load_mimic_iv_ecg` emits three
+    columns, one per *head*, indicating only that some finding in that
+    head's territory was present.  A ``1`` in MIMIC column 0 means "some
+    rhythm abnormality"; a ``1`` in PTB-XL column 0 means "atrial
+    fibrillation".  Stacking them would train the rhythm head against a
+    column whose meaning changes with the row's source.
+
+    Closing this means rewriting the MIMIC label pipeline to the same
+    per-output contract, which needs the ICD codes in the MIMIC-IV *hosp*
+    module — a separate PhysioNet download from the waveform subset.
+    """
+
+    def __init__(self, ptbxl_width: int, mimic_width: int) -> None:
+        self.ptbxl_width = ptbxl_width
+        self.mimic_width = mimic_width
+        super().__init__(
+            f"Cannot merge corpora: PTB-XL produced {ptbxl_width} label "
+            f"columns and MIMIC-IV-ECG produced {mimic_width}.\n"
+            "These are different label schemas, not different widths of the "
+            "same one. PTB-XL emits one column per model output; "
+            "load_mimic_iv_ecg() still emits one column per head "
+            "(rhythm/structural/ischaemia) and cannot say which finding it "
+            "saw.\n"
+            "Fix load_mimic_iv_ecg() to emit per-output labels before "
+            "combining. That needs diagnoses_icd.csv from the MIMIC-IV hosp "
+            "module, which is a separate download from the ECG waveform "
+            "subset."
+        )
+
+
 class MIMICDataNotFoundError(FileNotFoundError):
     """Raised when MIMIC-IV-ECG data files are not found.
 
@@ -531,6 +570,8 @@ def load_combined(
         b: Tuple[List[ECGRecord], np.ndarray],
         a_tagged: List[ECGRecord],
     ) -> Tuple[List[ECGRecord], np.ndarray]:
+        if a[1].shape[1:] != b[1].shape[1:]:
+            raise CombinedLabelSchemaError(a[1].shape[1], b[1].shape[1])
         merged_records = list(a_tagged) + list(b[0])
         merged_labels = np.concatenate([a[1], b[1]], axis=0)
         return merged_records, merged_labels

@@ -124,8 +124,12 @@ include = ["aortica*"]
 # The output-gating sidecars must travel with the wheel. Without them
 # aortica.models.output_gating cannot tell a trained output from an
 # untrained one, and it refuses to serve predictions rather than guess.
+#
+# The label maps must travel with it for the same class of reason: they are
+# the corpus-vocabulary-to-output mappings the training pipeline reads, and
+# a wheel without them cannot build a label matrix at all.
 [tool.setuptools.package-data]
-aortica = ["models/artifacts/*.json"]
+aortica = ["models/artifacts/*.json", "data/label_maps/*.yaml"]
 
 [tool.mypy]
 python_version = "3.10"

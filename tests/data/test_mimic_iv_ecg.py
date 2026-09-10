@@ -9,13 +9,13 @@ import pytest
 import wfdb
 
 from aortica.data.mimic_iv_ecg import (
+    CombinedLabelSchemaError,
     MIMICDataNotFoundError,
     _map_icd_to_taxonomy,
     _split_data,
     load_combined,
     load_mimic_iv_ecg,
 )
-from aortica.data.ptbxl import DatasetLoaderUnavailableError
 from aortica.io.ecg_record import ECGRecord
 
 
@@ -422,12 +422,16 @@ def _create_synthetic_ptbxl(base_dir: Path) -> None:
 
 
 @pytest.mark.xfail(
-    raises=DatasetLoaderUnavailableError,
+    raises=CombinedLabelSchemaError,
     strict=True,
     reason=(
-        "load_combined() needs the PTB-XL loader, which was never committed "
-        "to this repository — see aortica/data/ptbxl.py. Strict, so these "
-        "turn back into ordinary passing tests the moment it is restored."
+        "The PTB-XL loader is restored, and these tests immediately found the "
+        "next problem: load_ptbxl() emits one column per model output while "
+        "load_mimic_iv_ecg() still emits one column per head, so the two "
+        "label matrices mean different things and cannot be concatenated. "
+        "Strict, so these turn back into ordinary passing tests once the "
+        "MIMIC label pipeline is rewritten to the per-output contract — "
+        "which needs diagnoses_icd.csv from the MIMIC-IV hosp module."
     ),
 )
 class TestLoadCombined:

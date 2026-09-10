@@ -1,0 +1,386 @@
+# PTB-XL SCP-ECG statement codes -> Aortica output names.
+#
+# This file is DATA, not code, because the same reconstruction problem
+# recurs for every corpus added after this one (Chapman, CODE-15, MIMIC).
+# A mapping that lives in a file can be diffed, reviewed by a clinician who
+# does not read Python, and cited in a paper; one that lives in a dict
+# literal cannot.
+#
+# ---------------------------------------------------------------------
+# Provenance
+# ---------------------------------------------------------------------
+# The original mapping was lost with the loader (see aortica/data/ptbxl.py).
+# It was not re-invented here -- it was *recovered* by solving for it.
+#
+# artifacts_combined/test_metrics.json records, for each of the 26 outputs
+# PTB-XL can label, the number of positive examples in the v0.3.0 test set
+# ("test_pos").  PTB-XL's test set is stratification fold 10, a fixed set of
+# 2,198 records.  So for each Aortica class there is a known integer that any
+# correct set of SCP codes must reproduce exactly.  Candidate code sets were
+# counted against fold 10 and matched to those integers.
+#
+# All 26 classes below reproduce their published test_pos exactly.  Where more
+# than one code set produced the same count, the ambiguity is recorded in the
+# class's `note`.  Counts for folds 1-8 (train) and 9 (val) are recorded too;
+# they are consistency evidence only, since the released metrics do not
+# report them.
+#
+# Recovered:  2026-09-10
+# Verified against: artifacts_combined/test_metrics.json (v0.3.0)
+# Source vocabulary: scp_statements.csv, PTB-XL 1.0.3 (71 codes)
+
+version: 1
+
+source:
+  name: PTB-XL
+  release: 1.0.3
+  vocabulary: SCP-ECG statements (scp_statements.csv)
+  url: https://physionet.org/content/ptb-xl/1.0.3/
+
+# How a code in the `scp_codes` column counts as present.
+#
+# PTB-XL stores scp_codes as a dict of code -> likelihood, e.g.
+# "{'NORM': 100.0, 'LVOLT': 0.0, 'SR': 0.0}".  A likelihood of 0.0 does NOT
+# mean the statement is absent: it means no likelihood was assigned, and it is
+# by far the most common value (28,992 of 62,007 assignments).  Thresholding
+# above 0 would silently discard nearly half the labels in the corpus.
+#
+# Presence-of-key is therefore the rule, and it is the rule the released
+# weights were trained under -- a likelihood threshold of any kind fails to
+# reproduce the published test_pos counts.
+presence_rule:
+  min_likelihood: 0.0
+  include_zero_likelihood: true
+
+# PTB-XL ships its own patient-disjoint stratification. Folds must not be
+# resampled: patients recur across records, and any other split leaks a
+# patient across the evaluation boundary.
+splits:
+  train: [1, 2, 3, 4, 5, 6, 7, 8]
+  val:   [9]
+  test:  [10]
+
+# ---------------------------------------------------------------------
+# Class mappings
+# ---------------------------------------------------------------------
+# task            which Aortica head the output belongs to
+# codes           SCP codes whose presence sets this output to 1
+# verified_test_pos  positives on fold 10; must equal test_metrics.json
+# counts          [train(1-8), val(9), test(10)] -- consistency evidence
+# snomed          SNOMED CT concept id -- DELIBERATELY UNSET, see below
+#
+# Every `snomed` field is null.  The cross-corpus ontology this schema is
+# built for needs real, verified concept ids; inventing plausible-looking
+# ones would be worse than leaving the work visibly undone, because a wrong
+# id is indistinguishable from a right one downstream.  Filling these in
+# against a SNOMED CT browser is the next piece of work this file exists to
+# make possible.
+
+classes:
+
+  # ---- rhythm head (17 of 28 outputs) ----
+
+  AF:
+    task: rhythm
+    codes: [AFIB]
+    verified_test_pos: 152
+    counts: [1211, 151, 152]
+    snomed: null
+
+  AFL:
+    task: rhythm
+    codes: [AFLT]
+    verified_test_pos: 7
+    counts: [59, 7, 7]
+    snomed: null
+
+  SVT:
+    task: rhythm
+    codes: [SVTAC, PSVT]
+    verified_test_pos: 5
+    counts: [32, 5, 5]
+    snomed: null
+    note: >
+      Sustained (SVTAC, 27 records) and paroxysmal (PSVT, 24) supraventricular
+      tachycardia are pooled. Neither alone reaches the published count of 5;
+      together they match exactly.
+
+  sinus_brady:
+    task: rhythm
+    codes: [SBRAD]
+    verified_test_pos: 64
+    counts: [509, 64, 64]
+    snomed: null
+
+  sinus_tachy:
+    task: rhythm
+    codes: [STACH]
+    verified_test_pos: 82
+    counts: [661, 83, 82]
+    snomed: null
+
+  PAC:
+    task: rhythm
+    codes: [PAC]
+    verified_test_pos: 40
+    counts: [318, 40, 40]
+    snomed: null
+    note: >
+      PRC(S) ("premature complex(es)", origin unspecified) is NOT included.
+      Adding it gives 41 against a published 40.
+
+  PVC:
+    task: rhythm
+    codes: [PVC, BIGU, TRIGU]
+    verified_test_pos: 122
+    counts: [956, 119, 122]
+    snomed: null
+    note: >
+      PVC alone gives 114 against a published 122. Bigeminy and trigeminy are
+      recorded in PTB-XL as patterns of "unknown origin, SV or ventricular",
+      so pooling them into PVC is a lossy choice -- but it is demonstrably the
+      choice the released weights were trained under.
+
+  av_block_1st:
+    task: rhythm
+    codes: [1AVB]
+    verified_test_pos: 79
+    counts: [634, 80, 79]
+    snomed: null
+    note: >
+      LPR ("prolonged PR interval", a form statement) is excluded; including
+      it gives 96 against a published 79.
+
+  av_block_2nd:
+    task: rhythm
+    codes: [2AVB]
+    verified_test_pos: 1
+    counts: [12, 1, 1]
+    snomed: null
+    note: >
+      14 records corpus-wide, 1 in the test fold. Reported metrics for this
+      class are not meaningful; it is gated by class_thresholds.json.
+
+  av_block_3rd:
+    task: rhythm
+    codes: [3AVB]
+    verified_test_pos: 2
+    counts: [12, 2, 2]
+    snomed: null
+    note: 16 records corpus-wide. Same caveat as av_block_2nd.
+
+  LBBB:
+    task: rhythm
+    codes: [CLBBB, ILBBB]
+    verified_test_pos: 62
+    counts: [490, 61, 62]
+    snomed: null
+    note: >
+      Complete AND incomplete LBBB. CLBBB alone gives 54 against a published
+      62. Clinically these are distinct entities and pooling them is
+      questionable -- but it is what v0.3.0 did, and changing it changes the
+      meaning of the shipped LBBB output.
+
+  RBBB:
+    task: rhythm
+    codes: [CRBBB, IRBBB]
+    verified_test_pos: 166
+    counts: [1326, 166, 166]
+    snomed: null
+    note: >
+      Complete AND incomplete RBBB; CRBBB alone gives 54. The pooling matters
+      more here than for LBBB: incomplete RBBB is a common normal variant and
+      outnumbers the complete form 1118 to 541 corpus-wide, so the shipped
+      "RBBB" output is majority-driven by a benign finding.
+
+  LAFB:
+    task: rhythm
+    codes: [LAFB]
+    verified_test_pos: 162
+    counts: [1298, 163, 162]
+    snomed: null
+
+  LPFB:
+    task: rhythm
+    codes: [LPFB]
+    verified_test_pos: 18
+    counts: [141, 18, 18]
+    snomed: null
+
+  WPW:
+    task: rhythm
+    codes: [WPW]
+    verified_test_pos: 8
+    counts: [64, 7, 8]
+    snomed: null
+
+  pacemaker_rhythm:
+    task: rhythm
+    codes: [PACE]
+    verified_test_pos: 28
+    counts: [237, 29, 28]
+    snomed: null
+
+  normal_sinus_rhythm:
+    task: rhythm
+    codes: [SR]
+    verified_test_pos: 1674
+    counts: [13404, 1670, 1674]
+    snomed: null
+    note: >
+      SR (the rhythm statement "sinus rhythm"), not NORM (the diagnostic
+      statement "normal ECG"). NORM gives 963 and SR+NORM gives 1822, against
+      a published 1674. The distinction is real: a record can be in sinus
+      rhythm and still be a diagnostically abnormal ECG.
+
+  # ---- structural head (4 of 19 outputs) ----
+
+  LVH:
+    task: structural
+    codes: [LVH, VCLVH]
+    verified_test_pos: 234
+    counts: [1883, 237, 234]
+    snomed: null
+    note: >
+      The diagnostic statement plus the voltage-criteria form statement; LVH
+      alone gives 214 against a published 234.
+      UNRESOLVED: SEHYP (septal hypertrophy, 29 records corpus-wide) has zero
+      records in fold 10, so the test count cannot distinguish whether v0.3.0
+      included it. It is excluded here on clinical grounds -- septal
+      hypertrophy is the HCM pattern, not left ventricular hypertrophy -- and
+      19 of the 29 SEHYP records already carry LVH or VCLVH anyway, so at most
+      10 training records are affected either way.
+
+  RVH:
+    task: structural
+    codes: [RVH]
+    verified_test_pos: 12
+    counts: [102, 12, 12]
+    snomed: null
+
+  LA_enlargement:
+    task: structural
+    codes: ["LAO/LAE"]
+    verified_test_pos: 42
+    counts: [341, 43, 42]
+    snomed: null
+    note: >
+      PTB-XL conflates atrial overload and atrial enlargement in one code.
+      The shipped output name says "enlargement" and is therefore slightly
+      broader than it claims.
+
+  RA_enlargement:
+    task: structural
+    codes: ["RAO/RAE"]
+    verified_test_pos: 10
+    counts: [79, 10, 10]
+    snomed: null
+    note: Same overload/enlargement conflation as LA_enlargement.
+
+  # ---- ischaemia head (5 of 19 outputs) ----
+
+  STEMI:
+    task: ischaemia
+    codes: [INJAS, INJAL, INJIN, INJIL, INJLA]
+    verified_test_pos: 31
+    counts: [256, 36, 31]
+    snomed: null
+    note: >
+      READ THIS BEFORE TRUSTING THE STEMI OUTPUT.
+      PTB-XL has no STEMI statement. The five codes above are "subendocardial
+      injury" in anteroseptal / anterolateral / inferior / inferolateral /
+      lateral leads -- they denote an acute injury current, which is why they
+      were chosen, but subendocardial injury is textbook NON-ST-elevation
+      territory. The set reproduces the published count of 31 exactly and no
+      other candidate does (STE_ alone gives 3; INJ*+STE_ gives 34; MI codes
+      restricted to infarction_stadium1 == "Stadium I" gives 14), so this is
+      what v0.3.0 was trained on.
+      The consequence is that the output labelled STEMI was trained on a
+      proxy that is arguably its clinical opposite. It is a naming and
+      validation problem, not a mapping error, and it should be resolved
+      before this output is ever surfaced to a clinician.
+
+  posterior_MI:
+    task: ischaemia
+    codes: [PMI, IPMI, IPLMI]
+    verified_test_pos: 10
+    counts: [80, 11, 10]
+    snomed: null
+    note: >
+      Isolated posterior, inferoposterior, and inferoposterolateral MI. PMI
+      alone gives 2 against a published 10.
+
+  old_MI:
+    task: ischaemia
+    codes: [IMI, ASMI, AMI, ALMI, ILMI, LMI]
+    verified_test_pos: 526
+    counts: [4165, 511, 526]
+    snomed: null
+    note: >
+      All MI diagnostic statements EXCEPT the three posterior ones, which go
+      to posterior_MI -- so the two outputs partition the MI codes rather than
+      overlapping. The full set of nine gives 532 against a published 526, and
+      this six-code subset is the only inclusive subset that gives exactly
+      526.
+      "old" is doing no work in the mapping: PTB-XL's infarction_stadium1
+      column, which is what actually distinguishes acute from chronic, is not
+      consulted. 16,187 of 21,799 records leave it blank.
+
+  digitalis_effect:
+    task: ischaemia
+    codes: [DIG]
+    verified_test_pos: 18
+    counts: [145, 18, 18]
+    snomed: null
+
+  QTc_prolongation:
+    task: ischaemia
+    codes: [LNGQT]
+    verified_test_pos: 11
+    counts: [94, 12, 11]
+    snomed: null
+    note: >
+      LNGQT is a qualitative read of the QT interval, not a computed QTc
+      against a rate-correction formula. The output name implies a measurement
+      the label does not carry.
+
+# ---------------------------------------------------------------------
+# Codes deliberately left unmapped
+# ---------------------------------------------------------------------
+# Recorded so the omission is visibly a decision rather than an oversight,
+# and so a future reviewer can challenge any line here.
+unmapped_codes:
+  NORM:     No rhythm/finding semantics; "normal ECG" overall. See normal_sinus_rhythm.
+  SR:       Mapped -- listed here only to note it is the rhythm statement, not NORM.
+  SEHYP:    Septal hypertrophy. Closest Aortica output is HCM, which PTB-XL cannot label. See LVH note.
+  IRBBB:    Mapped into RBBB.
+  ILBBB:    Mapped into LBBB.
+  LPR:      Prolonged PR without a block diagnosis; excluded from av_block_1st.
+  PRC(S):   Premature complexes of unspecified origin; excluded from PAC.
+  IVCD:     Non-specific intraventricular conduction delay; no Aortica output.
+  SARRH:    Sinus arrhythmia; no Aortica output.
+  SVARR:    Supraventricular arrhythmia, unspecified; too coarse for SVT.
+  ANEUR:    Ventricular aneurysm ST-T pattern; no Aortica output.
+  EL:       Electrolyte disturbance or drug effect, unspecified. Too coarse
+            for hyperkalaemia/hypokalaemia/hypercalcaemia, which need serum
+            chemistry to label properly (see MIMIC-IV hosp module).
+  ISC_:     Non-specific ischaemia; too coarse for occlusive_NSTEMI.
+  ISCAL:    Regional ischaemia (anterolateral); no matching Aortica output.
+  ISCIN:    Regional ischaemia (inferior); no matching Aortica output.
+  ISCIL:    Regional ischaemia (inferolateral); no matching Aortica output.
+  ISCAS:    Regional ischaemia (anteroseptal); no matching Aortica output.
+  ISCLA:    Regional ischaemia (lateral); no matching Aortica output.
+  ISCAN:    Regional ischaemia (anterior); no matching Aortica output.
+  NDT:      Non-diagnostic T abnormality; deliberately unlabelable.
+  NST_:     Non-specific ST change; deliberately unlabelable.
+  STD_:     Non-specific ST depression; candidate for occlusive_NSTEMI, but
+            "non-specific" is exactly what that output must not be trained on.
+  STE_:     Non-specific ST elevation; see the STEMI note.
+  ABQRS:    Abnormal QRS, unspecified.
+  QWAVE:    Q waves present; a component of old MI, not a diagnosis.
+  LOWT:     Low-amplitude T waves.
+  NT_:      Non-specific T-wave change.
+  INVT:     Inverted T waves; a component of Wellens, not sufficient alone.
+  TAB_:     T-wave abnormality, unspecified.
+  LVOLT:    Low QRS voltage; candidate for amyloidosis, not sufficient alone.
+  HVOLT:    High QRS voltage; subsumed by VCLVH for LVH purposes.

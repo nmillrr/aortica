@@ -30,20 +30,30 @@ def test_public_names_are_exported() -> None:
         assert hasattr(data, name), f"{name} is in __all__ but not defined"
 
 
-def test_load_ptbxl_failure_is_explicit() -> None:
-    """Calling the absent loader explains itself instead of NameError-ing."""
-    from aortica.data import DatasetLoaderUnavailableError, load_ptbxl
+def test_load_ptbxl_missing_corpus_is_explicit() -> None:
+    """The loader is restored; a missing *corpus* still explains itself.
 
-    with pytest.raises(DatasetLoaderUnavailableError) as excinfo:
+    This test used to assert that ``load_ptbxl`` raised
+    ``DatasetLoaderUnavailableError`` because the loader itself was gone.
+    It now asserts the remaining failure mode: the loader exists, and the
+    error names the path and tells the caller where to download PTB-XL.
+    """
+    from aortica.data import PTBXLDataNotFoundError, load_ptbxl
+
+    with pytest.raises(PTBXLDataNotFoundError) as excinfo:
         load_ptbxl("/nonexistent/ptbxl")
 
     message = str(excinfo.value)
-    assert "aortica/data/ptbxl.py" in message
-    assert "restored" in message.lower()
+    assert "/nonexistent/ptbxl" in message
+    assert "physionet.org" in message
 
 
 def test_loader_error_is_a_notimplementederror() -> None:
-    """Existing ``except NotImplementedError`` handlers keep working."""
+    """Existing ``except NotImplementedError`` handlers keep working.
+
+    ``DatasetLoaderUnavailableError`` outlived the PTB-XL gap: it remains
+    the shared signal for a corpus with no loader behind it.
+    """
     from aortica.data import DatasetLoaderUnavailableError
 
     assert issubclass(DatasetLoaderUnavailableError, NotImplementedError)
