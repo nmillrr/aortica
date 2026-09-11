@@ -354,6 +354,91 @@ class TestSplitIndices:
 
 
 # ----------------------------------------------------------------------
+# Dead leads
+# ----------------------------------------------------------------------
+
+
+class TestNonFiniteRecordsAreDropped:
+    """A minority of Chapman records store a whole lead of NaN.
+
+    This is not a hypothetical. Roughly one record in 200 carries a dead
+    lead, and a single one poisons the batch it lands in: NaN propagates
+    through the shared backbone into every head's loss, so the run trains
+    on NaN from the first step and reports it as a loss value rather than
+    raising. It cost a full combined-corpus training run to find, which is
+    why there is a test.
+    """
+
+    def _write_record(
+        self, directory: Path, name: str, *, dead_lead: bool
+    ) -> None:
+        import wfdb
+
+        leads = [
+            "I", "II", "III", "aVR", "aVL", "aVF",
+            "V1", "V2", "V3", "V4", "V5", "V6",
+        ]
+        signal = np.random.randn(500, 12).astype(np.float64)
+        if dead_lead:
+            # All-NaN would be more faithful to the corpus, but wfdb.wrsamp
+            # derives each channel's gain from its min/max and cannot do
+            # that for a column with no finite value. Leaving a few valid
+            # samples lets the write path store the rest as WFDB's invalid
+            # sentinel, which reads back as NaN — the same condition the
+            # guard has to catch.
+            signal[:-5, 10] = np.nan
+        directory.mkdir(parents=True, exist_ok=True)
+        wfdb.wrsamp(
+            name,
+            fs=500,
+            units=["mV"] * 12,
+            sig_name=leads,
+            p_signal=signal,
+            fmt=["16"] * 12,
+            write_dir=str(directory),
+        )
+        header = directory / f"{name}.hea"
+        with open(header, "a", encoding="utf-8") as handle:
+            handle.write("#Age: 60\n#Sex: Male\n#Dx: 426177001\n")
+
+    @pytest.fixture
+    def corpus(self, tmp_path: Path) -> Path:
+        (tmp_path / "ConditionNames_SNOMED-CT.csv").write_text(
+            "Acronym Name,Full Name,Snomed_CT\nSB,Sinus Bradycardia,426177001\n",
+            encoding="utf-8",
+        )
+        records = tmp_path / "WFDBRecords" / "01" / "010"
+        for index in range(8):
+            self._write_record(
+                records, f"JS{index:05d}", dead_lead=(index == 3)
+            )
+        return tmp_path
+
+    def test_the_dead_lead_record_is_excluded(self, corpus: Path) -> None:
+        splits = load_chapman(corpus, sampling_rate=100)
+        kept = sum(len(records) for records, _ in splits)
+        assert kept == 7, "the NaN record should have been dropped"
+
+    def test_every_surviving_record_is_finite(self, corpus: Path) -> None:
+        for records, _ in load_chapman(corpus, sampling_rate=100):
+            for record in records:
+                assert np.isfinite(record.signals).all()
+
+    def test_labels_stay_aligned_after_a_drop(self, corpus: Path) -> None:
+        """The failure mode a naive skip introduces: labels shifted by one."""
+        for records, labels in load_chapman(corpus, sampling_rate=100):
+            assert len(records) == labels.shape[0]
+
+    def test_the_drop_is_reported(self, corpus: Path, caplog) -> None:
+        """Silently discarding records is its own kind of bug."""
+        import logging
+
+        with caplog.at_level(logging.WARNING, logger="aortica.data.chapman"):
+            load_chapman(corpus, sampling_rate=100)
+        assert any("non-finite" in record.message for record in caplog.records)
+
+
+# ----------------------------------------------------------------------
 # Failure modes
 # ----------------------------------------------------------------------
 

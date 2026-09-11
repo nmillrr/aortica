@@ -34,6 +34,7 @@ never record-for-record.  :data:`SPLIT_IS_RECONSTRUCTED` says so in code, and
 from __future__ import annotations
 
 import csv
+import logging
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
@@ -43,6 +44,8 @@ from numpy.typing import NDArray
 from aortica.data.label_mapping import LabelMap, load_label_map
 from aortica.io.ecg_record import ECGRecord
 
+logger = logging.getLogger(__name__)
+
 #: Mapping file backing this loader.
 LABEL_MAP_NAME = "chapman_snomed"
 
@@ -50,6 +53,9 @@ LABEL_MAP_NAME = "chapman_snomed"
 #: is unrecoverable.  Anything comparing against published ``chapman/*``
 #: metrics must account for it.
 SPLIT_IS_RECONSTRUCTED = True
+
+#: Channel count the model's backbone expects.
+EXPECTED_LEADS = 12
 
 _DOWNLOAD_HINT = (
     "Chapman-Shaoxing/Ningbo is a free, open-access dataset — no "
@@ -335,16 +341,54 @@ def load_chapman(
         records: list[ECGRecord] = []
         dx_sets: list[tuple[str, ...]] = []
 
+        unreadable = 0
+        non_finite = 0
+        wrong_leads = 0
+
         for position in chosen:
             header = headers[int(position)]
             meta = parse_header_metadata(header)
+            # Deliberately broad, and deliberately narrow in scope: the only
+            # statement inside the try is the third-party parse, so a bug in
+            # this module cannot hide here. A handful of the corpus's 45,152
+            # headers are malformed -- two declare twelve channels and ship
+            # eleven signal specifications, which surfaces from inside wfdb
+            # as IndexError rather than anything a reader could anticipate.
+            # Listing exception types is a losing game against a parser
+            # reading someone else's files; the requirement is that nothing
+            # is dropped silently.
             try:
                 record = read_ecg(
                     header.with_suffix(""), target_rate=float(sampling_rate)
                 )
-            except (FileNotFoundError, ValueError):
-                # A partially-downloaded corpus should not take the run down;
-                # skipping here keeps records and labels aligned.
+            except Exception as exc:
+                unreadable += 1
+                logger.debug(
+                    "chapman: skipping %s — %s: %s",
+                    header.stem, type(exc).__name__, exc,
+                )
+                continue
+
+            # A minority of records carry a whole lead of NaN — a failed
+            # acquisition the corpus stores rather than drops. One such
+            # record poisons the batch it lands in: NaN propagates through
+            # the backbone to every head's loss, and the run trains on NaN
+            # from the first step without raising anything. Dropping them is
+            # the only safe option; imputing a dead lead would be inventing
+            # signal.
+            if not np.isfinite(record.signals).all():
+                non_finite += 1
+                continue
+
+            # The backbone takes a fixed 12 channels. A short record would
+            # not fail here — it would fail deep inside the first forward
+            # pass, after the corpus had finished loading.
+            if record.num_leads != EXPECTED_LEADS:
+                wrong_leads += 1
+                logger.debug(
+                    "chapman: skipping %s — %d leads, expected %d",
+                    header.stem, record.num_leads, EXPECTED_LEADS,
+                )
                 continue
 
             metadata = dict(record.patient_metadata or {})
@@ -369,6 +413,16 @@ def load_chapman(
                 )
             )
             dx_sets.append(meta["dx"])
+
+        dropped = unreadable + non_finite + wrong_leads
+        if dropped:
+            logger.warning(
+                "chapman %s split: dropped %d record(s) — %d unreadable, "
+                "%d with non-finite samples (a dead lead), %d with the wrong "
+                "lead count. %d kept.",
+                split, dropped, unreadable, non_finite, wrong_leads,
+                len(records),
+            )
 
         labels = build_labels(dx_sets, multitask=multitask, label_map=mapping)
         return records, labels

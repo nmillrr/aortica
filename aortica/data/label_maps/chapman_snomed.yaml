@@ -92,14 +92,24 @@ presence_rule:
 #     which is a ~10% test split.
 #   * The model card reports 53,426 combined training records. PTB-XL
 #     contributes 17,418 (folds 1-8), so Chapman contributed 36,008 --
-#     79.75% of 45,152. An 80% train fraction predicts 36,121, which puts
-#     the combined figure at 53,539 against the published 53,426.
+#     79.75% of 45,152. An 80% train fraction selects 36,121.
 #
-# That last gap is 113 records, 0.2%. It is NOT explained by dropping
-# records with no mapped label (there are 2,350 of those, which would
-# overshoot in the other direction by 1,767). The likeliest explanation is
-# a handful of records the original loader failed to read, but that is a
-# guess and is recorded as one. Corroboration, not proof.
+# 36,121 overshoots by 113, and the reason turns out to be measurable: the
+# corpus contains records the loader has to drop. 85 of the 36,121 carry a
+# whole lead of NaN (a failed acquisition the corpus stores rather than
+# discards) and 2 have truncated headers that no WFDB reader can parse. That
+# leaves 36,034 actually loadable, so:
+#
+#     17,418 + 36,034 = 53,452   against a published 53,426   (+26, 0.07%)
+#
+# The residual 26 is within what the unknown seed alone would move: dead-lead
+# records are ~0.24% of the corpus, so which of them land in train varies by
+# a couple of dozen from seed to seed. An earlier version of this note
+# guessed the 113 came from unreadable records; that guess was roughly right
+# and is now measured rather than assumed.
+#
+# It remains corroboration of the 80/10/10 shape, not proof of the split.
+# Two different splits of the same corpus produce the same record count.
 split_policy:
   kind: random
   seed: 42
