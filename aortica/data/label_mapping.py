@@ -20,7 +20,7 @@ a record arrived from.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Mapping
@@ -49,6 +49,12 @@ class ClassMapping:
         verified_test_pos: Positive count this mapping is known to reproduce
             on the corpus's test split, or ``None`` if unverified.
         note: Rationale for any judgement call in this entry.
+        raw: The entry's whole YAML block.  Mapping files carry evidence
+            fields beyond the ones modelled here — ``corpus_total``,
+            ``implied_ratio``, ``acronyms``, ``published_test_pos`` — and
+            which of those apply depends on how that corpus's mapping was
+            established.  Keeping the block means a new kind of evidence
+            does not need a schema change to be recorded or tested.
     """
 
     name: str
@@ -57,6 +63,7 @@ class ClassMapping:
     snomed: str | None = None
     verified_test_pos: int | None = None
     note: str | None = None
+    raw: Mapping[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -66,7 +73,13 @@ class LabelMap:
     version: int
     source_name: str
     source_release: str
-    splits: dict[str, tuple[int, ...]]
+    #: Fold numbers per split, for a corpus that publishes its own
+    #: stratification (PTB-XL).  ``None`` when the corpus ships no folds.
+    splits: dict[str, tuple[int, ...]] | None
+    #: How to derive splits when the corpus publishes none — the raw
+    #: ``split_policy`` block, e.g. ``{"kind": "random", "seed": 42,
+    #: "fractions": {...}}``.  Empty when :attr:`splits` carries folds.
+    split_policy: dict[str, Any]
     include_zero_likelihood: bool
     min_likelihood: float
     classes: dict[str, ClassMapping]
@@ -148,7 +161,15 @@ def load_label_map(name: str) -> LabelMap:
 
     source = _require(raw, "source", str(path))
     presence = raw.get("presence_rule", {})
-    splits_raw = _require(raw, "splits", str(path))
+    # A corpus either publishes its own folds (PTB-XL) or it does not and
+    # the split has to be derived (Chapman). Exactly one must be present.
+    splits_raw = raw.get("splits")
+    policy_raw = raw.get("split_policy")
+    if (splits_raw is None) == (policy_raw is None):
+        raise LabelMapError(
+            f"{path}: provide exactly one of 'splits' (published folds) or "
+            "'split_policy' (how to derive a split)"
+        )
     classes_raw = _require(raw, "classes", str(path))
 
     # Validate against the model's real output names so a typo in the data
@@ -184,13 +205,19 @@ def load_label_map(name: str) -> LabelMap:
             snomed=body.get("snomed"),
             verified_test_pos=body.get("verified_test_pos"),
             note=body.get("note"),
+            raw=dict(body),
         )
 
     return LabelMap(
         version=int(raw.get("version", 1)),
         source_name=str(_require(source, "name", str(path))),
         source_release=str(source.get("release", "unknown")),
-        splits={k: tuple(int(f) for f in v) for k, v in splits_raw.items()},
+        splits=(
+            {k: tuple(int(f) for f in v) for k, v in splits_raw.items()}
+            if splits_raw is not None
+            else None
+        ),
+        split_policy=dict(policy_raw or {}),
         include_zero_likelihood=bool(
             presence.get("include_zero_likelihood", True)
         ),

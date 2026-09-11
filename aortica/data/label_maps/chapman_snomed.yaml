@@ -1,0 +1,477 @@
+# Chapman-Shaoxing/Ningbo SNOMED CT codes -> Aortica output names.
+#
+# Companion to ptbxl_scp.yaml; same schema, same purpose. See
+# aortica/data/label_mapping.py for why these live in data rather than code.
+#
+# ---------------------------------------------------------------------
+# Provenance
+# ---------------------------------------------------------------------
+# The Chapman loader was lost with the PTB-XL one, to the same unanchored
+# `data/` rule in .gitignore. This mapping was recovered the same way, but
+# the evidence is weaker and the method is worth stating precisely.
+#
+# PTB-XL publishes stratification folds, so its test split is a known set of
+# records and each class's published test_pos is an exact equation. Chapman
+# publishes no split. Its test_pos counts in test_metrics.json therefore
+# depend on a seed and strategy that are not recorded anywhere, and cannot
+# be solved for: the search space is unbounded, and several thousand random
+# 80/10/10 splits land within sampling noise of the published counts.
+#
+# So the mapping was recovered from prevalence *ratios* instead. Across the
+# 21 outputs Chapman labels, test_pos / corpus_total clusters tightly at
+# 0.0996 -- a ~10% test split -- and for 17 of the 21 a single SNOMED code
+# in the shipped vocabulary lands in that band while every alternative is
+# off by a factor of 3 or more.
+#
+# The decisive finding is what the mapping *excludes*. The record headers
+# carry 94 distinct SNOMED codes; ConditionNames_SNOMED-CT.csv, the
+# vocabulary file the dataset ships, names 55 concept ids across 63 acronym
+# rows, and only 51 of the header codes are among them -- 43 are not. The
+# lost loader evidently mapped through that file alone, because:
+#
+#   LVH   = 647  (164873001), not 6048 -- 55827005 (n=5401) is outside it
+#   RBBB  = 649  (59118001),  not 1745 -- 713427006 (n=1096) is outside it
+#   PVC   = 294  (17338001),  not 1385 -- 427172004 (n=1091) is outside it
+#
+# Each of those three alternatives would put the ratio 5-10x off. And the
+# seven outputs PTB-XL labels but Chapman does not are *exactly* the seven
+# whose codes fall outside that vocabulary or cannot be separated within it:
+#
+#   LAFB             445118002      outside the vocabulary (n=380)
+#   LPFB             445211001      outside the vocabulary (n=5)
+#   LA_enlargement   67741000119109 outside the vocabulary (n=1)
+#   pacemaker_rhythm 10370003       outside the vocabulary (n=1182)
+#   STEMI            --             no acute-injury concept in it at all
+#   posterior_MI     164865005      every MI shares one code; not separable
+#   digitalis_effect --             no digitalis concept in it at all
+#
+# Seven independent absences, seven explanations, none left over. That is
+# what promotes this from a plausible reconstruction to a well-evidenced one.
+#
+# What it is NOT is exact. Per-class ratios scatter from 0.073 to 0.142, all
+# consistent with binomial noise on small counts, and none of it separable
+# from a mapping that is slightly wrong in a low-count class. Treat
+# `implied_ratio` below as the evidence it is: supportive, not conclusive.
+#
+# Recovered:  2026-09-11
+# Verified against: artifacts_combined/test_metrics.json (v0.3.0, chapman/*)
+# Source vocabulary: ConditionNames_SNOMED-CT.csv (55 concept ids, 63 acronyms)
+
+version: 1
+
+source:
+  name: Chapman-Shaoxing
+  release: 1.0.0
+  vocabulary: SNOMED CT, via ConditionNames_SNOMED-CT.csv
+  url: https://physionet.org/content/ecg-arrhythmia/1.0.0/
+  records: 45152
+  note: >
+    PhysioNet publishes this as "A large scale 12-lead electrocardiogram
+    database for arrhythmia study". It merges the Chapman-Shaoxing and
+    Ningbo collections; the model card calls the whole thing
+    Chapman-Shaoxing 1.0.0 and that name is kept here for continuity.
+
+# Codes are asserted outright in the #Dx: header line -- there is no
+# likelihood annotation to threshold, unlike PTB-XL.
+presence_rule:
+  min_likelihood: 0.0
+  include_zero_likelihood: true
+
+# Chapman publishes no stratification, so a split has to be derived. This is
+# NOT the split v0.3.0 used -- that one is unrecoverable (see Provenance).
+# Any metric computed on this split is therefore comparable to v0.3.0 only
+# in distribution, never record-for-record.
+#
+# Each record is a distinct patient, so a record-level split does not leak a
+# patient across the evaluation boundary the way it would in PTB-XL.
+#
+# The 80/10/10 shape is not arbitrary. Two independent lines of evidence
+# point at it:
+#
+#   * test_pos / corpus_total clusters at 0.0996 across the 21 classes,
+#     which is a ~10% test split.
+#   * The model card reports 53,426 combined training records. PTB-XL
+#     contributes 17,418 (folds 1-8), so Chapman contributed 36,008 --
+#     79.75% of 45,152. An 80% train fraction predicts 36,121, which puts
+#     the combined figure at 53,539 against the published 53,426.
+#
+# That last gap is 113 records, 0.2%. It is NOT explained by dropping
+# records with no mapped label (there are 2,350 of those, which would
+# overshoot in the other direction by 1,767). The likeliest explanation is
+# a handful of records the original loader failed to read, but that is a
+# guess and is recorded as one. Corroboration, not proof.
+split_policy:
+  kind: random
+  seed: 42
+  fractions:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+
+# ---------------------------------------------------------------------
+# Class mappings
+# ---------------------------------------------------------------------
+# codes             SNOMED CT concept ids from the #Dx: header
+# acronyms          the dataset's own short names, for review
+# published_test_pos  the v0.3.0 chapman/<class> count this must be
+#                     consistent with -- NOT exactly reproducible, see above
+# corpus_total      positives across all 45,152 records under this mapping
+# implied_ratio     published_test_pos / corpus_total; ~0.0996 is the target
+#
+# Unlike ptbxl_scp.yaml, `snomed` here is populated -- the source vocabulary
+# IS SNOMED CT, so these are the dataset's own asserted concept ids rather
+# than a mapping someone would have to invent. Where a class pools several
+# codes, `snomed` carries the one that names the class itself.
+
+classes:
+
+  # ---- rhythm head (15 of 28 outputs) ----
+
+  AF:
+    task: rhythm
+    codes: ["164889003"]
+    acronyms: [AFIB]
+    snomed: "164889003"
+    published_test_pos: 180
+    corpus_total: 1780
+    implied_ratio: 0.1011
+
+  AFL:
+    task: rhythm
+    codes: ["164890007"]
+    acronyms: [AF]
+    snomed: "164890007"
+    published_test_pos: 838
+    corpus_total: 8060
+    implied_ratio: 0.1040
+    note: >
+      The dataset's acronym for atrial flutter is "AF", which is Aortica's
+      name for atrial fibrillation. Mapping by acronym rather than by
+      concept id would silently swap two of the commonest rhythm classes.
+
+  SVT:
+    task: rhythm
+    codes: ["426761007", "713422000"]
+    acronyms: [SVT, AT]
+    snomed: "426761007"
+    published_test_pos: 105
+    corpus_total: 1002
+    implied_ratio: 0.1048
+    note: >
+      Supraventricular tachycardia pooled with atrial tachycardia. SVT alone
+      totals 724, giving a ratio of 0.145 against a corpus-wide 0.0996;
+      pooling brings it to 0.1048. Atrial tachycardia is a supraventricular
+      tachycardia, so the pooling is defensible independently of the count.
+      Note 1002, not 724 + 297: nineteen records carry both codes, so the
+      total is the union and not the sum.
+
+  AVRT:
+    task: rhythm
+    codes: ["233897008"]
+    acronyms: [AVRT]
+    snomed: "233897008"
+    published_test_pos: 3
+    corpus_total: 26
+    implied_ratio: 0.1154
+    note: >
+      26 records corpus-wide, 3 in the published test split. The v0.3.0 card
+      already flags this class as unvalidated. It exists in the trained set
+      only because Chapman labels it at all -- PTB-XL cannot.
+
+  sinus_brady:
+    task: rhythm
+    codes: ["426177001"]
+    acronyms: [SB]
+    snomed: "426177001"
+    published_test_pos: 1650
+    corpus_total: 16559
+    implied_ratio: 0.0996
+    note: >
+      The single most common finding in the corpus, at 37% of all records,
+      and the anchor for the ~10% test-fraction estimate.
+
+  sinus_tachy:
+    task: rhythm
+    codes: ["427084000"]
+    acronyms: [ST]
+    snomed: "427084000"
+    published_test_pos: 743
+    corpus_total: 7255
+    implied_ratio: 0.1024
+
+  PAC:
+    task: rhythm
+    codes: ["284470004"]
+    acronyms: [APB]
+    snomed: "284470004"
+    published_test_pos: 143
+    corpus_total: 1312
+    implied_ratio: 0.1090
+    note: >
+      Atrial premature beats only. Junctional premature beats (251164006,
+      n=11) are excluded on clinical grounds -- a junctional beat is not
+      atrial. The counts cannot settle it either way: including them shifts
+      the ratio from 0.1090 to 0.1081, roughly one expected record.
+
+  PVC:
+    task: rhythm
+    codes: ["17338001", "11157007"]
+    acronyms: [VPB, VB]
+    snomed: "17338001"
+    published_test_pos: 29
+    corpus_total: 297
+    implied_ratio: 0.0976
+    note: >
+      Ventricular premature beats plus ventricular bigeminy (n=3), which is
+      by definition a repeating PVC; this follows the PTB-XL mapping, which
+      pools BIGU into PVC. Ventricular escape beats and escape trigeminy are
+      excluded -- escape beats are late, not premature. The 3 bigeminy
+      records are far below the resolution of the ratio evidence (0.0986
+      without them, 0.0976 with), so this rests on the clinical reading.
+
+  av_block_1st:
+    task: rhythm
+    codes: ["270492004"]
+    acronyms: [1AVB]
+    snomed: "270492004"
+    published_test_pos: 111
+    corpus_total: 1140
+    implied_ratio: 0.0974
+    note: >
+      PR interval extension (164947007, n=52) is excluded, matching the
+      PTB-XL mapping's exclusion of LPR from this class: a prolonged PR
+      without a block diagnosis is not first-degree AV block.
+
+  av_block_2nd:
+    task: rhythm
+    codes: ["195042002", "54016002", "28189009"]
+    acronyms: [2AVB, 2AVB1, 2AVB2]
+    snomed: "195042002"
+    published_test_pos: 13
+    corpus_total: 97
+    implied_ratio: 0.1340
+    note: >
+      Unspecified second-degree block plus Mobitz I; the vocabulary's
+      Mobitz II code (28189009) appears in no record but is kept so the
+      mapping is complete if a later release uses it. Unspecified alone
+      gives a ratio of 0.197, which is well outside the band.
+
+  av_block_3rd:
+    task: rhythm
+    codes: ["27885002"]
+    acronyms: [3AVB]
+    snomed: "27885002"
+    published_test_pos: 10
+    corpus_total: 76
+    implied_ratio: 0.1316
+
+  LBBB:
+    task: rhythm
+    codes: ["164909002"]
+    acronyms: [LBBB, LBBBB, LFBBB]
+    snomed: "164909002"
+    published_test_pos: 34
+    corpus_total: 240
+    implied_ratio: 0.1417
+    note: >
+      READ BEFORE COMPARING THIS CLASS ACROSS CORPORA.
+      The dataset's own vocabulary assigns three different acronyms -- left
+      bundle branch block, left *back* bundle branch block, and left *front*
+      bundle branch block -- to the single concept id 164909002. The
+      fascicular blocks are therefore indistinguishable from true LBBB in
+      this corpus, and the Aortica LBBB column trained on Chapman includes
+      records that PTB-XL would have labelled LAFB or LPFB.
+      This class also has the worst ratio fit of the 21 (0.1417 against
+      0.0996, roughly +2 sigma on n=240). The excess is consistent with
+      split noise, but a genuinely different mapping cannot be ruled out --
+      no alternative code set in the vocabulary fits better, and the two
+      nearest candidates outside it fit worse (adding 733534002 gives 0.075,
+      adding 251120003 gives 0.138).
+
+  RBBB:
+    task: rhythm
+    codes: ["59118001"]
+    acronyms: [RBBB]
+    snomed: "59118001"
+    published_test_pos: 65
+    corpus_total: 649
+    implied_ratio: 0.1002
+    note: >
+      Note the contrast with PTB-XL, where RBBB pools complete and
+      incomplete forms and is majority-driven by the benign incomplete
+      variant. Here only the unqualified concept is in the vocabulary;
+      complete (713427006, n=1096) and incomplete (713426002, n=246) RBBB
+      are both outside it, and including either destroys the ratio fit. So
+      "RBBB" means materially different things in the two corpora -- which
+      is precisely the cross-corpus ontology problem this file format
+      exists to make visible.
+
+  WPW:
+    task: rhythm
+    codes: ["74390002", "195060002"]
+    acronyms: [WPW, VPE]
+    snomed: "74390002"
+    published_test_pos: 10
+    corpus_total: 84
+    implied_ratio: 0.1190
+    note: >
+      Wolff-Parkinson-White pooled with ventricular pre-excitation, the
+      underlying substrate. WPW alone gives 0.139; pooled gives 0.119.
+
+  normal_sinus_rhythm:
+    task: rhythm
+    codes: ["426783006"]
+    acronyms: [SR]
+    snomed: "426783006"
+    published_test_pos: 742
+    corpus_total: 8125
+    implied_ratio: 0.0913
+    note: >
+      The weakest large-n fit in the table: at 0.0913 against a corpus-wide
+      0.0996 this is about -2.4 sigma, which is more than sampling noise
+      comfortably explains at n=8125. No alternative mapping is available --
+      426783006 is the only sinus-rhythm concept in the vocabulary -- so the
+      most likely explanation is that the v0.3.0 split was stratified or
+      otherwise not uniformly random. Recorded here rather than smoothed
+      over, because it is the main piece of evidence that the unrecoverable
+      split was not a plain random one.
+
+  # ---- structural head (3 of 19 outputs) ----
+
+  LVH:
+    task: structural
+    codes: ["164873001"]
+    acronyms: [LVH]
+    snomed: "164873001"
+    published_test_pos: 58
+    corpus_total: 647
+    implied_ratio: 0.0896
+    note: >
+      One of the three findings that pin the ConditionNames-only hypothesis.
+      The headers also carry 55827005 (n=5401), which is likewise left
+      ventricular hypertrophy but is absent from the shipped vocabulary.
+      Pooling them would give a corpus total of 6048 and a ratio of 0.0096 --
+      an order of magnitude from the band. So v0.3.0 trained LVH on 647
+      records while 5,401 more sat unused in the same corpus.
+      That is a defect worth fixing deliberately, not a mapping to preserve:
+      adding 55827005 would roughly 9x the positives for this class. Doing
+      so changes what the shipped LVH output means, so it belongs in a
+      version bump rather than a silent edit.
+
+  RVH:
+    task: structural
+    codes: ["89792004"]
+    acronyms: [RVH]
+    snomed: "89792004"
+    published_test_pos: 8
+    corpus_total: 110
+    implied_ratio: 0.0727
+
+  RA_enlargement:
+    task: structural
+    codes: ["446358003"]
+    acronyms: [RAH]
+    snomed: "446358003"
+    published_test_pos: 4
+    corpus_total: 36
+    implied_ratio: 0.1111
+    note: >
+      The vocabulary says right atrial *hypertrophy*; the Aortica output
+      says enlargement. PTB-XL's RAO/RAE conflates overload and enlargement.
+      Three names, one column, none of them quite the same finding.
+
+  # ---- ischaemia head (3 of 19 outputs) ----
+
+  old_MI:
+    task: ischaemia
+    codes: ["164865005"]
+    acronyms: [MI, MIBW, MIFW, MILW, MISW]
+    snomed: "164865005"
+    published_test_pos: 12
+    corpus_total: 123
+    implied_ratio: 0.0976
+    note: >
+      All five regional MI acronyms share one concept id, so Chapman cannot
+      distinguish posterior MI from any other territory -- which is why
+      posterior_MI is a PTB-XL-only output in v0.3.0. Abnormal Q wave
+      (164917005, n=1063) is excluded: pooling it gives a ratio of 0.0101,
+      two orders out, and a Q wave is a component of an old infarct rather
+      than a diagnosis of one.
+
+  QTc_prolongation:
+    task: ischaemia
+    codes: ["111975006"]
+    acronyms: [QTIE]
+    snomed: "111975006"
+    published_test_pos: 38
+    corpus_total: 394
+    implied_ratio: 0.0964
+    note: >
+      "QT interval extension" -- a qualitative read, not a rate-corrected
+      measurement, exactly as with PTB-XL's LNGQT. The output name promises
+      a QTc that neither corpus actually supplies.
+
+  early_repol_vs_STEMI:
+    task: ischaemia
+    codes: ["428417006"]
+    acronyms: [ERV]
+    snomed: "428417006"
+    published_test_pos: 33
+    corpus_total: 366
+    implied_ratio: 0.0902
+    note: >
+      Early repolarisation of the ventricles. One of the two outputs Chapman
+      adds over PTB-XL. Note the output is named as a *discrimination*
+      (early repolarisation versus STEMI) but is trained here as a plain
+      early-repolarisation detector -- the corpus contains no STEMI label to
+      discriminate against.
+
+# ---------------------------------------------------------------------
+# Codes deliberately left unmapped
+# ---------------------------------------------------------------------
+unmapped_codes:
+  # -- in the shipped vocabulary, but no matching Aortica output --
+  "427393009": Sinus irregularity (SA, n=2550). No Aortica output.
+  "164934002": T wave change (TWC, n=7043). Non-specific, deliberately unlabelable.
+  "59931005":  T wave opposite / inversion (TWO, n=2877). A component, not a diagnosis.
+  "429622005": ST drop down (STDD, n=1668). Non-specific ST depression.
+  "39732003":  Axis left shift (ALS, n=1545). Suggestive of LAFB but not a diagnosis of it.
+  "47665007":  Axis right shift (ARS, n=853). Same reasoning.
+  "428750005": ST-T change (STTC, n=1158). Non-specific.
+  "164917005": Abnormal Q wave (AQW, n=1063). See the old_MI note.
+  "251146004": Low QRS voltage, all leads (LVQRSAL, n=1043). Candidate for amyloidosis, not sufficient alone.
+  "251147008": Low QRS voltage, limb leads (LVQRSLL). Same.
+  "251148003": Low QRS voltage, chest leads (LVQRSCL). Same.
+  "164930006": ST extension (STE, n=801). Non-specific ST elevation.
+  "164931005": ST tilt up (STTU, n=176). Non-specific.
+  "698252002": Intraventricular / interior differences conduction (IVB/IDC, n=771). No Aortica output; PTB-XL leaves IVCD unmapped for the same reason.
+  "164947007": PR interval extension (PRIE, n=52). See the av_block_1st note.
+  "251199005": Counterclockwise rotation (CCR, n=162). No Aortica output.
+  "251198002": Clockwise rotation (CR, n=76). No Aortica output.
+  "164912004": P wave change (PWC, n=142). Non-specific.
+  "164937009": U wave (UW, n=136). No Aortica output; would need serum chemistry to be useful.
+  "13640000":  Ventricular fusion wave (VFW, n=116). No Aortica output.
+  "426995002": Junctional escape beat (JEB, n=75). Escape, not premature.
+  "251164006": Junctional premature beat (JPT, n=11). See the PAC note.
+  "75532003":  Ventricular escape beat (VEB, n=56). Escape, not premature.
+  "251180001": Ventricular escape trigeminy (VET, n=8). Escape, not premature.
+  "233917008": Atrioventricular block, unspecified (AVB, n=244). Too coarse to assign a degree.
+  "195101003": Wandering atrial pacemaker (WAVN/SAAWR, n=2). No Aortica output.
+  "251173003": Atrial bigeminy (ABI, n=3). Atrial, so not pooled into PVC.
+  "164942001": Fragmented QRS (FQRS, n=3). No Aortica output.
+  "233896004": AVNRT (n=0). Aortica has an AVNRT output, but no record carries this code, so mapping it would add a column of zeros for the mask to strip again.
+  # -- present in the headers but outside the shipped vocabulary --
+  # These are the Challenge-2020/2021 concept ids. Mapping them would break
+  # continuity with the shipped v0.3.0 weights, so each is listed with what
+  # it would change. This list is the work item, not an oversight.
+  "55827005":  Left ventricular hypertrophy (n=5401). Would ~9x the LVH positives. See the LVH note.
+  "713427006": Complete RBBB (n=1096). Would change what the RBBB column means.
+  "427172004": Premature ventricular contractions (n=1091). Would ~4.7x the PVC positives.
+  "10370003":  Pacing rhythm (n=1182). Would make pacemaker_rhythm labelable from Chapman.
+  "445118002": Left anterior fascicular block (n=380). Would make LAFB labelable from Chapman.
+  "445211001": Left posterior fascicular block (n=5). Would make LPFB labelable from Chapman.
+  "713426002": Incomplete RBBB (n=246). See the RBBB note.
+  "733534002": Complete LBBB (n=213). See the LBBB note.
+  "251120003": Incomplete LBBB (n=6). See the LBBB note.
+  "67741000119109": Left atrial enlargement (n=1). Would make LA_enlargement labelable, barely.
+  "418818005": Brugada syndrome (n=5). Aortica has a brugada_pattern output and no corpus that labels it; five records will not train it, but they are the only positives in any open dataset here.

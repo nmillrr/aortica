@@ -258,11 +258,18 @@ def load_ptbxl(
     _validate_ptbxl_path(root, sampling_rate)
 
     mapping = label_map or load_label_map(LABEL_MAP_NAME)
-    split_folds = (
-        {k: tuple(int(f) for f in v) for k, v in folds.items()}
-        if folds is not None
-        else mapping.splits
-    )
+    if folds is not None:
+        split_folds = {k: tuple(int(f) for f in v) for k, v in folds.items()}
+    elif mapping.splits is not None:
+        split_folds = mapping.splits
+    else:
+        # Only reachable if someone swaps the PTB-XL map for one describing a
+        # corpus with no published folds — which this loader cannot split,
+        # because it splits on PTB-XL's own strat_fold column.
+        raise ValueError(
+            f"Label map '{mapping.source_name}' publishes no folds, so it "
+            "cannot drive the PTB-XL loader. Pass folds= explicitly."
+        )
 
     database = pd.read_csv(root / "ptbxl_database.csv")
     for column in ("strat_fold", "scp_codes", "filename_lr", "filename_hr"):
