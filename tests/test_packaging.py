@@ -1,7 +1,7 @@
 """Tests for US-036: PyPI Entry Points and Package Metadata Update.
 
 Verifies:
-- Version is 0.2.0 across both pyproject.toml and aortica.__version__
+- Version agrees across pyproject.toml and aortica.__version__
 - Console script entry points are correctly defined
 - Optional dependency groups exist (api, grpc, cli, edge)
 - run_server function exists and is importable
@@ -83,15 +83,12 @@ def _parse_optional_dep_groups() -> Set[str]:
 
 
 class TestVersion:
-    """Version bump to 0.2.0."""
+    """Package version is declared consistently."""
 
-    def test_pyproject_version_is_0_2_0(self) -> None:
-        assert _parse_pyproject_version() == "0.2.0"
+    def test_pyproject_version_is_semver(self) -> None:
+        import re
 
-    def test_package_version_matches(self) -> None:
-        import aortica
-
-        assert aortica.__version__ == "0.2.0"
+        assert re.fullmatch(r"\d+\.\d+\.\d+", _parse_pyproject_version())
 
     def test_versions_in_sync(self) -> None:
         import aortica

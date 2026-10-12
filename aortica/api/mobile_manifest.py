@@ -9,7 +9,7 @@ Example response::
 
     {
         "latest_version": "0.3.0",
-        "download_url": "https://huggingface.co/nmillrr/aortica/resolve/v0.3.0/aortica_edge_int8_v0.3.0.onnx",
+        "download_url": "https://github.com/nmillrr/aortica/raw/main/releases/v0.3.0/aortica_edge_int8_v0.3.0.onnx",
         "sha256": "abc123...",
         "min_app_version": "1.0.0",
         "file_size_bytes": 15000000
@@ -40,11 +40,22 @@ ENV_MODEL_SHA256 = "AORTICA_MOBILE_MODEL_SHA256"
 ENV_MODEL_MIN_APP_VERSION = "AORTICA_MOBILE_MIN_APP_VERSION"
 ENV_MODEL_FILE_PATH = "AORTICA_MOBILE_MODEL_FILE_PATH"
 
-#: Default HuggingFace Hub download URL template.
-HF_DOWNLOAD_URL_TEMPLATE = (
-    "https://huggingface.co/nmillrr/aortica/resolve/v{version}/"
+#: Version of the edge model the app should run.  This is the *model*
+#: release, not the package version: the package can move ahead (v0.4.0 adds
+#: a reference PyTorch model) without a new edge model existing.
+DEFAULT_EDGE_MODEL_VERSION = "0.3.0"
+
+#: Default download URL template.  The edge models are committed under
+#: ``releases/`` in the public repository; the HuggingFace repo the app used
+#: to point at is private, so every update check failed.
+DOWNLOAD_URL_TEMPLATE = (
+    "https://github.com/nmillrr/aortica/raw/main/releases/v{version}/"
     "aortica_edge_int8_v{version}.onnx"
 )
+#: Kept for backwards compatibility with code importing the old name.
+HF_DOWNLOAD_URL_TEMPLATE = DOWNLOAD_URL_TEMPLATE
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 # ---------------------------------------------------------------------------
@@ -141,9 +152,11 @@ def build_model_manifest(
             SHA-256 and file size.  Falls back to ``AORTICA_MOBILE_MODEL_FILE_PATH``
             env var.
         version: Model version string.  Falls back to
-            ``AORTICA_MOBILE_MODEL_VERSION`` env var or package version.
+            ``AORTICA_MOBILE_MODEL_VERSION`` env var or
+            :data:`DEFAULT_EDGE_MODEL_VERSION`.
         download_url: Download URL.  Falls back to
-            ``AORTICA_MOBILE_MODEL_DOWNLOAD_URL`` env var or HF template.
+            ``AORTICA_MOBILE_MODEL_DOWNLOAD_URL`` env var or
+            :data:`DOWNLOAD_URL_TEMPLATE`.
         min_app_version: Minimum app version.  Falls back to
             ``AORTICA_MOBILE_MIN_APP_VERSION`` env var or ``"1.0.0"``.
 
@@ -154,14 +167,14 @@ def build_model_manifest(
     resolved_version = (
         version
         or os.environ.get(ENV_MODEL_VERSION)
-        or _get_package_version()
+        or DEFAULT_EDGE_MODEL_VERSION
     )
 
     # Resolve download URL
     resolved_url = (
         download_url
         or os.environ.get(ENV_MODEL_DOWNLOAD_URL)
-        or HF_DOWNLOAD_URL_TEMPLATE.format(version=resolved_version)
+        or DOWNLOAD_URL_TEMPLATE.format(version=resolved_version)
     )
 
     # Resolve min app version
@@ -176,6 +189,13 @@ def build_model_manifest(
     file_size = 0
 
     file_path = model_file_path or os.environ.get(ENV_MODEL_FILE_PATH)
+    if not file_path and not resolved_sha256:
+        # Running from a checkout: hash the committed model so the app can
+        # verify its download.
+        local = (_REPO_ROOT / "releases" / f"v{resolved_version}"
+                 / f"aortica_edge_int8_v{resolved_version}.onnx")
+        if local.exists():
+            file_path = str(local)
     if file_path:
         path = Path(file_path)
         if path.exists():
