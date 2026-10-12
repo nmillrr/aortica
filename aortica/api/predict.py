@@ -18,7 +18,7 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from aortica.io import UnsupportedFormatError, read_ecg
-from aortica.models.output_gating import kept_indices
+from aortica.models.output_gating import is_positive, kept_indices, operating_points
 from aortica.signal import denoise, score_quality
 from aortica.signal.preprocess import model_record
 
@@ -76,6 +76,14 @@ class TaskPrediction(BaseModel):
         description=(
             "Outputs withheld because the checkpoint never trained them. "
             "These heads emit noise, not predictions."
+        ),
+    )
+    thresholds: List[Optional[float]] = Field(
+        default_factory=list,
+        description=(
+            "Per-class operating point, aligned with class_names.  A finding "
+            "is positive when its probability reaches its own threshold; raw "
+            "probabilities are not comparable across classes."
         ),
     )
 
@@ -151,6 +159,13 @@ class SuggestionEntry(BaseModel):
     prompt: str = Field(..., description="Short clinical cue")
     urgency: str = Field(..., description="Urgency level")
     rationale: str = Field(..., description="Clinical justification")
+    probability: Optional[float] = Field(
+        default=None, description="Model probability for this condition"
+    )
+    threshold: Optional[float] = Field(
+        default=None,
+        description="Per-class operating point the probability cleared",
+    )
 
 
 class SimilarCaseEntry(BaseModel):
@@ -411,6 +426,7 @@ def run_inference_pipeline(
             # property: an untrained risk head that reaches a triage UI can
             # escalate on noise, and "the caller forgot" must not be a way to
             # get there.  See aortica.models.output_gating.
+            thresholds = operating_points(model)
             for task_name, probs_tensor in preds_dict.items():
                 probs_list = probs_tensor[0].tolist()
                 names = class_names.get(task_name, [])
@@ -439,6 +455,7 @@ def run_inference_pipeline(
                         class_names=[names[i] for i in keep],
                         probabilities=[probs_list[i] for i in keep],
                         suppressed_classes=suppressed,
+                        thresholds=[thresholds.get(names[i]) for i in keep],
                     )
                 )
                 if uncertainty_resp is not None:
@@ -518,22 +535,30 @@ def run_inference_pipeline(
         if include_suggestions and predictions:
             from aortica.api.clinical_suggestions import get_suggestion
 
+            # A finding is positive when it clears its own operating point,
+            # tuned per class on validation data.  A single cut-off does not
+            # work: rare classes peak far below common ones, so the old flat
+            # 0.30 missed most AVRT/AV-block/AF positives (operating points
+            # 0.05-0.10) and over-called STEMI/SVT (0.40-0.45).
             suggestion_entries = []
             for task_pred in predictions:
                 for class_name, prob in zip(
                     task_pred.class_names, task_pred.probabilities
                 ):
-                    if prob >= 0.30:  # Only suggest for positive findings
-                        suggestion = get_suggestion(class_name)
-                        if suggestion is not None:
-                            suggestion_entries.append(
-                                SuggestionEntry(
-                                    condition=class_name,
-                                    prompt=suggestion.prompt,
-                                    urgency=suggestion.urgency,
-                                    rationale=suggestion.rationale,
-                                )
+                    if not is_positive(class_name, prob, thresholds):
+                        continue
+                    suggestion = get_suggestion(class_name)
+                    if suggestion is not None:
+                        suggestion_entries.append(
+                            SuggestionEntry(
+                                condition=class_name,
+                                prompt=suggestion.prompt,
+                                urgency=suggestion.urgency,
+                                rationale=suggestion.rationale,
+                                probability=prob,
+                                threshold=thresholds.get(class_name),
                             )
+                        )
             if not suggestion_entries:
                 suggestion_entries = None
 

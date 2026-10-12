@@ -607,3 +607,74 @@ class TestImports:
         assert "urgent" in VALID_URGENCY_LEVELS
         assert "emergent" in VALID_URGENCY_LEVELS
         assert len(VALID_URGENCY_LEVELS) == 4
+
+
+# ---------------------------------------------------------------------------
+# Per-class operating points
+# ---------------------------------------------------------------------------
+
+
+class TestSuggestionThresholds:
+    """Suggestions fire on each class's own operating point, not a flat 0.30."""
+
+    @staticmethod
+    def _run(probs: dict, model_thresholds: dict | None = None) -> list:
+        from unittest.mock import MagicMock, patch
+
+        import numpy as np
+
+        torch = pytest.importorskip("torch")
+        from aortica.api.predict import run_inference_pipeline
+        from aortica.io.ecg_record import ECGRecord
+        from aortica.models.aortica_model import MultiTaskOutput
+        from aortica.models.ischaemia_head import ISCHAEMIA_CLASSES
+        from aortica.models.rhythm_head import RHYTHM_CLASSES
+        from aortica.models.structural_head import STRUCTURAL_CLASSES
+
+        def head(names: list) -> "torch.Tensor":
+            return torch.tensor([[probs.get(n, 0.0) for n in names]])
+
+        output = MultiTaskOutput(
+            rhythm=head(RHYTHM_CLASSES),
+            structural=head(STRUCTURAL_CLASSES),
+            ischaemia=head(ISCHAEMIA_CLASSES),
+            risk=torch.zeros(1, 6),
+        )
+        model = MagicMock(return_value=output)
+        model.enabled_tasks = ["rhythm", "structural", "ischaemia", "risk"]
+        model.class_thresholds = model_thresholds or {}
+        record = ECGRecord(
+            signals=np.random.default_rng(0).standard_normal((12, 1000)) * 100,
+            sample_rate=100.0,
+            lead_names=["I", "II", "III", "aVR", "aVL", "aVF",
+                        "V1", "V2", "V3", "V4", "V5", "V6"],
+        )
+        with patch("aortica.api.predict.read_ecg", return_value=record):
+            resp = run_inference_pipeline(b"", "x.hea", model=model,
+                                          include_suggestions=True)
+        return resp.suggestions or []
+
+    def test_rare_class_above_its_operating_point_is_suggested(self) -> None:
+        # AVRT's operating point is 0.05; the old flat 0.30 never saw this.
+        conditions = {s.condition for s in self._run({"AVRT": 0.08})}
+        assert "AVRT" in conditions
+
+    def test_class_below_its_operating_point_is_not_suggested(self) -> None:
+        # STEMI's operating point is 0.45; 0.35 cleared the old 0.30 bar.
+        conditions = {s.condition for s in self._run({"STEMI": 0.35})}
+        assert "STEMI" not in conditions
+
+    def test_suggestion_reports_probability_and_threshold(self) -> None:
+        (s,) = [s for s in self._run({"AF": 0.2}) if s.condition == "AF"]
+        assert s.probability == pytest.approx(0.2)
+        assert s.threshold == pytest.approx(0.1)
+
+    def test_checkpoint_thresholds_override_packaged(self) -> None:
+        conditions = {s.condition for s in self._run({"AF": 0.2}, {"AF": 0.6})}
+        assert "AF" not in conditions
+
+    def test_untrained_outputs_never_suggested(self) -> None:
+        from aortica.models.output_gating import default_trained_outputs
+
+        conditions = {s.condition for s in self._run({"Brugada": 0.99, "HCM": 0.99})}
+        assert conditions <= default_trained_outputs()

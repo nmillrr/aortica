@@ -69,8 +69,18 @@ def main() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _severity_style(prob: float) -> str:
-    """Return a Rich colour name based on probability thresholds."""
+def _calibrated(prob: float, threshold: Optional[float]) -> float:
+    """Rescale so the class's operating point sits at 0.5 (see output_gating)."""
+    if threshold is None:
+        return prob
+    from aortica.models.output_gating import calibrated_score
+
+    return calibrated_score("", prob, {"": threshold})
+
+
+def _severity_style(prob: float, threshold: Optional[float] = None) -> str:
+    """Return a Rich colour name, banded around the class's operating point."""
+    prob = _calibrated(prob, threshold)
     if prob >= _HIGH_THRESHOLD:
         return "bold red"
     if prob >= _MED_THRESHOLD:
@@ -78,8 +88,9 @@ def _severity_style(prob: float) -> str:
     return "green"
 
 
-def _severity_badge(prob: float) -> str:
+def _severity_badge(prob: float, threshold: Optional[float] = None) -> str:
     """Return a short severity badge string."""
+    prob = _calibrated(prob, threshold)
     if prob >= _HIGH_THRESHOLD:
         return "●"  # high
     if prob >= _MED_THRESHOLD:
@@ -157,9 +168,10 @@ def _print_results_table(result_dict: Dict[str, Any]) -> None:
         table.add_column("Confidence", justify="right")
         table.add_column("Bar")
 
-        for name, prob in zip(class_names, probs):
-            style = _severity_style(prob)
-            badge = _severity_badge(prob)
+        thresholds: List[Optional[float]] = task_pred.get("thresholds") or [None] * len(probs)
+        for name, prob, thr in zip(class_names, probs, thresholds):
+            style = _severity_style(prob, thr)
+            badge = _severity_badge(prob, thr)
             pct = prob * 100
             bar_width = int(prob * 20)
             bar = "█" * bar_width + "░" * (20 - bar_width)
@@ -258,29 +270,9 @@ def predict(
     model: Any = None
     if model_path:
         try:
-            import torch
+            from aortica.models.checkpoint import load_checkpoint
 
-            from aortica.models import AorticaModel
-
-            checkpoint = torch.load(model_path, map_location="cpu", weights_only=False)
-            # Support both raw state_dict and wrapped checkpoint
-            if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-                state_dict = checkpoint["model_state_dict"]
-                config = checkpoint.get("config", {})
-            elif isinstance(checkpoint, dict) and "state_dict" in checkpoint:
-                state_dict = checkpoint["state_dict"]
-                config = checkpoint.get("config", {})
-            else:
-                state_dict = checkpoint
-                config = {}
-
-            model = AorticaModel(
-                enabled_tasks=config.get("enabled_tasks", list(ALL_TASKS)),
-                feature_dim=config.get("feature_dim", 252),
-                num_leads=config.get("num_leads", 12),
-            )
-            model.load_state_dict(state_dict)
-            model.eval()
+            model = load_checkpoint(model_path)
         except ImportError:
             raise click.ClickException(
                 "PyTorch is required for model inference. "
@@ -407,24 +399,9 @@ def benchmark(
     model: Any = None
     if model_path:
         try:
-            checkpoint = torch.load(model_path, map_location="cpu", weights_only=False)
-            if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-                state_dict = checkpoint["model_state_dict"]
-                config = checkpoint.get("config", {})
-            elif isinstance(checkpoint, dict) and "state_dict" in checkpoint:
-                state_dict = checkpoint["state_dict"]
-                config = checkpoint.get("config", {})
-            else:
-                state_dict = checkpoint
-                config = {}
+            from aortica.models.checkpoint import load_checkpoint
 
-            model = AorticaModel(
-                enabled_tasks=config.get("enabled_tasks", list(ALL_TASKS)),
-                feature_dim=config.get("feature_dim", 252),
-                num_leads=config.get("num_leads", 12),
-            )
-            model.load_state_dict(state_dict)
-            model.eval()
+            model = load_checkpoint(model_path)
         except ImportError:
             raise click.ClickException(
                 "PyTorch is required for model loading. "
@@ -436,8 +413,6 @@ def benchmark(
         # Create an untrained model for benchmarking (useful for testing)
         model = AorticaModel(
             enabled_tasks=enabled_tasks or list(ALL_TASKS),
-            feature_dim=252,
-            num_leads=12,
         )
         model.eval()
 
