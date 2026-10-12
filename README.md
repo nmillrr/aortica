@@ -2,364 +2,257 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-orange.svg)](https://github.com/nmillrr/aortica)
+[![Version](https://img.shields.io/badge/version-0.4.0-orange.svg)](releases/v0.4.0)
 
-**Open-source AI ECG analysis platform** designed to close the most critical gaps in clinical ECG: poor device generalization, narrow single-task models, black-box outputs, inaccessible tooling, and exclusion of rural/low-resource settings.
+**Open-source 12-lead ECG analysis** — a multi-task deep learning model, the
+tooling to train and evaluate it reproducibly, and the plumbing to run it on
+your own hardware: format readers, signal quality, explanations, a REST API,
+CLI, web UI, an offline edge model, and EHR integrations.
 
-> **Self-hosted & privacy-first.** No data ever leaves the deployment site. Clinicians and institutions download and run Aortica locally — via Docker or `pip install` — preserving patient privacy, eliminating recurring infrastructure costs, and enabling deployment in data-sovereignty-constrained settings.
-
----
-
-## ✨ Key Features
-
-### 🔌 Universal ECG Ingestion
-- **7+ format readers** — WFDB (.hea/.dat), DICOM (Supp 30/130), SCP-ECG, CSV, MAT, HL7 aECG XML
-- **PDF/image scan digitization** — Scanned paper ECGs (PDF, PNG, JPG, TIFF) digitized via OpenCV grid detection and waveform trace extraction
-- **Auto-detection** — `aortica.io.read_ecg(path)` dispatches to the correct reader by extension and file magic bytes
-
-### 🧠 Multi-Task AI Engine
-Four task heads sharing a single ResNet backbone with cross-lead temporal attention:
-
-| Task Head | Classes | Examples |
-|-----------|---------|----------|
-| **Rhythm & Conduction** | 22 → 28* | AF, VT, VF, LBBB, RBBB, WPW, Brugada, CPVT |
-| **Structural & Functional** | 15 → 19* | LVH, LVSD, HCM, ARVC, Takotsubo, RV strain in PE |
-| **Ischaemia & Metabolic** | 10 → 19* | STEMI, de Winter, Wellens, hyperkalaemia grading, TCA toxicity |
-| **Risk Prediction** | 3 → 6* | 1-year mortality, HF hospitalization, AF onset, ECG-predicted EF |
-
-<sub>* Expanded dimensions in Phase 3</sub>
-
-### 🎯 Trustworthy AI
-- **Temperature-scaled calibration** — well-calibrated probability outputs per task head
-- **Conformal prediction** — per-prediction confidence intervals at configurable coverage levels
-- **OOD detection** — Mahalanobis distance flagging of out-of-distribution inputs
-- **Integrated gradient XAI** — attributions mapped to named ECG features (P wave, QRS complex, ST segment, T wave)
-- **VAE latent factor model** — interpretable 24-dimensional latent space with synthetic waveform generation
-
-### 📊 Signal Processing
-- **QRS detection** — NeuroKit2 and Pan-Tompkins backends
-- **Denoising** — baseline wander removal, powerline notch filter (50/60 Hz auto-detect), high-frequency noise reduction
-- **Quality scoring** — per-lead 0–100 scores with good/marginal/poor classification and lead-off/clipping detection
-
-### 🔬 Reproducible Benchmarking
-- Per-task metrics: macro-F1, per-class AUC, sensitivity/specificity, ECE, C-index, Brier score
-- Demographic subgroup stratification (age decile, sex)
-- Equity gating: blocks releases with statistically significant demographic performance gaps
-- Auto-generated public performance cards (markdown + CSV) per model version
+> [!CAUTION]
+> **Research use only. Not a medical device.** Aortica is not FDA-cleared or
+> CE-marked and must not be used to diagnose, treat or triage patients.
 
 ---
 
-## 🏗 Architecture
+## Status at a glance
 
-```
-aortica/
-├── io/            # ECG format readers (WFDB, DICOM, CSV, MAT, SCP, HL7, PDF scan)
-├── signal/        # Signal processing (QRS detection, denoising, quality scoring)
-├── models/        # Deep learning (backbone, attention, task heads, training, calibration)
-├── xai/           # Explainability (integrated gradients, VAE latent factor model)
-├── evaluation/    # Benchmark harness, equity gating, performance cards
-├── data/          # Dataset loaders (PTB-XL), PyTorch Dataset, TF tf.data wrappers
-├── edge/          # ONNX export, MobileNet-1D backbone, distillation, INT8 quantization
-├── api/           # FastAPI REST API + gRPC service
-├── cli/           # Click + Rich CLI (predict, benchmark, train, profile)
-├── sync/          # Offline result storage (SQLite + AES-256), vector clock sync
-├── federated/     # Flower FL server/client, FedAvg/FedProx/SCAFFOLD, DP, secure aggregation
-├── integration/   # FHIR R4, HL7 v2.x, DICOM SR, DIMSE, SCP serial capture, SMART on FHIR
-├── reports/       # PDF clinical reports, JSON-LD, CSV batch export
-├── retrieval/     # Latent space index, case-based ECG retrieval (Annoy/FAISS)
-├── validation/    # Prospective study tooling, performance monitoring, adverse event tracking
-└── utils/         # Shared utilities
+| | |
+|---|---|
+| **Trained outputs** | **28 of 72.** Rhythm & conduction (18), structural (4), ischaemia & repolarisation (6). The other 44 — including the entire risk head — have no label source in any public dataset used and are **suppressed by default** on every inference path. |
+| **Training data** | PTB-XL 1.0.3 (Germany) + Chapman-Shaoxing 1.0.0 (China), 53,405 training ECGs. |
+| **Internal test** | Macro-AUROC 0.941 (PTB-XL fold 10) and 0.975 (Chapman test split), classes with ≥10 positives. |
+| **External test** | Macro-AUROC 0.894 on 10,338 ECGs from the Georgia cohort (Emory, US) — never trained or tuned on. |
+| **Baseline** | On the six findings it shares with Ribeiro et al. (2020) — a model trained on about 2.3 million ECGs — both score a mean AUROC of 0.967 on Georgia: Aortica is ahead on sinus bradycardia and slightly behind (by 0.001–0.014) on first-degree AV block, RBBB, LBBB and sinus tachycardia, with AF tied. |
+| **Reproducibility** | Seeded run with saved splits and a run manifest in [`releases/v0.4.0/`](releases/v0.4.0). Training is deterministic on fixed hardware and thread count (repeated reduced runs produce byte-identical weights). |
+| **Distribution** | Not on PyPI, Docker Hub or a model hub. Install from source. |
 
-frontend/          # React + Vite + TypeScript PWA (offline-capable with ONNX WASM fallback)
-docs/              # MkDocs Material documentation site
-  ├── regulatory/  # IEC 80601-2-86, FDA SaMD, CE-MDR, TRIPOD-AI/STARD-AI/CONSORT-AI templates
-  └── validation/  # Prospective study protocol and data collection templates
-```
+Full per-class results, confidence intervals and subgroups:
+[`releases/v0.4.0/RESULTS.md`](releases/v0.4.0/RESULTS.md).
 
 ---
 
-## 🚀 Quick Start
+## What the model detects
 
-### Installation
+| Head | Trained outputs |
+|---|---|
+| **Rhythm & conduction** | AF, AFL, SVT, AVRT, sinus bradycardia, sinus tachycardia, PAC, PVC, 1st/2nd/3rd-degree AV block, LBBB, RBBB, LAFB, LPFB, WPW, paced rhythm, normal sinus rhythm |
+| **Structural** | LVH, RVH, left atrial enlargement, right atrial enlargement |
+| **Ischaemia & repolarisation** | STEMI, posterior MI, old MI, QTc prolongation, digitalis effect, early repolarisation |
+
+**Not trained** (present in the architecture, withheld from every response):
+VT/VF, Brugada, Wellens and de Winter patterns, cardiomyopathies (HCM, DCM,
+ARVC, amyloid), electrolyte disorders, and all risk predictions (1-year
+mortality, heart-failure hospitalisation, AF onset, ECG-predicted EF).
+Responses name them in `suppressed_classes` so "not predicted" is never
+confused with "predicted negative". See
+[`aortica/models/output_gating.py`](aortica/models/output_gating.py).
+
+Several trained classes have too few positives in the test sets to be
+validated (for example AVRT, 2nd/3rd-degree AV block, RA enlargement). Check
+`n_pos` in the metrics before relying on any single class.
+
+### Decision thresholds
+
+Each class has its own operating point, tuned on validation data and shipped
+with the checkpoint. Raw probabilities are not comparable across classes —
+rare findings peak far below common ones — so every "is this present?"
+decision (clinical suggestions, CLI severity, the CHW tiers) uses the
+per-class threshold, and API responses return it alongside each probability.
+
+### Input contract
+
+Every checkpoint is trained on **12 leads, 100 Hz, 10 s (1,000 samples),
+micro-volts, unfiltered**. All inference paths build model input through
+[`aortica.signal.preprocess.model_input`](aortica/signal/preprocess.py), which
+resamples, windows and unit-converts from whatever was read. Denoising is
+applied for signal-quality scoring only. (Earlier versions fed 500 Hz,
+denoised input to this 100 Hz model and scored near chance; a regression test
+on real PTB-XL records now guards against it.)
+
+---
+
+## 🚀 Quick start
+
+### Install (from source)
 
 ```bash
-# Clone the repository
 git clone https://github.com/nmillrr/aortica.git
 cd aortica
-
-# Install in editable mode (core only)
-pip install -e .
-
-# Install with optional dependency groups
-pip install -e ".[cli]"          # CLI (Click + Rich)
-pip install -e ".[api]"          # REST API (FastAPI + Uvicorn)
-pip install -e ".[edge]"         # ONNX edge inference
-pip install -e ".[torch]"        # PyTorch backend
-pip install -e ".[tf]"           # TensorFlow/Keras backend
-pip install -e ".[scan]"         # PDF/image ECG digitization (OpenCV)
-pip install -e ".[dev]"          # Development tools (pytest, mypy, ruff)
-
-# Install everything
-pip install -e ".[cli,api,edge,torch,scan,dev]"
+pip install -e ".[cli,api,torch]"   # add edge, dev, ... as needed
 ```
 
-### CLI Usage
+### Run on an ECG
 
 ```bash
-# Run inference on an ECG file
-aortica predict recording.hea
-
-# JSON output with specific task heads
-aortica predict recording.hea --format json --tasks rhythm,ischaemia
-
-# Benchmark a model on PTB-XL
-aortica benchmark /path/to/ptbxl --tasks all --output results.csv
-
-# Train a model from config
-aortica train config.yaml
+aortica predict recording.hea --model releases/v0.4.0/aortica_v0.4.0.pt
+aortica predict recording.hea --model ... --format json --tasks rhythm,ischaemia
 ```
+
+The v0.4.0 weights are produced by the reference run below (they are not
+hosted yet). Without `--model`, `aortica predict` reports signal quality only.
 
 ### REST API
 
 ```bash
-# Start the API server
-aortica-server
-# or: uvicorn aortica.api.app:app --host 0.0.0.0 --port 8000
-
-# Health check
-curl http://localhost:8000/health
-
-# Single ECG inference
-curl -X POST http://localhost:8000/api/v1/predict \
-  -F "file=@recording.hea"
-
-# Batch inference
-curl -X POST http://localhost:8000/api/v1/predict/batch \
-  -F "files=@ecg1.hea" -F "files=@ecg2.hea"
+aortica-server                       # http://localhost:8000
+curl -X POST http://localhost:8000/api/v1/predict -F "file=@recording.xml"
 ```
 
-### Python API
+### Python
 
 ```python
+import torch
 from aortica.io import read_ecg
-from aortica.signal import denoise, score_quality
-from aortica.models import AorticaModel
+from aortica.models.checkpoint import load_checkpoint
+from aortica.models.output_gating import filter_task_outputs, is_positive
+from aortica.models.task_dims import TASK_CLASS_NAMES
+from aortica.signal.preprocess import model_input
 
-# Load and preprocess
-ecg = read_ecg("recording.hea")          # auto-detects format
-ecg = denoise(ecg)                        # baseline + powerline + HF removal
-quality = score_quality(ecg)              # per-lead quality scores
+model = load_checkpoint("releases/v0.4.0/aortica_v0.4.0.pt")
+ecg = read_ecg("recording.hea")                 # any supported format
+x = torch.from_numpy(model_input(ecg))[None]    # [1, 12, 1000]: 100 Hz, 10 s, µV
 
-# Multi-task inference
-model = AorticaModel.load("checkpoint.pt")
-output = model(ecg)                       # rhythm, structural, ischaemia, risk
+with torch.no_grad():
+    out = model(x).as_dict()
 
-# Explainability
-from aortica.xai import explain
-attribution = explain(model, ecg, task="rhythm")
-print(attribution.top_features)           # e.g., [("QRS width", 0.42), ...]
+for task in ("rhythm", "structural", "ischaemia"):
+    kept, probs, _ = filter_task_outputs(TASK_CLASS_NAMES[task], out[task][0].tolist())
+    for name, p in zip(kept, probs):
+        if is_positive(name, p, model.class_thresholds):
+            print(task, name, round(p, 3))
 ```
+
+For the full pipeline (reading, quality scoring, gating, explanations,
+suggestions) use `aortica.api.predict.run_inference_pipeline`.
 
 ---
 
-## 🌍 Edge & Rural Deployment
+## 🔁 Reproducing the results
 
-Aortica is designed for **rural clinics with intermittent internet, a laptop, and a USB-attached ECG device**.
+All datasets are open access on PhysioNet.
 
-### Hybrid Offline Architecture
-- **Local server mode** — FastAPI backend + full PyTorch model when a workstation is available
-- **PWA offline mode** — React frontend caches itself + ONNX INT8 edge model; inference falls back to ONNX Runtime Web (WASM) in the browser when the server is unreachable
-- **No internet required** after initial setup
-
-### Edge Model
-- **MobileNet-1D backbone** — depthwise-separable convolutions, 0.32M parameters (7.5× smaller than the teacher's 2.39M)
-- **Knowledge distillation** — trained from the full ResNet model (KL divergence + hard labels)
-- **INT8 quantization** — static quantization via ONNX Runtime for ARM deployment
-
-Measured on the PTB-XL held-out test fold (macro-AUROC over trained classes):
-
-| model | params | size | macro-AUROC |
-|-------|--------|------|-------------|
-| teacher (ResNet-1D) | 2.39 M | 28 MB | 0.946 |
-| student (MobileNet-1D) | 0.32 M | 3.97 MB | 0.947 |
-| student INT8 (ONNX) | 0.32 M | 0.42 MB | 0.938 |
-
-The 3%-of-full-model AUC target is met with room to spare (0.8% drop after INT8).
-Raspberry Pi inference latency has **not** yet been measured on hardware.
-
-### Raspberry Pi Deployment
-```bash
-# Deploy on ARM64 hardware
-docker run -p 8000:8000 aortica/edge:latest-arm64
-
-# Or install directly
-pip install aortica[cli,edge]
-aortica predict ecg_file.hea  # uses INT8 ONNX model
-```
-
-### Docker Deployment
+| Dataset | Use | Location expected |
+|---|---|---|
+| [PTB-XL 1.0.3](https://physionet.org/content/ptb-xl/1.0.3/) | train / val / test (folds 1–8 / 9 / 10) | `data/ptb-xl-…-1.0.3/` |
+| [Chapman-Shaoxing 1.0.0](https://physionet.org/content/ecg-arrhythmia/1.0.0/) | train / val / test (seeded 80/10/10) | `data/a-large-scale-…-1.0.0/` |
+| [Georgia, Challenge 2021](https://physionet.org/content/challenge-2021/1.0.3/training/georgia/) | external test only | `data/georgia/` |
+| [Ribeiro et al. 2020 weights](https://zenodo.org/records/3765717) | baseline | `data/ribeiro/model/model.hdf5` |
 
 ```bash
-# Build the server image (amd64 — includes API server + built frontend)
-docker build -f Dockerfile.server -t aortica/server:latest .
+# 1. Train (≈4 h on an 8-core CPU). Writes splits.csv, run_manifest.json,
+#    class_thresholds.json, test_metrics.json and the weights.
+python scripts/train_reference.py --config releases/v0.4.0/config.yaml
 
-# Build the edge image (arm64 — CLI + ONNX edge inference only)
-docker build -f Dockerfile.edge -t aortica/edge:latest .
+# 2. External validation on Georgia.
+python scripts/external_validation.py --georgia data/georgia \
+    --reference releases/v0.4.0/aortica_v0.4.0.pt --out releases/v0.4.0/evaluation
 
-# Run the server
-docker run -p 8000:8000 aortica/server:latest
+# 3. Baseline (needs TensorFlow 2.16 + tf_keras in a separate env).
+TF_USE_LEGACY_KERAS=1 python scripts/baseline_ribeiro.py \
+    --model data/ribeiro/model/model.hdf5 --ptbxl data/ptb-xl-…-1.0.3 \
+    --georgia data/georgia --out releases/v0.4.0/_work/ribeiro
+python scripts/compare_baseline.py --ptbxl data/ptb-xl-…-1.0.3 \
+    --out releases/v0.4.0/evaluation
 
-# Run edge inference on a file
-docker run -v /path/to/ecg:/data aortica/edge:latest predict /data/recording.hea
-
-# Local development with docker-compose (API + frontend dev server)
-docker compose up
+# 4. Tables.
+python scripts/render_results.py releases/v0.4.0
 ```
 
-### CHW-Facing Simplified Output
-For community health workers without cardiology training:
-- **Three-tier system**: Low risk → Refer for assessment → Urgent referral
-- Plain-language summaries with recommended actions
-- Localizable via JSON locale files
+`splits.csv` lists every record considered, its split, and whether it was
+kept or why it was excluded (154 Chapman records: unreadable, a dead lead, or
+amplitudes above 25 mV). `run_manifest.json` records the commit, library
+versions, thread count, data checksums and the SHA-256 of the weights.
 
 ---
 
-## 🤝 Federated Learning
+## 🧩 Platform
 
-Train models across institutions without sharing raw patient data.
+- **Format readers** — WFDB, DICOM (Supp 30/130), SCP-ECG, HL7 aECG XML, CSV,
+  MAT, and scanned PDFs/images; `aortica.io.read_ecg` auto-detects.
+- **Signal processing** — QRS detection (NeuroKit2, Pan-Tompkins), denoising,
+  per-lead quality scoring.
+- **Explainability** — integrated-gradient attributions mapped to named ECG
+  segments, returned at the model's sample rate.
+- **Interfaces** — FastAPI REST + gRPC, Click CLI, React PWA (12-lead viewer,
+  findings panel with clinical suggestions, second-reader mode, batch mode).
+- **Edge** — distilled MobileNet-1D student, INT8 ONNX (0.42 MB, v0.3.0) for
+  ARM devices and an in-browser fallback. On-device latency has not been
+  measured on hardware.
+- **Integration** — FHIR R4, HL7 v2 ORU, DICOM SR, DIMSE, serial capture,
+  SMART on FHIR; PDF/JSON-LD/CSV reports.
+- **Federated learning** — Flower client/server with FedAvg, FedProx and
+  SCAFFOLD; raw ECGs stay on site. Model updates are sent **without
+  differential privacy or secure aggregation** (the `dp` and `secure_agg`
+  modules are experimental and not wired in).
+- **Evaluation & governance** — per-class metrics with bootstrap CIs,
+  demographic subgroups, equity gate, performance cards, and templates for
+  IEC 80601-2-86, FDA pre-submission, CE-MDR and TRIPOD/STARD/CONSORT-AI.
 
-- **Flower framework** — FedAvg, FedProx, and SCAFFOLD aggregation strategies
-- **Differential privacy** — OpenDP integration with configurable ε budget (default ε=1.0)
-- **Secure aggregation** — CKKS homomorphic encryption via TenSEAL
-- **CLI-driven** — `aortica federated server config.yaml` / `aortica federated client config.yaml`
+```
+aortica/
+├── io/          format readers          ├── api/          REST + gRPC
+├── signal/      quality, denoising,     ├── cli/          `aortica` commands
+│                model input contract    ├── edge/         ONNX, distillation, INT8
+├── models/      backbone, heads,        ├── federated/    Flower FL
+│                gating, checkpoints     ├── integration/  FHIR, HL7, DICOM
+├── data/        PTB-XL, Chapman,        ├── reports/      PDF, JSON-LD, CSV
+│                Georgia loaders         ├── retrieval/    similar-case search
+├── evaluation/  metrics, gates          └── validation/   prospective tooling
+└── xai/         attributions
+releases/        v0.2.0, v0.3.0 (edge), v0.4.0 (reference) — metrics, splits, manifests
+frontend/        React + Vite PWA        mobile/android/   Kotlin app
+docs/            MkDocs site             scripts/          training & evaluation
+```
 
----
+### Docker
 
-## 🏥 EHR & Device Integration
+No images are published; build locally:
 
-| Standard | Description |
-|----------|-------------|
-| **FHIR R4** | DiagnosticReport + Observation resources with LOINC/SNOMED codes |
-| **HL7 v2.x** | ORU^R01 messages for legacy EHR systems |
-| **DICOM SR** | Structured Report write-back to PACS |
-| **DICOM DIMSE** | C-STORE/C-FIND for GE MUSE-style ECG management |
-| **SCP-ECG Serial** | Serial/USB capture from legacy ECG carts |
-| **SMART on FHIR** | EHR-embedded launch with patient context |
-
-### Report Generation
-- **PDF reports** — ECG waveform, AI findings, XAI annotations (via WeasyPrint)
-- **JSON-LD** — Machine-readable reports with Schema.org + SNOMED/LOINC ontology links
-- **CSV batch export** — Streaming export for cohort-level research analytics
-- **Worklist prioritization** — AI-sorted by clinical urgency
-
----
-
-## 📋 Regulatory Readiness
-
-Aortica ships document templates and validation tooling for regulatory pathways:
-
-- **IEC 80601-2-86** — Algorithm Testing Documentation template
-- **FDA SaMD** — Pre-submission template
-- **CE-MDR** — Technical file template (Annex I, ISO 14971, IEC 62304)
-- **TRIPOD-AI / STARD-AI / CONSORT-AI** — Publication reporting checklists
-- **CI enforcement** — minimum per-class performance thresholds block releases
-- **Prospective validation** — multi-site study protocol template, data collection pipeline, automated quarterly performance reports
-
----
-
-## 🖥 Web UI
-
-React + Vite + TypeScript frontend with:
-
-- **Interactive ECG viewer** — 12-lead standard layout with grid, pan/zoom, caliper tool
-- **AI Copilot panel** — ranked findings with confidence, severity badges, and clinical suggestion prompts
-- **Second Reader mode** — enter your interpretation, compare against AI, see discrepancies
-- **Edge-Case Spotlight** — rare but dangerous findings (Brugada, Wellens, de Winter) are never buried
-- **Batch processing dashboard** — upload multiple ECGs, sortable results table, CSV export
-- **XAI overlays** — gradient heatmaps and named segment callouts on the waveform
+```bash
+make dev                                    # API + frontend + docs (+ edge)
+docker build -f Dockerfile.server -t aortica-server .
+docker build -f Dockerfile.edge   -t aortica-edge .
+```
 
 ---
 
 ## 🧪 Development
 
 ```bash
-# Run the full test suite
-pytest
-
-# Run type checking
-mypy aortica
-
-# Run linter
-ruff check aortica
-
-# Run tests with coverage
-pytest --cov=aortica --cov-report=term-missing
+pip install -e ".[dev,cli,api,torch,edge]"
+pytest -q -m "not slow"
+ruff check aortica tests scripts
+cd frontend && npm ci && npm run lint && npm run build
 ```
 
-### Tech Stack
+---
 
-| Layer | Technology |
-|-------|-----------|
-| ML (primary) | PyTorch |
-| ML (parallel) | TensorFlow / Keras |
-| Signal processing | NeuroKit2, SciPy |
-| REST API | FastAPI + Uvicorn |
-| High-throughput API | gRPC |
-| CLI | Click + Rich |
-| Web frontend | React + Vite + TypeScript (PWA) |
-| Edge inference | ONNX Runtime, ONNX Runtime Web (WASM) |
-| Documentation | MkDocs Material |
-| Federated learning | Flower (flwr) |
-| Differential privacy | OpenDP |
-| Encryption | cryptography (Fernet / AES-256) |
-| EHR integration | fhir.resources, hl7apy, pydicom, pynetdicom |
-| Report generation | WeasyPrint, pyld |
-| Case retrieval | Annoy / FAISS |
-| PDF scan digitization | OpenCV, pdfplumber |
-| Containerization | Docker (amd64 + arm64) |
+## Limitations
+
+- 44 of 72 outputs are untrained; no risk prediction is available.
+- Two training cohorts and one external cohort. Generalisation to other
+  populations, devices and especially low-resource settings is untested.
+- Label definitions differ between corpora (PTB-XL counts incomplete bundle
+  branch blocks as RBBB/LBBB; Chapman and Georgia do not), which affects both
+  training and evaluation; see the sensitivity analysis in the results.
+- Operating points were tuned on in-distribution validation data; on an
+  external cohort sensitivity/specificity at those points can shift even when
+  AUROC holds.
+- Several trained classes have too few test positives to be validated.
+- 100 Hz input; ST-segment detail may benefit from higher rates.
 
 ---
 
-## 🗺 Roadmap
+## License & acknowledgements
 
-| Phase | Focus | Status |
-|-------|-------|--------|
-| **Phase 0** | Foundation — format readers, signal processing, baseline model | ✅ Complete |
-| **Phase 1** | Core Engine — multi-task model, calibration, XAI, benchmarking | ✅ Complete |
-| **Phase 2** | Edge & Rural Deployment — API, CLI, Web UI, ONNX, offline sync, Docker | ✅ Code complete |
-| **Phase 3** | Federated Learning & Equity — Flower SDK, DP, equity gating, expanded task heads | ✅ Code complete |
-| **Phase 4** | Regulatory & Scale — FHIR/HL7/DICOM integration, reports, case retrieval, regulatory templates | ✅ Code complete |
+Apache 2.0 — see [LICENSE](LICENSE). Planning documents from the build-out
+are in [`docs/archive/`](docs/archive/); they do not describe current
+capabilities.
 
-> **Distribution status.** Code completeness is not the same as availability.
-> A trained checkpoint now exists (PTB-XL, teacher + distilled + INT8 edge) and
-> is published to a **private** HuggingFace repo at `nmillrr/aortica`. Not yet
-> published: PyPI, Docker Hub images, and a signed Android APK — so
-> `pip install aortica` and `docker run aortica/server:latest` do not work yet.
-> Build from source in the meantime.
->
-> The released v0.3.0 checkpoint covers **28 of the model's 72 outputs**
-> (PTB-XL + Chapman-Shaoxing); the rest — including the entire risk head — have
-> no label source in either cohort. They are **suppressed by default**: every
-> inference path withholds them and names them in `suppressed_classes`, and
-> re-enabling them takes an explicit `suppress_untrained=False`. See
-> `aortica/models/output_gating.py` and the model card for detail.
->
-> **Training is not reproducible from this repository.** The PTB-XL loaders were
-> excluded by a `.gitignore` rule and never committed, so `aortica train` and
-> `aortica benchmark` cannot run until they are rewritten — see
-> `aortica/data/ptbxl.py` for the contract a replacement must satisfy.
-> Inference from a released checkpoint is unaffected.
-
----
-
-## 📄 License
-
-Apache 2.0 — see [LICENSE](LICENSE) for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **PTB-XL** (Wagner et al. 2020, PhysioNet) — primary training and evaluation dataset (CC BY 4.0)
-- **PhysioNet** — public ECG databases for development and testing
-- No proprietary data is used. All training uses public or federated data.
+- **PTB-XL** — Wagner P. et al. *Sci Data* 7, 154 (2020). CC BY 4.0.
+- **Chapman-Shaoxing** — Zheng J. et al. *Sci Data* 7, 48 (2020).
+- **Georgia cohort** — PhysioNet/Computing in Cardiology Challenge 2021,
+  Reyna M.A. et al. *Comput Cardiol* (2021). CC BY 4.0.
+- **Baseline** — Ribeiro A.H. et al. *Nat Commun* 11, 1760 (2020).
+- **PhysioNet** — Goldberger A. et al. *Circulation* 101(23) (2000).

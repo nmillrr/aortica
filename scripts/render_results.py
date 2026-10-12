@@ -33,7 +33,7 @@ def _f(x: Optional[float], nd: int = 3) -> str:
 
 
 def _ci(ci: Optional[Sequence[float]], nd: int = 3) -> str:
-    return "" if not ci else f" ({ci[0]:.{nd}f}–{ci[1]:.{nd}f})"
+    return "" if not ci else f" [{ci[0]:.{nd}f}, {ci[1]:.{nd}f}]"
 
 
 def _auc_cell(r: Optional[Dict[str, Any]]) -> str:
@@ -71,7 +71,8 @@ def render(release: Path) -> tuple[str, Dict[str, str]]:
     for corpus, label in (("ptbxl", "PTB-XL fold 10"), ("chapman", "Chapman test split")):
         s = test["summary"][corpus]
         w(f"| {label} | internal test | {s['n_records']:,} | "
-          f"{_f(s['macro_auroc_min10pos'])} | {s['n_classes_min10pos']} | "
+          f"{_f(s['macro_auroc_min10pos'])}{_ci(s.get('macro_auroc_min10pos_ci95'))} | "
+          f"{s['n_classes_min10pos']} | "
           f"{_f(s['macro_auroc'])}{_ci(s.get('macro_auroc_ci95'))} | {s['n_classes']} |")
         head[f"{corpus.upper()}_AUROC"] = _f(s["macro_auroc_min10pos"])
         head[f"N_{corpus.upper()}"] = f"{s['n_records']:,}"
@@ -83,7 +84,7 @@ def render(release: Path) -> tuple[str, Dict[str, str]]:
           f"{_f(m10['value'])}{_ci(m10['ci95'])} | {m10['n_classes']} | "
           f"{_f(m1['value'])}{_ci(m1['ci95'])} | {m1['n_classes']} |")
         head["GEORGIA_AUROC"] = _f(m10["value"])
-        head["GEORGIA_AUROC_CI"] = _ci(m10["ci95"]).strip(" ()")
+        head["GEORGIA_AUROC_CI"] = _ci(m10["ci95"]).strip(" []")
         head["N_GEORGIA"] = f"{n:,}"
     head["N_TRAIN"] = f"{manifest['records']['train']:,}"
     w("")

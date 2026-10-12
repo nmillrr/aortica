@@ -332,6 +332,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 te_p[sel][:, cols], te_y[sel][:, cols], labelled,
                 mask=te_m[sel][:, cols], seed=seed),
             "macro_auroc_min10pos": m10, "n_classes_min10pos": k10,
+            "macro_auroc_min10pos_ci95": bootstrap_macro_auroc_ci(
+                te_p[sel][:, cols], te_y[sel][:, cols],
+                [i for i, n in enumerate(trained) if n in res and res[n].n_pos >= 10],
+                mask=te_m[sel][:, cols], seed=seed),
         }
         logger.info("test %s: macro-AUROC %.4f over %d classes (%.4f over %d with >=10 pos)",
                     corpus, m1, k1, m10, k10)

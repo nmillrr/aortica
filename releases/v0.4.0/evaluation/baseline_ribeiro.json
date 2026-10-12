@@ -1,0 +1,266 @@
+{
+  "baseline": "Ribeiro AH et al. Nat Commun 11, 1760 (2020); weights Zenodo 3765717 model.hdf5",
+  "selection": {
+    "lead_order": "github_aVR_aVL_aVF",
+    "scale": "mV",
+    "padding": "right"
+  },
+  "cohorts": {
+    "georgia": {
+      "role": "primary \u2014 external to both models",
+      "n_records": 10338,
+      "per_class": {
+        "1dAVb": {
+          "aortica_output": "av_block_1st",
+          "n": 10338,
+          "n_pos": 769,
+          "aortica_auroc": 0.9722058429630467,
+          "ribeiro_auroc": 0.978587117780229,
+          "aortica_auprc": 0.7906150275317898,
+          "ribeiro_auprc": 0.8201449442146513,
+          "delta_auroc": -0.006381274817182314,
+          "delta_auprc": -0.029529916682861534,
+          "delta_auroc_ci95": [
+            -0.009632551767679177,
+            -0.003129372318474219
+          ],
+          "delta_auprc_ci95": [
+            -0.04808941795806135,
+            -0.01124945191190897
+          ]
+        },
+        "RBBB": {
+          "aortica_output": "RBBB",
+          "n": 10338,
+          "n_pos": 556,
+          "aortica_auroc": 0.9488002115175576,
+          "ribeiro_auroc": 0.9613949200484225,
+          "aortica_auprc": 0.5291011693347712,
+          "ribeiro_auprc": 0.8063200245220576,
+          "delta_auroc": -0.012594708530864973,
+          "delta_auprc": -0.2772188551872864,
+          "delta_auroc_ci95": [
+            -0.02041363855582947,
+            -0.004163593351790346
+          ],
+          "delta_auprc_ci95": [
+            -0.32162437582706654,
+            -0.23404582667145726
+          ]
+        },
+        "LBBB": {
+          "aortica_output": "LBBB",
+          "n": 10338,
+          "n_pos": 231,
+          "aortica_auroc": 0.966418628039287,
+          "ribeiro_auroc": 0.9807672621563984,
+          "aortica_auprc": 0.7144582524023755,
+          "ribeiro_auprc": 0.8048848569770598,
+          "delta_auroc": -0.014348634117111403,
+          "delta_auprc": -0.09042660457468432,
+          "delta_auroc_ci95": [
+            -0.022678037225551183,
+            -0.0075467494171836
+          ],
+          "delta_auprc_ci95": [
+            -0.14368906585624894,
+            -0.04031979842970604
+          ]
+        },
+        "SB": {
+          "aortica_output": "sinus_brady",
+          "n": 10338,
+          "n_pos": 1677,
+          "aortica_auroc": 0.9926604687239772,
+          "ribeiro_auroc": 0.9497241109279034,
+          "aortica_auprc": 0.9577307028475099,
+          "ribeiro_auprc": 0.765421770364384,
+          "delta_auroc": 0.04293635779607374,
+          "delta_auprc": 0.19230893248312597,
+          "delta_auroc_ci95": [
+            0.03901918319676397,
+            0.04683554170597697
+          ],
+          "delta_auprc_ci95": [
+            0.1741482252047548,
+            0.21226187295848387
+          ]
+        },
+        "AF": {
+          "aortica_output": "AF",
+          "n": 10338,
+          "n_pos": 570,
+          "aortica_auroc": 0.9321544032070348,
+          "ribeiro_auroc": 0.9361619394514131,
+          "aortica_auprc": 0.6815119652732688,
+          "ribeiro_auprc": 0.7386119670137646,
+          "delta_auroc": -0.004007536244378329,
+          "delta_auprc": -0.05710000174049579,
+          "delta_auroc_ci95": [
+            -0.011705392517304675,
+            0.003565164970587999
+          ],
+          "delta_auprc_ci95": [
+            -0.09205512372190275,
+            -0.02169200130839881
+          ]
+        },
+        "ST": {
+          "aortica_output": "sinus_tachy",
+          "n": 10338,
+          "n_pos": 1259,
+          "aortica_auroc": 0.9923402476942969,
+          "ribeiro_auroc": 0.993655723946742,
+          "aortica_auprc": 0.9505895004768505,
+          "ribeiro_auprc": 0.95859068189025,
+          "delta_auroc": -0.0013154762524451025,
+          "delta_auprc": -0.00800118141339945,
+          "delta_auroc_ci95": [
+            -0.0027506367895501287,
+            -1.9577501366134883e-05
+          ],
+          "delta_auprc_ci95": [
+            -0.01948887002965391,
+            0.0022151530677443527
+          ]
+        }
+      },
+      "mean_auroc": {
+        "aortica": 0.9674299670242,
+        "ribeiro": 0.9667151790518514
+      },
+      "mean_auprc": {
+        "aortica": 0.7706677696444277,
+        "ribeiro": 0.8156623741636947
+      }
+    },
+    "ptbxl_fold10": {
+      "role": "secondary \u2014 Aortica's in-distribution test fold; external to Ribeiro",
+      "n_records": 2198,
+      "per_class": {
+        "1dAVb": {
+          "aortica_output": "av_block_1st",
+          "n": 2198,
+          "n_pos": 79,
+          "aortica_auroc": 0.9760634643759595,
+          "ribeiro_auroc": 0.961147185500684,
+          "aortica_auprc": 0.5747689410729433,
+          "ribeiro_auprc": 0.5520358766866232,
+          "delta_auroc": 0.014916278875275468,
+          "delta_auprc": 0.022733064386320057,
+          "delta_auroc_ci95": [
+            0.0028482411098881303,
+            0.030233001534079585
+          ],
+          "delta_auprc_ci95": [
+            -0.052829800451096226,
+            0.1083675379584893
+          ]
+        },
+        "RBBB": {
+          "aortica_output": "RBBB",
+          "n": 2198,
+          "n_pos": 54,
+          "aortica_auroc": 0.9832953289110006,
+          "ribeiro_auroc": 0.9966400635710337,
+          "aortica_auprc": 0.5753063185833001,
+          "ribeiro_auprc": 0.7975453553211345,
+          "delta_auroc": -0.013344734660033164,
+          "delta_auprc": -0.2222390367378344,
+          "delta_auroc_ci95": [
+            -0.01953969120121856,
+            -0.007905036026272513
+          ],
+          "delta_auprc_ci95": [
+            -0.3328600360715162,
+            -0.10883075421218676
+          ]
+        },
+        "LBBB": {
+          "aortica_output": "LBBB",
+          "n": 2198,
+          "n_pos": 54,
+          "aortica_auroc": 0.9977629215035931,
+          "ribeiro_auroc": 0.998125690989497,
+          "aortica_auprc": 0.9205890488885805,
+          "ribeiro_auprc": 0.9417170743767739,
+          "delta_auroc": -0.0003627694859038577,
+          "delta_auprc": -0.02112802548819337,
+          "delta_auroc_ci95": [
+            -0.0014579306859346052,
+            0.0005959600676102097
+          ],
+          "delta_auprc_ci95": [
+            -0.06385543374250607,
+            0.01506132093390293
+          ]
+        },
+        "SB": {
+          "aortica_output": "sinus_brady",
+          "n": 2198,
+          "n_pos": 64,
+          "aortica_auroc": 0.9519827788191191,
+          "ribeiro_auroc": 0.955921977507029,
+          "aortica_auprc": 0.5593817079262842,
+          "ribeiro_auprc": 0.6149840817469432,
+          "delta_auroc": -0.003939198687909928,
+          "delta_auprc": -0.05560237382065902,
+          "delta_auroc_ci95": [
+            -0.015640753567342347,
+            0.006110868958164764
+          ],
+          "delta_auprc_ci95": [
+            -0.14272554884091543,
+            0.028264675645067648
+          ]
+        },
+        "AF": {
+          "aortica_output": "AF",
+          "n": 2198,
+          "n_pos": 152,
+          "aortica_auroc": 0.9861636312188095,
+          "ribeiro_auroc": 0.9852054072130473,
+          "aortica_auprc": 0.9374114429858783,
+          "ribeiro_auprc": 0.90279087687998,
+          "delta_auroc": 0.000958224005762176,
+          "delta_auprc": 0.034620566105898254,
+          "delta_auroc_ci95": [
+            -0.00541954314359244,
+            0.006717756438139783
+          ],
+          "delta_auprc_ci95": [
+            -0.005659611765822944,
+            0.08597579459270296
+          ]
+        },
+        "ST": {
+          "aortica_output": "sinus_tachy",
+          "n": 2198,
+          "n_pos": 82,
+          "aortica_auroc": 0.9822836460878787,
+          "ribeiro_auroc": 0.9925077228087971,
+          "aortica_auprc": 0.8387229219908168,
+          "ribeiro_auprc": 0.8572480661145199,
+          "delta_auroc": -0.010224076720918407,
+          "delta_auprc": -0.018525144123703097,
+          "delta_auroc_ci95": [
+            -0.030404567785904207,
+            0.000841550968978002
+          ],
+          "delta_auprc_ci95": [
+            -0.10808501993912095,
+            0.07364017307682655
+          ]
+        }
+      },
+      "mean_auroc": {
+        "aortica": 0.9795919618193935,
+        "ribeiro": 0.9815913412650147
+      },
+      "mean_auprc": {
+        "aortica": 0.7343633969079671,
+        "ribeiro": 0.7777202218543291
+      }
+    }
+  }
+}
