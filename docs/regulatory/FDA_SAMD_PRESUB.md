@@ -296,7 +296,7 @@ Per FDA's "Predetermined Change Control Plan" framework:
 | **Data in Transit** | HTTPS for API, TLS for gRPC, encrypted sync engine |
 | **Authentication** | OAuth 2.0 (Google, GitHub) + API key authentication |
 | **Authorisation** | JWT-based role access, protected API endpoints |
-| **Federated Learning** | CKKS homomorphic encryption for gradient exchange, differential privacy (ε=1.0 default) |
+| **Federated Learning** | Raw data stays on site; model updates are exchanged over the transport without differential privacy or secure aggregation |
 | **Model Integrity** | SHA-256 checksum verification on pre-trained model download |
 | **Network Isolation** | Self-hosted deployment — no mandatory external data flows |
 

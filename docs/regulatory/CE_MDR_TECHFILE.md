@@ -40,7 +40,6 @@ The system analyses each ECG across four clinical domains simultaneously:
 | SciPy | [FILL: version] | BSD-3 | Signal filtering |
 | NumPy | [FILL: version] | BSD-3 | Numerical computation |
 | Flower (flwr) | [FILL: version] | Apache 2.0 | Federated learning |
-| OpenDP | [FILL: version] | MIT | Differential privacy |
 | WeasyPrint | [FILL: version] | BSD-3 | PDF report generation |
 | [FILL: additional SOUP components] |
 
@@ -166,7 +165,7 @@ Risk management covers the entire lifecycle of Aortica including design, develop
 | H-001 | False negative — missed critical finding (STEMI, VT, VF) | Delayed treatment, patient deterioration | Critical | [FILL: probability estimate] | [FILL: risk level] | Uncertainty quantification, OOD detection, "decision support only" labelling, clinical workflow requiring physician review | [FILL: residual risk] |
 | H-002 | False positive — incorrect critical finding | Unnecessary invasive procedures, patient anxiety | Serious | [FILL: probability estimate] | [FILL: risk level] | Calibrated probabilities, conformal prediction sets, clinical suggestion prompts requiring clinician judgment | [FILL: residual risk] |
 | H-003 | Model drift — performance degradation | Degraded decision support accuracy | Serious | [FILL: probability estimate] | [FILL: risk level] | Performance monitoring, quarterly reports, automated drift detection, equity gating | [FILL: residual risk] |
-| H-004 | Data privacy breach | Patient data exposure | Serious | [FILL: probability estimate] | [FILL: risk level] | Local-only deployment, AES-256 encryption at rest, differential privacy in federated learning, no mandatory external data flows | [FILL: residual risk] |
+| H-004 | Data privacy breach | Patient data exposure | Serious | [FILL: probability estimate] | [FILL: risk level] | Local-only deployment, AES-256 encryption at rest, no mandatory external data flows (federated model updates are not DP-protected) | [FILL: residual risk] |
 | H-005 | Edge model reduced accuracy | Lower quality decision support | Moderate | [FILL: probability estimate] | [FILL: risk level] | Automated edge validation (≤3% AUC degradation), connection status banner indicating inference mode | [FILL: residual risk] |
 | H-006 | Poor quality ECG input | Unreliable analysis results | Moderate | [FILL: probability estimate] | [FILL: risk level] | Signal quality scoring, quality classification (good/marginal/poor), scan-origin quality cap, QualityReport in output | [FILL: residual risk] |
 | H-007 | Demographic bias — underperformance on specific populations | Inequitable care, missed diagnoses in underrepresented groups | Serious | [FILL: probability estimate] | [FILL: risk level] | Equity gating (Bonferroni-corrected demographic comparison), non-Western site validation requirement, performance cards with subgroup breakdowns | [FILL: residual risk] |

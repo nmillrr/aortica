@@ -116,7 +116,7 @@ class FLClientConfig:
     enabled_tasks: List[str] = field(
         default_factory=lambda: ["rhythm", "structural", "ischaemia", "risk"]
     )
-    feature_dim: int = 256
+    feature_dim: int = 240  # must divide by 12 leads; matches released checkpoints
     head_hidden_dim: int = 128
     head_dropout: float = 0.3
     seed: int = 42

@@ -571,13 +571,6 @@ def client_cmd(
     help="Aggregation strategy used.",
 )
 @click.option(
-    "--dp-epsilon",
-    type=float,
-    default=0.0,
-    show_default=True,
-    help="Total differential privacy ε budget spent.",
-)
-@click.option(
     "--push-to-hub",
     is_flag=True,
     default=False,
@@ -605,7 +598,6 @@ def release_cmd(
     site_count: int,
     total_samples: int,
     aggregation_strategy: str,
-    dp_epsilon: float,
     push_to_hub: bool,
     skip_onnx: bool,
     output_format: str,
@@ -649,7 +641,6 @@ def release_cmd(
         site_count=site_count,
         total_samples=total_samples,
         aggregation_strategy=aggregation_strategy,
-        dp_epsilon_spent=dp_epsilon,
         output_dir=output_dir,
         push_to_hub=push_to_hub,
         skip_onnx_export=skip_onnx,

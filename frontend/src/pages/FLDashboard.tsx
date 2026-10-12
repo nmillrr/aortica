@@ -51,7 +51,7 @@ interface SitesData {
   epsilon_budget: number;
 }
 
-type Tab = 'overview' | 'rounds' | 'sites' | 'privacy' | 'convergence';
+type Tab = 'overview' | 'rounds' | 'sites' | 'convergence';
 
 const API_BASE = 'http://localhost:8000';
 const POLL_INTERVAL_MS = 30_000; // 30s default
@@ -270,7 +270,6 @@ export function FLDashboard() {
     { key: 'overview', label: 'Overview', icon: '📊' },
     { key: 'rounds', label: 'Round Metrics', icon: '📈' },
     { key: 'sites', label: 'Sites', icon: '🏥' },
-    { key: 'privacy', label: 'Privacy Budget', icon: '🔒' },
     { key: 'convergence', label: 'Convergence', icon: '🎯' },
   ];
 
@@ -342,9 +341,6 @@ export function FLDashboard() {
         )}
         {activeTab === 'sites' && (
           <SitesPanel sitesData={sitesData} />
-        )}
-        {activeTab === 'privacy' && (
-          <PrivacyPanel sitesData={sitesData} />
         )}
         {activeTab === 'convergence' && (
           <ConvergencePanel campaign={campaign} gradNormData={gradNormData} lossData={lossData} />
@@ -533,8 +529,6 @@ function SitesPanel({ sitesData }: { sitesData: SitesData | null }) {
                 <th>Samples</th>
                 <th>Last Communication</th>
                 <th>Training Time</th>
-                <th>ε Spent</th>
-                <th>ε Budget %</th>
               </tr>
             </thead>
             <tbody>
@@ -548,92 +542,15 @@ function SitesPanel({ sitesData }: { sitesData: SitesData | null }) {
                   <td>{site.samples_contributed.toLocaleString()}</td>
                   <td className="fl-td-ts">{formatTimestamp(site.last_communication)}</td>
                   <td>{(site.local_training_time_ms / 1000).toFixed(1)}s</td>
-                  <td>{site.epsilon_spent.toFixed(3)}</td>
-                  <td>
-                    <div className="fl-epsilon-bar-container">
-                      <div
-                        className={`fl-epsilon-bar ${site.epsilon_budget_pct > 80 ? 'critical' : site.epsilon_budget_pct > 50 ? 'warning' : ''}`}
-                        style={{ width: `${Math.min(site.epsilon_budget_pct, 100)}%` }}
-                      />
-                      <span className="fl-epsilon-label">{site.epsilon_budget_pct.toFixed(1)}%</span>
-                    </div>
-                  </td>
                 </tr>
               ))}
               {sites.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="fl-td-empty">No sites connected</td>
+                  <td colSpan={5} className="fl-td-empty">No sites connected</td>
                 </tr>
               )}
             </tbody>
           </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PrivacyPanel({ sitesData }: { sitesData: SitesData | null }) {
-  const sites = sitesData?.sites ?? [];
-  const budget = sitesData?.epsilon_budget ?? 1.0;
-
-  // Projected epsilon: extrapolate from current spend rate
-  const totalSpent = sites.reduce((sum, s) => sum + s.epsilon_spent, 0);
-  const avgSpent = sites.length > 0 ? totalSpent / sites.length : 0;
-
-  return (
-    <div className="fl-privacy">
-      <div className="fl-card">
-        <div className="fl-card-header">
-          <h3>Privacy Budget Overview</h3>
-        </div>
-        <div className="fl-stat-grid">
-          <div className="fl-stat">
-            <div className="fl-stat-value">{budget.toFixed(2)}</div>
-            <div className="fl-stat-label">Total ε Budget</div>
-          </div>
-          <div className="fl-stat">
-            <div className="fl-stat-value">{avgSpent.toFixed(3)}</div>
-            <div className="fl-stat-label">Avg ε Spent</div>
-          </div>
-          <div className="fl-stat">
-            <div className="fl-stat-value">{sites.filter(s => s.epsilon_budget_pct > 80).length}</div>
-            <div className="fl-stat-label">Sites Near Exhaustion</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Per-site privacy bars */}
-      <div className="fl-card">
-        <div className="fl-card-header">
-          <h3>Per-Site ε Consumption</h3>
-        </div>
-        <div className="fl-privacy-bars">
-          {sites.map(site => (
-            <div key={site.site_id} className="fl-privacy-row">
-              <span className="fl-privacy-site-label">{site.site_id}</span>
-              <div className="fl-privacy-bar-track">
-                <div
-                  className={`fl-privacy-bar-fill ${
-                    site.epsilon_budget_pct > 80 ? 'critical' :
-                    site.epsilon_budget_pct > 50 ? 'warning' : ''
-                  }`}
-                  style={{ width: `${Math.min(site.epsilon_budget_pct, 100)}%` }}
-                />
-                {/* 80% threshold line */}
-                <div className="fl-privacy-threshold" style={{ left: '80%' }} />
-              </div>
-              <span className="fl-privacy-value">
-                {site.epsilon_spent.toFixed(3)} / {budget.toFixed(2)}
-              </span>
-              {site.epsilon_budget_pct > 80 && (
-                <span className="fl-privacy-warn" title="Approaching budget exhaustion">⚠</span>
-              )}
-            </div>
-          ))}
-          {sites.length === 0 && (
-            <div className="fl-empty">No site privacy data available</div>
-          )}
         </div>
       </div>
     </div>

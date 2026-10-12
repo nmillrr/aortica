@@ -4,6 +4,16 @@ Provides :class:`DPWrapper` which wraps an :class:`AorticaFlowerClient`
 with per-round gradient clipping and Gaussian noise injection for
 (ε, δ)-differential privacy.
 
+.. warning::
+   **Experimental and not wired into the federated pipeline.**  Neither
+   :class:`~aortica.federated.fl_client.AorticaFlowerClient`, the Flower
+   server, the strategies nor the ``aortica federated`` CLI use this module,
+   so federated training as shipped provides **no** differential-privacy guarantee.  Aortica makes
+   no differential-privacy claim; do not describe a deployment as having one on the
+   strength of this module.  The accountant below is a simplified RDP
+   composition for the Gaussian mechanism without subsampling and has not
+   been independently audited.
+
 Uses Rényi Differential Privacy (RDP) composition for tight privacy
 accounting across multiple training rounds.
 

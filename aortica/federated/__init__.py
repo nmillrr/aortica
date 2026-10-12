@@ -1,4 +1,11 @@
-"""Federated learning SDK for privacy-preserving collaborative model training."""
+"""Federated learning SDK: train across sites without pooling raw ECGs.
+
+Raw data stays on site; model updates are exchanged in the clear.  The
+:mod:`~aortica.federated.dp` and :mod:`~aortica.federated.secure_agg` modules
+are experimental and **not** wired into the client, server or CLI, so the
+pipeline as shipped offers neither differential privacy nor secure
+aggregation.
+"""
 
 from __future__ import annotations
 

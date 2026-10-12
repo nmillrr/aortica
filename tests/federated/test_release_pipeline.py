@@ -69,7 +69,6 @@ def base_config(output_dir: Path) -> FederatedReleaseConfig:
         site_count=5,
         total_samples=10000,
         aggregation_strategy="fedavg",
-        dp_epsilon_spent=1.0,
         output_dir=str(output_dir),
         skip_benchmark=True,
         skip_equity_gate=True,
@@ -356,7 +355,6 @@ class TestFederatedReleaseConfig:
         assert config.fl_round == 0
         assert config.site_count == 0
         assert config.aggregation_strategy == "fedavg"
-        assert config.dp_epsilon_spent == 0.0
         assert config.push_to_hub is False
         assert config.skip_hub_push is True
 
@@ -366,7 +364,6 @@ class TestFederatedReleaseConfig:
             site_count=10,
             total_samples=50000,
             aggregation_strategy="fedprox",
-            dp_epsilon_spent=2.5,
             push_to_hub=True,
         )
         assert config.fl_round == 100
@@ -393,7 +390,6 @@ class TestModelCard:
             site_count=5,
             total_samples=10000,
             aggregation_strategy="fedavg",
-            dp_epsilon_spent=1.0,
             output_dir=str(output_dir),
             skip_benchmark=True,
             skip_equity_gate=True,
