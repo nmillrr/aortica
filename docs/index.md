@@ -10,37 +10,41 @@ Aortica is a self-hosted, open-source toolkit for AI-powered 12-lead ECG analysi
 
 ### Multi-Task AI Engine
 
-A single forward pass through Aortica's deep learning engine produces:
+The model has 72 outputs across four heads; **28 are trained** (PTB-XL +
+Chapman-Shaoxing). The rest — including every risk prediction — have no label
+source in the public training data and are suppressed on every inference path.
 
-| Task Head | Classes | Output |
-|-----------|---------|--------|
-| **Rhythm & Conduction** | 22 classes | AF, AFL, SVT, VT, VF, AV blocks, BBB, WPW, and more |
-| **Structural & Functional** | 15 classes | LVH, RVH, LVSD, HCM, DCM, amyloidosis, and more |
-| **Ischaemia & Metabolic** | 10 classes | STEMI, NSTEMI, hyperkalaemia, QTc prolongation, and more |
-| **Risk Prediction** | 3 continuous | 1-year mortality, HF hospitalization, AF onset |
+| Task Head | Trained outputs |
+|-----------|-----------------|
+| **Rhythm & Conduction** | 18 — AF, AFL, SVT, AVRT, sinus brady/tachycardia, PAC, PVC, 1st/2nd/3rd-degree AV block, LBBB, RBBB, LAFB, LPFB, WPW, paced, normal sinus |
+| **Structural** | 4 — LVH, RVH, left/right atrial enlargement |
+| **Ischaemia & Repolarisation** | 6 — STEMI, posterior MI, old MI, QTc prolongation, digitalis effect, early repolarisation |
+| **Risk Prediction** | none trained |
+
+!!! warning "Research use only"
+    Not FDA-cleared or CE-marked; not for diagnosis, treatment or triage.
 
 ### Key Features
 
 - :material-file-multiple: **Universal format support** — WFDB, DICOM, SCP-ECG, CSV, MAT, HL7 aECG, PDF/image scans
-- :material-brain: **Calibrated uncertainty** — conformal prediction sets and OOD detection
+- :material-brain: **Per-class operating points** — thresholds tuned on validation data ship with each checkpoint
 - :material-chart-bar: **ECG-native XAI** — integrated gradients mapped to named ECG features (P wave, QRS, ST segment)
 - :material-cellphone-link: **Edge deployment** — INT8 ONNX models for ARM devices (Raspberry Pi)
 - :material-wifi-off: **Offline-first** — PWA with in-browser WASM inference, encrypted local storage
-- :material-docker: **Docker ready** — multi-arch images for server (amd64) and edge (arm64)
+- :material-docker: **Docker** — Dockerfiles for server (amd64) and edge (arm64); build locally
 - :material-api: **REST API + gRPC + CLI** — integrate with any workflow
 
 ---
 
 ## Quick Install
 
-```bash
-pip install aortica
-```
-
-For the full platform with API server and CLI:
+Aortica is not yet published to PyPI, Docker Hub or the HuggingFace Hub —
+install from a clone of the repository.
 
 ```bash
-pip install "aortica[api,cli]"
+git clone https://github.com/nmillrr/aortica.git
+cd aortica
+pip install -e ".[api,cli,torch]"
 ```
 
 See the [Installation Guide](getting-started/installation.md) for detailed instructions.
