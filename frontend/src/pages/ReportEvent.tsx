@@ -7,7 +7,7 @@ export function ReportEvent() {
   const navigate = useNavigate();
 
   const handleSubmitted = useCallback(
-    (_eventId: string) => {
+    () => {
       // Stay on form — success state is shown in the component
     },
     [],

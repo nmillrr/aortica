@@ -481,7 +481,7 @@ export function Results() {
   }, [activeXAI]);
 
   /* ── Copilot finding click — scroll to waveform + activate XAI ── */
-  const handleCopilotFindingClick = useCallback((findingName: string, _task: string) => {
+  const handleCopilotFindingClick = useCallback((findingName: string) => {
     // Activate XAI overlay and set the finding
     setXaiVisible(true);
     setActiveFinding(findingName);

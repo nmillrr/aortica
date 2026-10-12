@@ -305,7 +305,7 @@ export async function predictBatch(
     try {
       const result = await predict(f, config);
       results.push(result);
-    } catch (err) {
+    } catch {
       results.push({
         inference_mode: 'edge_wasm',
         raw: null,

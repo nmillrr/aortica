@@ -240,8 +240,8 @@ export function FLDashboard() {
         setRounds(data.rounds || []);
       }
       if (sitesRes.ok) setSitesData(await sitesRes.json());
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch FL data');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch FL data');
     } finally {
       setLoading(false);
     }
