@@ -1,0 +1,171 @@
+# Georgia 12-lead ECG Challenge Database (PhysioNet/CinC Challenge 2021)
+# SNOMED CT -> Aortica outputs.
+#
+# Evaluation only. Georgia is never used for training or threshold tuning;
+# it is the external cohort for the v0.4.0 whitepaper, chosen because it is
+# a different population (Emory, south-eastern US), device fleet and
+# annotation process from both training corpora.
+#
+# Codes and their names come from the challenge's own tables
+# (physionetchallenges/evaluation-2021: dx_mapping_scored.csv and
+# dx_mapping_unscored.csv). Where the challenge declares two codes
+# equivalent for scoring (CRBBB=RBBB, CLBBB=LBBB, PAC=SVPB, PVC=VPB), both
+# are listed here.
+#
+# Incomplete bundle branch blocks (IRBBB 713426002, ILBBB 251120003) are
+# NOT mapped. Chapman and the challenge treat RBBB/LBBB as complete blocks;
+# PTB-XL's training labels pool incomplete blocks in. The external
+# validation reports the complete-block definition as primary and the
+# pooled one as a sensitivity analysis (scripts/external_validation.py).
+#
+# Deliberately unmapped: acute MI (57054005) is not STEMI; ST elevation
+# (164931005) and Q-wave abnormality (164917005) are findings, not the
+# diagnoses Aortica's STEMI and old_MI outputs name. Georgia has no code
+# for posterior MI or digitalis effect.
+
+version: 1
+
+source:
+  name: Georgia 12-lead ECG Challenge Database
+  release: PhysioNet/CinC Challenge 2021, 1.0.3
+  vocabulary: SNOMED CT, from the #Dx header line
+  url: https://physionet.org/content/challenge-2021/1.0.3/training/georgia/
+  records: 10344
+
+presence_rule:
+  min_likelihood: 0.0
+  include_zero_likelihood: true
+
+# All records are test records.
+split_policy:
+  kind: random
+  seed: 0
+  fractions:
+    train: 0.0
+    val: 0.0
+    test: 1.0
+
+classes:
+
+  # ---- rhythm ----
+  AF:
+    task: rhythm
+    codes: ["164889003"]
+    snomed: "164889003"
+  AFL:
+    task: rhythm
+    codes: ["164890007"]
+    snomed: "164890007"
+  SVT:
+    task: rhythm
+    codes: ["426761007", "713422000"]
+    snomed: "426761007"
+    note: Pooled with atrial tachycardia, as in chapman_snomed.yaml.
+  AVRT:
+    task: rhythm
+    codes: ["233897008"]
+    snomed: "233897008"
+  sinus_brady:
+    task: rhythm
+    codes: ["426177001"]
+    snomed: "426177001"
+  sinus_tachy:
+    task: rhythm
+    codes: ["427084000"]
+    snomed: "427084000"
+  PAC:
+    task: rhythm
+    codes: ["284470004", "63593006"]
+    snomed: "284470004"
+    note: Supraventricular premature beats are scored as PAC by the challenge.
+  PVC:
+    task: rhythm
+    codes: ["427172004", "17338001", "11157007"]
+    snomed: "427172004"
+    note: >
+      Ventricular premature beats are scored as PVC by the challenge;
+      ventricular bigeminy is included as in both training maps.
+  av_block_1st:
+    task: rhythm
+    codes: ["270492004"]
+    snomed: "270492004"
+  av_block_2nd:
+    task: rhythm
+    codes: ["195042002", "54016002", "28189009"]
+    snomed: "195042002"
+  av_block_3rd:
+    task: rhythm
+    codes: ["27885002"]
+    snomed: "27885002"
+  LBBB:
+    task: rhythm
+    codes: ["164909002", "733534002"]
+    snomed: "164909002"
+  RBBB:
+    task: rhythm
+    codes: ["59118001", "713427006"]
+    snomed: "59118001"
+  LAFB:
+    task: rhythm
+    codes: ["445118002"]
+    snomed: "445118002"
+  LPFB:
+    task: rhythm
+    codes: ["445211001"]
+    snomed: "445211001"
+  WPW:
+    task: rhythm
+    codes: ["74390002"]
+    snomed: "74390002"
+  pacemaker_rhythm:
+    task: rhythm
+    codes: ["10370003"]
+    snomed: "10370003"
+  normal_sinus_rhythm:
+    task: rhythm
+    codes: ["426783006"]
+    snomed: "426783006"
+
+  # ---- structural ----
+  LVH:
+    task: structural
+    codes: ["164873001"]
+    snomed: "164873001"
+  RVH:
+    task: structural
+    codes: ["89792004"]
+    snomed: "89792004"
+  LA_enlargement:
+    task: structural
+    codes: ["67741000119109", "253352002"]
+    snomed: "67741000119109"
+    note: Left atrial enlargement pooled with left atrial abnormality.
+  RA_enlargement:
+    task: structural
+    codes: ["446358003", "253339007"]
+    snomed: "446358003"
+    note: Right atrial hypertrophy pooled with right atrial abnormality.
+
+  # ---- ischaemia ----
+  QTc_prolongation:
+    task: ischaemia
+    codes: ["111975006"]
+    snomed: "111975006"
+  old_MI:
+    task: ischaemia
+    codes: ["164865005"]
+    snomed: "164865005"
+    note: >
+      "Myocardial infarction" without an acuity qualifier, as mapped for
+      Chapman. Acute MI (57054005) is excluded.
+  early_repol_vs_STEMI:
+    task: ischaemia
+    codes: ["428417006"]
+    snomed: "428417006"
+
+unmapped_codes:
+  "57054005": acute myocardial infarction -- not equivalent to STEMI
+  "164931005": ST elevation -- a finding, not a STEMI diagnosis
+  "164917005": Q wave abnormal -- a finding, not an old-MI diagnosis
+  "713426002": incomplete RBBB -- see header; sensitivity analysis only
+  "251120003": incomplete LBBB -- see header; sensitivity analysis only

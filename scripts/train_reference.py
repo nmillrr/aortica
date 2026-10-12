@@ -205,6 +205,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     torch.set_num_threads(threads)
     torch.use_deterministic_algorithms(True, warn_only=True)
     t0 = time.time()
+    # Captured before training: the code that ran is the code at start.
+    git_commit = _git("rev-parse", "HEAD")
+    git_dirty = bool(_git("status", "--porcelain", "--untracked-files=no"))
 
     # ── Data ────────────────────────────────────────────────────────────
     specs = ptbxl_chapman(ptbxl_root, chapman_root)
@@ -364,8 +367,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "version": version,
         "seed": seed,
         "smoke_test": args.limit is not None or args.epochs is not None,
-        "git_commit": _git("rev-parse", "HEAD"),
-        "git_dirty": bool(_git("status", "--porcelain", "--untracked-files=no")),
+        "git_commit": git_commit,
+        "git_dirty": git_dirty,
         "command": " ".join([Path(sys.executable).name, *sys.argv]),
         "python": platform.python_version(),
         "platform": platform.platform(),
