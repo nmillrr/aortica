@@ -41,6 +41,7 @@ from aortica.edge.profiling import (
     HARDWARE_TDP,
     profile_inference,
 )
+from aortica.signal.preprocess import MODEL_NUM_SAMPLES
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -54,7 +55,7 @@ DEFAULT_POWER_BUDGET_MW: float = 200.0
 DEFAULT_INFERENCE_INTERVAL_S: float = 300.0
 
 #: Default synthetic input shape when the model input is fully dynamic.
-_DEFAULT_INPUT_SHAPE: tuple[int, int, int] = (1, 12, 5000)
+_DEFAULT_INPUT_SHAPE: tuple[int, int, int] = (1, 12, MODEL_NUM_SAMPLES)
 
 
 # ---------------------------------------------------------------------------
@@ -180,7 +181,7 @@ def _resolve_input_shape(raw_shape: list[Any]) -> tuple[int, ...]:
 
     Dynamic dimensions (``None`` or symbolic strings) are replaced by sensible
     edge-model defaults: batch = 1, and, for a 3-D ``[batch, leads, samples]``
-    shape, leads = 12 and samples = 5000.
+    shape, leads = 12 and samples = 1000 (10 s at 100 Hz).
     """
     resolved: list[int] = []
     for i, dim in enumerate(raw_shape):

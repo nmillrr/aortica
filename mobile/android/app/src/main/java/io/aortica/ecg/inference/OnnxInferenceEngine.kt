@@ -126,14 +126,14 @@ class OnnxInferenceEngine(
         /** Default model filename in assets/ directory. */
         const val MODEL_FILENAME = "model.onnx"
 
-        /** Target sample rate for the edge model. */
-        const val TARGET_SAMPLE_RATE = 500
+        /** Target sample rate for the edge model. See [SignalPreprocessor]. */
+        const val TARGET_SAMPLE_RATE = SignalPreprocessor.TARGET_SAMPLE_RATE
 
         /** Standard 12-lead count. */
         const val STANDARD_LEAD_COUNT = 12
 
-        /** Maximum supported samples (10 seconds at 500 Hz). */
-        const val MAX_SAMPLES = 5000
+        /** Samples per lead the model expects (10 seconds at 100 Hz). */
+        const val MAX_SAMPLES = SignalPreprocessor.TARGET_SAMPLES
 
         /**
          * Zero-pad a signal to 12 leads.

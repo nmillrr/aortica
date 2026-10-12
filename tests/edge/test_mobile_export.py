@@ -88,7 +88,7 @@ class TestMobileModelMetadata:
     def test_default_input_spec(self) -> None:
         metadata = MobileModelMetadata(version="1.0.0")
         assert metadata.input_spec["name"] == "ecg_input"
-        assert metadata.input_spec["shape"] == [1, 12, 5000]
+        assert metadata.input_spec["shape"] == [1, 12, 1000]
         assert metadata.input_spec["dtype"] == "float32"
 
 

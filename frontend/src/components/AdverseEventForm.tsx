@@ -83,7 +83,7 @@ export function AdverseEventForm({
         const data = await response.json();
         setSubmittedId(data.id || 'unknown');
         onSubmitted?.(data.id);
-      } catch (err) {
+      } catch {
         // Offline fallback — store locally
         const stored = JSON.parse(
           localStorage.getItem('aortica_pending_adverse_events') || '[]',

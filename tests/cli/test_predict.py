@@ -29,6 +29,16 @@ from aortica.cli.predict import (  # noqa: E402
     predict,
 )
 
+
+@pytest.fixture(autouse=True)
+def _no_hub_download() -> Any:
+    """Keep the no --model path offline; the Hub repo is not public anyway."""
+    with patch(
+        "aortica.models.registry.load_pretrained",
+        side_effect=RuntimeError("hub unavailable in tests"),
+    ):
+        yield
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -194,7 +204,7 @@ class TestPredictCommand:
         result = runner.invoke(predict, [dummy_ecg_file, "--format", "json"])
         assert result.exit_code == 0
 
-        parsed = json.loads(result.output)
+        parsed = json.loads(result.stdout)
         assert "quality_report" in parsed
         assert parsed["quality_report"]["overall_score"] == 85.0
 
@@ -336,7 +346,7 @@ class TestPredictCommand:
 
         result = runner.invoke(predict, [dummy_ecg_file, "--format", "json"])
         assert result.exit_code == 0
-        parsed = json.loads(result.output)
+        parsed = json.loads(result.stdout)
         assert len(parsed["predictions"]) == 1
         assert parsed["predictions"][0]["task"] == "rhythm"
 
@@ -441,7 +451,7 @@ class TestCliGroup:
 
         result = runner.invoke(cli, ["predict", dummy_ecg_file, "--format", "json"])
         assert result.exit_code == 0
-        parsed = json.loads(result.output)
+        parsed = json.loads(result.stdout)
         assert "quality_report" in parsed
 
 

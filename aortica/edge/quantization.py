@@ -13,7 +13,7 @@ Example::
     from aortica.edge import quantize_int8
 
     # Generate representative calibration data (or use real ECG samples)
-    calibration_data = [np.random.randn(1, 12, 5000).astype(np.float32) for _ in range(100)]
+    calibration_data = [np.random.randn(1, 12, 1000).astype(np.float32) for _ in range(100)]
     report = quantize_int8("model.onnx", calibration_data, "model_int8.onnx")
     print(f"Max diff: {report.max_abs_diff:.6f}")
 

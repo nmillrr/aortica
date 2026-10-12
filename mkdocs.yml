@@ -66,6 +66,10 @@ markdown_extensions:
   - toc:
       permalink: true
 
+# Planning history; not part of the published site.
+exclude_docs: |
+  archive/
+
 nav:
   - Home: index.md
   - Getting Started:

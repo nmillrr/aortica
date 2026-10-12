@@ -43,8 +43,15 @@ const DEFAULT_MODEL_PATH = '/models/aortica_edge_int8.onnx';
 
 /** Number of ECG leads the edge model expects */
 const NUM_LEADS = 12;
-/** Default sample count (500 Hz × 10 s) */
-const NUM_SAMPLES = 5000;
+/**
+ * Samples per lead the edge model expects: 100 Hz × 10 s. Must match
+ * aortica/signal/preprocess.py. The ONNX graph accepts any length, so a
+ * 500 Hz tensor runs without error and scores near chance (macro-AUROC
+ * 0.53 vs 0.94 on PTB-XL fold 10).
+ */
+const NUM_SAMPLES = 1000;
+/** Input tensor name baked into the exported ONNX graph. */
+const INPUT_NAME = 'ecg_input';
 
 /* ---------- Edge session cache ------------------------------------------- */
 
@@ -124,26 +131,26 @@ async function inferEdge(
   const ort = await import('onnxruntime-web');
   const session = await getEdgeSession(modelPath);
 
-  // Read file as ArrayBuffer and convert to Float32Array
+  // The offline path takes a preprocessed tensor only: raw little-endian
+  // float32, [12 leads × 1000 samples], µV, 100 Hz, not denoised. Format
+  // parsing and resampling live on the server; anything else is rejected
+  // rather than zero-padded into a confident-looking prediction.
   const buffer = await file.arrayBuffer();
-  const rawSignal = new Float32Array(buffer.byteLength / 4);
-
-  // If the file is a raw float32 binary, use it directly;
-  // otherwise create a zero-padded input tensor
-  if (buffer.byteLength === NUM_LEADS * NUM_SAMPLES * 4) {
-    rawSignal.set(new Float32Array(buffer));
-  } else {
-    // Zero-padded placeholder — the real preprocessing would need
-    // format detection, but for edge fallback we accept raw tensors
-    const available = Math.min(buffer.byteLength / 4, NUM_LEADS * NUM_SAMPLES);
-    rawSignal.set(new Float32Array(buffer, 0, available));
+  const expectedBytes = NUM_LEADS * NUM_SAMPLES * 4;
+  if (buffer.byteLength !== expectedBytes) {
+    throw new Error(
+      `Offline inference needs a preprocessed ${NUM_LEADS}x${NUM_SAMPLES} float32 ` +
+        `tensor (${expectedBytes} bytes, 100 Hz, µV); got ${buffer.byteLength} bytes. ` +
+        'Connect to the server to analyse ECG files.',
+    );
   }
+  const rawSignal = new Float32Array(buffer);
 
   const inputTensor = new ort.Tensor('float32', rawSignal, [1, NUM_LEADS, NUM_SAMPLES]);
 
   // Run inference
   const typedSession = session as { run: (feeds: Record<string, unknown>) => Promise<Record<string, { data: Float32Array }>> };
-  const results = await typedSession.run({ input: inputTensor });
+  const results = await typedSession.run({ [INPUT_NAME]: inputTensor });
 
   // Collect outputs
   const predictions: Record<string, unknown> = {};
@@ -298,7 +305,7 @@ export async function predictBatch(
     try {
       const result = await predict(f, config);
       results.push(result);
-    } catch (err) {
+    } catch {
       results.push({
         inference_mode: 'edge_wasm',
         raw: null,

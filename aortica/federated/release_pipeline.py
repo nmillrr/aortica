@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from aortica.signal.preprocess import MODEL_NUM_SAMPLES
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +52,6 @@ class FederatedReleaseConfig:
         site_count: Number of participating sites (anonymised).
         total_samples: Total training samples contributed across sites.
         aggregation_strategy: Aggregation strategy used (e.g. ``'fedavg'``).
-        dp_epsilon_spent: Total differential privacy ε budget spent.
-        dp_delta: DP δ parameter.
         equity_regions: List of region labels for per-region equity
             reporting in the model card.
         output_dir: Directory for output artifacts.  Default: temp dir.
@@ -73,8 +72,6 @@ class FederatedReleaseConfig:
     site_count: int = 0
     total_samples: int = 0
     aggregation_strategy: str = "fedavg"
-    dp_epsilon_spent: float = 0.0
-    dp_delta: float = 1e-5
     equity_regions: List[str] = field(default_factory=list)
     output_dir: Optional[str] = None
     push_to_hub: bool = False
@@ -253,8 +250,8 @@ def _generate_federated_model_card(
         f"- **Participating sites (anonymised):** {config.site_count}",
         f"- **Total training samples contributed:** {config.total_samples}",
         f"- **Aggregation strategy:** {config.aggregation_strategy}",
-        f"- **Differential privacy ε spent:** {config.dp_epsilon_spent}",
-        f"- **Differential privacy δ:** {config.dp_delta}",
+        "- **Update privacy:** model updates were exchanged without "
+        "differential privacy or secure aggregation.",
         f"- **FL round:** {config.fl_round}",
         f"- **Release timestamp:** {timestamp}",
         f"- **Checkpoint SHA-256:** `{sha256}`",
@@ -346,7 +343,6 @@ def _step_load_weights(
                 "aggregation_strategy": config.aggregation_strategy,
                 "site_count": config.site_count,
                 "total_samples": config.total_samples,
-                "dp_epsilon_spent": config.dp_epsilon_spent,
             },
             str(ckpt_path),
         )
@@ -516,7 +512,7 @@ def _step_onnx_export(
         int8_path = output_dir / int8_name
         n_cal = max(1, config.calibration_samples)
         cal_data = [
-            np.random.randn(1, 12, 5000).astype(np.float32)
+            np.random.randn(1, 12, MODEL_NUM_SAMPLES).astype(np.float32)
             for _ in range(n_cal)
         ]
         quantize_int8(str(onnx_path), cal_data, str(int8_path))

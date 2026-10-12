@@ -36,29 +36,22 @@ def _load_model(
             from aortica.models.registry import load_pretrained
 
             return load_pretrained("latest")
-        except Exception:
+        except Exception as exc:
+            click.echo(
+                f"Warning: no --model given and no pretrained model could be "
+                f"fetched ({type(exc).__name__}). Pretrained weights are not yet "
+                f"publicly hosted; pass --model path/to/checkpoint.pt. "
+                f"Reporting signal quality only.",
+                err=True,
+            )
             return None
 
+    from aortica.models.checkpoint import load_checkpoint
+
     try:
-        import torch
-
-        from aortica.models.aortica_model import AorticaModel
-    except ImportError:
+        return load_checkpoint(model_path, enabled_tasks=list(tasks))
+    except ImportError:  # torch not installed
         return None
-
-    checkpoint = torch.load(model_path, map_location="cpu", weights_only=False)
-    if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
-        model = AorticaModel(enabled_tasks=list(tasks))
-        model.load_state_dict(checkpoint["model_state_dict"])
-    elif isinstance(checkpoint, AorticaModel):
-        model = checkpoint
-    else:
-        # Assume it's a raw state_dict
-        model = AorticaModel(enabled_tasks=list(tasks))
-        model.load_state_dict(checkpoint)
-
-    model.eval()
-    return model
 
 
 def _run_pipeline(
@@ -97,8 +90,17 @@ _SEVERITY_COLORS: Dict[str, str] = {
 }
 
 
-def _classify_severity(prob: float) -> str:
-    """Map a probability to a severity label."""
+def _classify_severity(prob: float, threshold: Optional[float] = None) -> str:
+    """Map a probability to a severity label.
+
+    Bands are applied to the score rescaled around the class's operating
+    point (which maps to 0.5), so "moderate" means "at or past this class's
+    tuned threshold" for every class rather than "past 0.5".
+    """
+    if threshold is not None:
+        from aortica.models.output_gating import calibrated_score
+
+        prob = calibrated_score("", prob, {"": threshold})
     if prob >= 0.9:
         return "critical"
     if prob >= 0.7:
@@ -177,6 +179,7 @@ def _render_table(result: Dict[str, Any]) -> None:
             task_name = task_pred.get("task", "unknown")
             class_names: List[str] = task_pred.get("class_names", [])
             probabilities: List[float] = task_pred.get("probabilities", [])
+            thresholds: List[Optional[float]] = task_pred.get("thresholds", [])
 
             table = Table(
                 title=f"{task_name.capitalize()} Predictions",
@@ -198,7 +201,9 @@ def _render_table(result: Dict[str, Any]) -> None:
             for idx in sorted_indices:
                 prob = probabilities[idx]
                 name = class_names[idx] if idx < len(class_names) else f"class_{idx}"
-                severity = _classify_severity(prob)
+                severity = _classify_severity(
+                    prob, thresholds[idx] if idx < len(thresholds) else None
+                )
                 color = _SEVERITY_COLORS[severity]
                 table.add_row(
                     name,

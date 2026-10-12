@@ -7,33 +7,40 @@
 
 ## Basic Installation
 
-Install the core library (format readers, signal processing, models):
+Aortica is not yet published to PyPI, Docker Hub or the HuggingFace Hub —
+install from a clone of the repository.
 
 ```bash
-pip install aortica
+git clone https://github.com/nmillrr/aortica.git
+cd aortica
+pip install -e .
 ```
 
 ## Installation with Extras
 
-Aortica uses optional dependency groups for different deployment scenarios:
+Aortica uses optional dependency groups for different deployment scenarios.
+Run these from the repository root.
 
-### Full Platform (API + CLI)
+### Full Platform (API + CLI + inference)
 
 ```bash
-pip install "aortica[api,cli]"
+pip install -e ".[api,cli,torch]"
 ```
 
 ### Researcher Setup (Training + Evaluation)
 
 ```bash
-pip install "aortica[torch,cli,dev]"
+pip install -e ".[torch,cli,dev]"
 ```
 
 ### Edge Deployment
 
 ```bash
-pip install "aortica[cli,edge]"
+pip install -e ".[cli,edge]"
 ```
+
+The INT8 edge model is in the repository at
+`releases/v0.3.0/aortica_edge_int8_v0.3.0.onnx`.
 
 ### All Optional Dependencies
 
@@ -47,7 +54,7 @@ pip install "aortica[cli,edge]"
 | `cli` | Click, Rich | Command-line interface |
 | `edge` | ONNX, ONNX Runtime | Edge model deployment |
 | `scan` | OpenCV, pdfplumber | PDF/image ECG digitization |
-| `hub` | HuggingFace Hub | Pre-trained model download |
+| `hub` | HuggingFace Hub | Pre-trained model download (repository not yet public) |
 | `sync` | cryptography | Encrypted offline storage |
 | `auth` | authlib, PyJWT | OAuth/API key authentication |
 | `dev` | pytest, mypy, ruff | Development and testing |
@@ -64,7 +71,7 @@ pip install -e ".[dev,torch,cli,api]"
 
 ## Docker Installation
 
-Pull pre-built images:
+No images are published; build them locally:
 
 ```bash
 # Server (amd64)
@@ -87,7 +94,7 @@ See the [Docker Deployment Guide](../deployment/docker.md) for details.
 
 ```bash
 python -c "import aortica; print(aortica.__version__)"
-# 0.2.0
+# 0.4.0
 
 aortica --help
 ```

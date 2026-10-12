@@ -13,7 +13,6 @@
 | **Model Updates** | Aggregated gradient or weight delta information transmitted from a Participant's local Aortica client to the FL server during a federated training round. |
 | **Local Data** | ECG recordings, patient metadata, and associated labels stored at the Participant's site. Local Data never leaves the Participant's network. |
 | **Global Model** | The aggregated model produced by the FL server after combining Model Updates from all Participants. |
-| **Privacy Budget** | The differential privacy parameter (ε) governing the maximum information leakage per round, as configured in the Aortica DP wrapper. |
 
 ---
 
@@ -23,11 +22,9 @@
 
 2.2. **Model Updates are ephemeral.** The FL server retains per-round Model Updates only for the duration of aggregation. Once the Global Model for a round is computed, individual Model Updates are deleted.
 
-2.3. **Differential privacy is mandatory.** All Model Updates are protected by differential privacy (default ε = 1.0, δ = 1e-5) via the Aortica `DPWrapper` before transmission. The Participant may configure a stricter privacy budget.
+2.3. **Model Updates are not privacy-protected.** The Aortica federated pipeline transmits Model Updates without differential privacy or secure aggregation, and the FL server observes each Participant's update in plaintext. Model updates can leak information about the data they were computed from. Participants should assess this residual risk with their privacy office before joining, and the Coordinator must not represent the pipeline as providing differential privacy or secure aggregation.
 
-2.4. **Secure aggregation available.** When enabled, Model Updates are encrypted via CKKS homomorphic encryption (`SecureAggregator`) so the FL server aggregates in encrypted space and never observes individual updates in plaintext.
-
-2.5. **Data deletion.** Upon withdrawal (Section 5), the Coordinator will confirm in writing that no Model Updates from the Participant remain on any server infrastructure.
+2.4. **Data deletion.** Upon withdrawal (Section 5), the Coordinator will confirm in writing that no Model Updates from the Participant remain on any server infrastructure.
 
 ---
 

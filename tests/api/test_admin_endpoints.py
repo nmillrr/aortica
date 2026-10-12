@@ -720,7 +720,9 @@ class TestAppIntegration:
 
     def test_admin_routes_registered(self) -> None:
         app = create_app()
-        paths = [r.path for r in app.routes]  # type: ignore[union-attr]
+        from tests.conftest import route_paths
+
+        paths = route_paths(app)
         assert "/api/v1/admin/users" in paths
         assert "/api/v1/admin/system-health" in paths
         assert "/api/v1/admin/activity-log" in paths

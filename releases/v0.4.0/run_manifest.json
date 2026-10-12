@@ -1,0 +1,51 @@
+{
+  "version": "v0.4.0",
+  "seed": 42,
+  "smoke_test": false,
+  "git_commit": "c17fd63687ea1ef39712cc1a34f8dac6cb16dd8c",
+  "git_dirty": false,
+  "command": "python scripts/train_reference.py --config releases/v0.4.0/config.yaml",
+  "python": "3.12.14",
+  "platform": "macOS-14.8.9-x86_64-i386-64bit",
+  "processor": "i386",
+  "torch": "2.2.2",
+  "numpy": "1.26.4",
+  "scipy": "1.17.1",
+  "torch_threads": 8,
+  "deterministic_algorithms": true,
+  "data": {
+    "ptbxl_database_csv_sha256": "7600de9c1b27d181d850b3c6038a35d7c3ddb6bb33b702e3a20252a6859d216b",
+    "chapman_sha256sums_sha256": "dfad0c26a276ce7e450e5002051f4c749304552d9add4d592928bbdcb6e4f31c"
+  },
+  "records": {
+    "train": 53405,
+    "val": 6687,
+    "test": 6705,
+    "by_status": {
+      "chapman/test/kept": 4507,
+      "chapman/test/dropped_by_loader": 4,
+      "chapman/test/excluded_amplitude_gt_25mV": 5,
+      "chapman/train/kept": 35987,
+      "chapman/train/dropped_by_loader": 87,
+      "chapman/train/excluded_amplitude_gt_25mV": 47,
+      "chapman/val/kept": 4504,
+      "chapman/val/dropped_by_loader": 8,
+      "chapman/val/excluded_amplitude_gt_25mV": 3,
+      "ptbxl/test/kept": 2198,
+      "ptbxl/train/kept": 17418,
+      "ptbxl/val/kept": 2183
+    }
+  },
+  "best_epoch": 18,
+  "weights_file": "aortica_v0.4.0.pt",
+  "weights_sha256": "13406bd26f53594d9db3fd2bd17f036e89fdd5be5b5af7aadafa666948922016",
+  "state_dict_sha256": "caf315553ca963aef1bfe67a726ba8f458c0aaa197921e163164547aa9837f16",
+  "splits_sha256": "7bdc9d14c55b0d6e934061a77ca61d79e0b25be14b99cf768bfcd26da666898d",
+  "seconds": {
+    "load": 760,
+    "train": 11710,
+    "total": 12524
+  },
+  "env": {},
+  "git_note": "This run was launched from clean commit c17fd63. The script version it ran captured git state at the end of the run, when HEAD was d4b3012 with uncommitted edits made during training; that capture was wrong and has been corrected here. Between the two commits, files on the training path changed only in a docstring path (aortica/data/ptbxl.py), the unused default of AorticaModel.feature_dim (the run passes 240 explicitly) and the script's git-capture timing. scripts/train_reference.py now records git state at start."
+}

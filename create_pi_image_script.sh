@@ -12,6 +12,8 @@
 # Prerequisites:
 #   - Raspberry Pi OS (64-bit Lite) flashed to microSD
 #   - Internet connection for initial package download
+#   - Run from a clone of https://github.com/nmillrr/aortica — Aortica is not
+#     on PyPI, and the edge model ships in the repository
 # ----------------------------------------------------------------
 set -euo pipefail
 
@@ -34,16 +36,20 @@ VENV_DIR="/opt/aortica/venv"
 sudo mkdir -p /opt/aortica
 sudo python3 -m venv "$VENV_DIR"
 sudo "$VENV_DIR/bin/pip" install --upgrade pip setuptools wheel
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ---- 4. Install Aortica ----
 echo "[4/7] Installing aortica[cli,edge]..."
-sudo "$VENV_DIR/bin/pip" install "aortica[cli,edge]"
+sudo "$VENV_DIR/bin/pip" install "${SCRIPT_DIR}[cli,edge]"
 sudo ln -sf "$VENV_DIR/bin/aortica" /usr/local/bin/aortica
 
 # ---- 5. Download edge model ----
-echo "[5/7] Downloading INT8 edge model..."
-sudo -u aortica "$VENV_DIR/bin/python" -c \
-    "from aortica.models.registry import load_pretrained; load_pretrained('latest', variant='edge')"
+echo "[5/7] Installing INT8 edge model..."
+MODEL_DIR="/home/aortica/.cache/aortica"
+sudo -u aortica mkdir -p "$MODEL_DIR"
+sudo install -o aortica -g aortica -m 0644 \
+    "$SCRIPT_DIR/releases/v0.3.0/aortica_edge_int8_v0.3.0.onnx" \
+    "$MODEL_DIR/aortica_edge_int8.onnx"
 
 # ---- 6. Create data/log directories ----
 echo "[6/7] Creating data and log directories..."
@@ -54,7 +60,6 @@ sudo chown -R aortica:aortica /var/log/aortica
 
 # ---- 7. Install systemd service ----
 echo "[7/7] Installing systemd service..."
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ -f "$SCRIPT_DIR/aortica-edge.service" ]; then
     sudo cp "$SCRIPT_DIR/aortica-edge.service" /etc/systemd/system/aortica-edge.service
 else

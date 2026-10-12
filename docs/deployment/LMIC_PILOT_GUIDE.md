@@ -59,7 +59,8 @@ sudo ./create_pi_image_script.sh --verify --device /dev/sdX
 
 The script provisions:
 
-- Aortica (`pip install aortica[cli,edge]`) and the INT8 edge model.
+- Aortica (installed from the repository checkout the script runs from) and
+  the INT8 edge model shipped in `releases/v0.3.0/`.
 - The `aortica-edge` systemd unit (auto-start, watchdog, restart-on-failure).
 - Duty-cycled inference configuration (model loads on-demand per ECG).
 - The data directory (`/var/lib/aortica/data`) and log directory

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://aortica.io/sitemap.xml
+Sitemap: https://nmillrr.github.io/aortica/sitemap.xml

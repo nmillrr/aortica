@@ -577,7 +577,9 @@ class TestReportEndpointRouting:
     """Tests verifying routes are registered correctly."""
 
     def test_all_report_routes_exist(self, app: fastapi.FastAPI) -> None:
-        route_paths = [r.path for r in app.routes if hasattr(r, "path")]
+        from tests.conftest import route_paths as _route_paths
+
+        route_paths = _route_paths(app)
         assert "/api/v1/report/pdf/{result_id}" in route_paths
         assert "/api/v1/report/jsonld/{result_id}" in route_paths
         assert "/api/v1/report/fhir/{result_id}" in route_paths

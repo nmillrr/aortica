@@ -11,7 +11,7 @@ interface SiteValidation {
   region: string;
   region_class: string;
   dataset_size: number;
-  benchmark_summary: Record<string, any>;
+  benchmark_summary: Record<string, unknown>;
   timestamp: string;
   overall_pass: boolean;
 }
@@ -202,8 +202,8 @@ export function SiteValidationPage() {
       if (readinessRes.ok) {
         setReadiness(await readinessRes.json());
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch validation data');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch validation data');
     } finally {
       setLoading(false);
     }
@@ -220,7 +220,7 @@ export function SiteValidationPage() {
     setSuccess(null);
 
     try {
-      let benchmarkReport: Record<string, any> = {};
+      let benchmarkReport: Record<string, unknown> = {};
       if (formBenchmark.trim()) {
         try {
           benchmarkReport = JSON.parse(formBenchmark);
@@ -257,8 +257,8 @@ export function SiteValidationPage() {
         const err = await resp.json();
         setError(err.detail || 'Registration failed');
       }
-    } catch (err: any) {
-      setError(err.message || 'Registration failed');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
       setSubmitting(false);
     }

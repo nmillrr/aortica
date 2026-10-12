@@ -7,14 +7,14 @@ This guide walks through the core Aortica workflows: loading ECGs, running infer
 The fastest way to get started:
 
 ```bash
-# Predict on a single ECG file
-aortica predict patient_ecg.dat
+# Predict on a single ECG file (WFDB: pass the record's .hea)
+aortica predict patient_ecg.hea --model releases/v0.4.0/aortica_v0.4.0.pt
 
 # JSON output
-aortica predict patient_ecg.dat --format json
+aortica predict patient_ecg.hea --model ... --format json
 
-# Select specific task heads
-aortica predict patient_ecg.dat --tasks rhythm,risk
+# Select specific task heads (the risk head is untrained and always suppressed)
+aortica predict patient_ecg.hea --model ... --tasks rhythm,ischaemia
 ```
 
 ## 2. Python API
@@ -25,7 +25,7 @@ aortica predict patient_ecg.dat --tasks rhythm,risk
 from aortica.io import read_ecg
 
 # Auto-detects format (WFDB, DICOM, SCP-ECG, CSV, MAT, HL7, PDF)
-record = read_ecg("patient_ecg.dat")
+record = read_ecg("patient_ecg.hea")
 
 print(f"Leads: {record.lead_names}")
 print(f"Sample rate: {record.sample_rate} Hz")
@@ -52,29 +52,31 @@ print(f"Detected {len(r_peaks)} beats")
 
 ### Model Inference
 
+Model input must match training: 12 leads, **100 Hz, 10 s, µV, not denoised**.
+`model_input` builds exactly that from the record as read — pass `record`, not
+the denoised `clean`, which is for quality scoring only.
+
 ```python
-from aortica.models import AorticaModel, load_pretrained
-
-# Load pre-trained model from HuggingFace Hub
-model = load_pretrained("latest")
-
-# Or load a local checkpoint
-# model = AorticaModel()
-# model.load_state_dict(torch.load("checkpoint.pt")["model_state_dict"])
-
 import torch
-import numpy as np
 
-# Prepare input tensor
-signals = torch.tensor(clean.signals, dtype=torch.float32).unsqueeze(0)
+from aortica.models.checkpoint import load_checkpoint
+from aortica.models.output_gating import filter_task_outputs, is_positive
+from aortica.models.task_dims import TASK_CLASS_NAMES
+from aortica.signal.preprocess import model_input, model_record
 
-# Run inference
-output = model(signals)
+# Pretrained weights are not hosted yet; train them with
+# scripts/train_reference.py or use a checkpoint you have.
+model = load_checkpoint("releases/v0.4.0/aortica_v0.4.0.pt")
 
-print(f"Rhythm predictions: {output.rhythm.shape}")       # [1, 22]
-print(f"Structural predictions: {output.structural.shape}") # [1, 15]
-print(f"Ischaemia predictions: {output.ischaemia.shape}")  # [1, 10]
-print(f"Risk scores: {output.risk.shape}")                 # [1, 3]
+x = torch.from_numpy(model_input(record)).unsqueeze(0)   # [1, 12, 1000]
+with torch.no_grad():
+    output = model(x).as_dict()
+
+# 28 of 72 outputs are trained; drop the rest before using anything.
+for task in ("rhythm", "structural", "ischaemia"):
+    names, probs, _ = filter_task_outputs(TASK_CLASS_NAMES[task], output[task][0].tolist())
+    found = [n for n, p in zip(names, probs) if is_positive(n, p, model.class_thresholds)]
+    print(task, found)
 ```
 
 ### Explainability (XAI)
@@ -82,11 +84,11 @@ print(f"Risk scores: {output.risk.shape}")                 # [1, 3]
 ```python
 from aortica.xai import explain
 
-# Integrated gradient attribution mapped to ECG features
-attribution = explain(model, record, task="rhythm")
+# Attribute on the same 100 Hz record the model scored.
+attribution = explain(model, model_record(record), task="rhythm")
 
 for feature in attribution.top_features:
-    print(f"  {feature.segment_name}: {feature.delta_score:.3f}")
+    print(f"  {feature.lead} {feature.feature_name}: {feature.delta_score:.3f}")
 ```
 
 ## 3. REST API Server

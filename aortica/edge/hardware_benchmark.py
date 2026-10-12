@@ -36,6 +36,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
 import numpy.typing as npt
+from aortica.signal.preprocess import MODEL_NUM_SAMPLES
 
 try:
     import yaml
@@ -261,11 +262,11 @@ class HardwareBenchmarkReport:
 def _input_shape_for_mode(input_mode: str) -> tuple[int, int, int]:
     """Return (batch, leads, samples) for a given input mode."""
     if input_mode == "single-lead":
-        return (1, 1, 5000)
+        return (1, 1, MODEL_NUM_SAMPLES)
     elif input_mode == "6-lead":
-        return (1, 6, 5000)
+        return (1, 6, MODEL_NUM_SAMPLES)
     else:  # 12-lead default
-        return (1, 12, 5000)
+        return (1, 12, MODEL_NUM_SAMPLES)
 
 
 def _measure_peak_memory() -> float:

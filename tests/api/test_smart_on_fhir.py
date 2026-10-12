@@ -421,7 +421,9 @@ class TestAppIntegration:
         from aortica.api.app import create_app
 
         app = create_app(enable_auth=False)
-        paths = [r.path for r in app.routes]
+        from tests.conftest import route_paths
+
+        paths = route_paths(app)
         assert "/api/v1/smart/launch" in paths
         assert "/api/v1/smart/callback" in paths
         assert "/api/v1/smart/status" in paths

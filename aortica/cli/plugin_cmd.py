@@ -21,18 +21,22 @@ def _build_default_processor() -> Any:
     returned callable maps an ``ECGRecord`` to a ``{task: {class: conf}}``
     dict, mirroring the model-forward path used by the predict endpoint.
     """
-    import numpy as np
     import torch
 
     from aortica.api.predict import _get_task_class_names
+    from aortica.models.output_gating import filter_task_outputs
     from aortica.models.registry import load_pretrained
+    from aortica.signal.preprocess import model_input
 
     model = load_pretrained("latest")
     model.eval()
     class_names = _get_task_class_names()
 
     def _processor(payload: Any) -> Dict[str, Any]:
-        x = torch.from_numpy(payload.signals.astype(np.float32)).unsqueeze(0)
+        # Same input contract and output gating as the predict endpoint: a
+        # 100 Hz model fed native-rate samples scores near chance, and an
+        # untrained head emits noise.
+        x = torch.from_numpy(model_input(payload)).unsqueeze(0)
         with torch.no_grad():
             output = model(x)
         result: Dict[str, Any] = {}
@@ -40,11 +44,9 @@ def _build_default_processor() -> Any:
             if probs is None:
                 continue
             names = class_names.get(task_name, [])
-            values = probs[0].tolist()
-            result[task_name] = {
-                (names[i] if i < len(names) else f"{task_name}_{i}"): float(v)
-                for i, v in enumerate(values)
-            }
+            kept, values, _ = filter_task_outputs(names, probs[0].tolist())
+            if kept:
+                result[task_name] = {n: float(v) for n, v in zip(kept, values)}
         return result
 
     return _processor

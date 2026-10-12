@@ -122,11 +122,15 @@ def build_index_cmd(
     try:
         import numpy as np
 
-        from aortica.data.ptbxl import load_ptbxl
+        from aortica.data.ptbxl import _output_columns, load_ptbxl
+        from aortica.signal.preprocess import model_input
 
+        # Embeddings must come from the same input the query is encoded from
+        # at serving time: 100 Hz, 10 s, unfiltered.
         (train_records, train_labels), (val_records, val_labels), (test_records, test_labels) = (
-            load_ptbxl(dataset_path, sampling_rate=500)
+            load_ptbxl(dataset_path, sampling_rate=100, multitask=True)
         )
+        output_names, _ = _output_columns(True)
 
         # Combine all splits for indexing
         all_records_signals: list[np.ndarray] = []
@@ -140,14 +144,11 @@ def build_index_cmd(
             ("test", test_records, test_labels),
         ]:
             for idx, ecg_record in enumerate(records):
-                all_records_signals.append(ecg_record.signals)
-                # Convert numeric label vector to string labels
+                all_records_signals.append(model_input(ecg_record))
                 label_names = []
                 if labels_arr.shape[0] > idx:
                     row = labels_arr[idx]
-                    for li, name in enumerate(["rhythm", "structural", "ischaemia"]):
-                        if row[li] > 0.5:
-                            label_names.append(name)
+                    label_names = [n for n, v in zip(output_names, row) if v > 0.5]
                 all_labels_list.append(label_names)
                 rec_id = f"{split_name}_{idx:06d}"
                 all_record_ids.append(rec_id)
@@ -163,19 +164,8 @@ def build_index_cmd(
             all_record_ids = all_record_ids[:max_records]
             all_demographics = all_demographics[:max_records]
 
-        # Stack into a single array [N, leads, samples]
-        # Pad/truncate to uniform length
-        target_len = 5000  # 10s at 500 Hz
-        processed: list[np.ndarray] = []
-        for sig in all_records_signals:
-            if sig.shape[1] >= target_len:
-                processed.append(sig[:, :target_len])
-            else:
-                pad_width = target_len - sig.shape[1]
-                processed.append(
-                    np.pad(sig, ((0, 0), (0, pad_width)), mode="constant")
-                )
-        dataset_array = np.stack(processed, axis=0).astype(np.float64)
+        # [N, 12, 1000] — model_input already windowed each record.
+        dataset_array = np.stack(all_records_signals, axis=0).astype(np.float64)
         console.print(
             f"[green]Loaded {dataset_array.shape[0]} ECGs "
             f"(shape: {dataset_array.shape})[/green]"

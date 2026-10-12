@@ -24,7 +24,9 @@ def _client_with_monitor(monitor: SiteMonitor) -> TestClient:
 def test_edge_status_route_registered() -> None:
     app = FastAPI()
     app.include_router(create_edge_router())
-    paths = [r.path for r in app.routes]  # type: ignore[attr-defined]
+    from tests.conftest import route_paths
+
+    paths = route_paths(app)
     assert "/edge/status" in paths
 
 

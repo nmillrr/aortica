@@ -19,48 +19,68 @@ import org.junit.runner.RunWith
 class InferenceInstrumentedTest {
 
     @Test
-    fun testSignalPreprocessor_resample() {
-        // 250 Hz → 500 Hz, single lead, 250 samples (1 second)
-        val signal = FloatArray(250) { (it % 50).toFloat() / 50f }
-        val resampled = SignalPreprocessor.resample(signal, 1, 250, 250)
+    fun testSignalPreprocessor_resample_downsamplesTo100Hz() {
+        // 500 Hz → 100 Hz, single lead, 500 samples (1 second)
+        val signal = FloatArray(500) { 1.0f }
+        val resampled = SignalPreprocessor.resample(signal, 1, 500, 500)
 
-        assertEquals(500, resampled.size)
-        // First and last values should be preserved
-        assertEquals(signal[0], resampled[0], 0.01f)
+        assertEquals(100, resampled.size)
+        // A constant passes the anti-aliasing filter unchanged (unity DC gain)
+        assertEquals(1.0f, resampled[50], 1e-4f)
+    }
+
+    @Test
+    fun testSignalPreprocessor_resample_suppressesAliasing() {
+        // A 60 Hz tone sampled at 500 Hz must not survive downsampling to
+        // 100 Hz, where it would alias to 40 Hz inside the ECG band.
+        val n = 5000
+        val signal = FloatArray(n) { kotlin.math.sin(2 * Math.PI * 60.0 * it / 500.0).toFloat() }
+        val resampled = SignalPreprocessor.resample(signal, 1, n, 500)
+        val interior = resampled.copyOfRange(50, resampled.size - 50)
+        val peak = interior.maxOf { kotlin.math.abs(it) }
+        assertTrue("60 Hz leaked through at amplitude $peak", peak < 0.05f)
     }
 
     @Test
     fun testSignalPreprocessor_padOrTruncate_pad() {
-        // 1 lead, 1000 samples → pad to 5000
-        val signal = FloatArray(1000) { 1.0f }
-        val padded = SignalPreprocessor.padOrTruncate(signal, 1, 1000)
+        // 1 lead, 500 samples → pad to 1000
+        val signal = FloatArray(500) { 1.0f }
+        val padded = SignalPreprocessor.padOrTruncate(signal, 1, 500)
 
-        assertEquals(5000, padded.size)
-        assertEquals(1.0f, padded[0], 0f)
-        assertEquals(1.0f, padded[999], 0f)
-        assertEquals(0.0f, padded[1000], 0f)  // Zero-padded
+        assertEquals(1000, padded.size)
+        assertEquals(1.0f, padded[499], 0f)
+        assertEquals(0.0f, padded[500], 0f)  // Zero-padded
     }
 
     @Test
     fun testSignalPreprocessor_padOrTruncate_truncate() {
-        // 1 lead, 10000 samples → truncate to 5000
-        val signal = FloatArray(10000) { it.toFloat() }
-        val truncated = SignalPreprocessor.padOrTruncate(signal, 1, 10000)
+        // 1 lead, 2000 samples → truncate to 1000
+        val signal = FloatArray(2000) { it.toFloat() }
+        val truncated = SignalPreprocessor.padOrTruncate(signal, 1, 2000)
 
-        assertEquals(5000, truncated.size)
-        assertEquals(0.0f, truncated[0], 0f)
-        assertEquals(4999.0f, truncated[4999], 0f)
+        assertEquals(1000, truncated.size)
+        assertEquals(999.0f, truncated[999], 0f)
     }
 
     @Test
-    fun testSignalPreprocessor_preprocess_microVoltConversion() {
-        val signal = FloatArray(5000) { 1000f }  // 1000 µV
+    fun testSignalPreprocessor_preprocess_outputsMicrovoltsAt100Hz() {
+        // 10 s at 500 Hz of a constant 1 mV
+        val signal = FloatArray(5000) { 1.0f }
         val processed = SignalPreprocessor.preprocess(
-            signal, 1, 5000, sourceUnits = "uV"
+            signal, 1, 5000, sourceSampleRate = 500, sourceUnits = "mV"
         )
 
-        assertEquals(5000, processed.size)
-        assertEquals(1.0f, processed[0], 0.01f)  // Should be 1 mV
+        assertEquals(1000, processed.size)
+        assertEquals(1000.0f, processed[500], 0.5f)  // 1 mV == 1000 µV
+    }
+
+    @Test
+    fun testSignalPreprocessor_preprocess_microvoltsPassThrough() {
+        val signal = FloatArray(1000) { 1000f }
+        val processed = SignalPreprocessor.preprocess(
+            signal, 1, 1000, sourceSampleRate = 100, sourceUnits = "uV"
+        )
+        assertEquals(1000f, processed[0], 0f)
     }
 
     @Test

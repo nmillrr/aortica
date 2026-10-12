@@ -33,5 +33,13 @@ TASK_NUM_OUTPUTS: dict[str, int] = {
     "risk": len(RISK_OUTPUTS),
 }
 
+#: Output names per task head, in head order.
+TASK_CLASS_NAMES: dict[str, list[str]] = {
+    "rhythm": list(RHYTHM_CLASSES),
+    "structural": list(STRUCTURAL_CLASSES),
+    "ischaemia": list(ISCHAEMIA_CLASSES),
+    "risk": list(RISK_OUTPUTS),
+}
+
 #: Total concatenated output width across all task heads.
 TOTAL_OUTPUTS: int = sum(TASK_NUM_OUTPUTS.values())

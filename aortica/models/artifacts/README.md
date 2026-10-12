@@ -10,8 +10,8 @@ them at import time.
 | `trained_outputs.json` | Allowlist of the 28 outputs that carry trained weights, plus the per-task loss mask used to train them. |
 | `class_thresholds.json` | Per-class operating points, used to calibrate raw probabilities before CHW tier assignment. |
 
-Both are copies of the v0.3.0 release sidecars in `artifacts_combined/`, which
-remains the source of truth. `scripts/sync_model_sidecars.py` refreshes them and
+Both are copies of the v0.3.0 release sidecars in `releases/v0.3.0/`, which
+remains the source of truth. `scripts/sync_release_artifacts.py` refreshes them and
 CI fails if they drift.
 
 Update these whenever a new checkpoint is released — a stale allowlist would

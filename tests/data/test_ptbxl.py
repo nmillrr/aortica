@@ -2,7 +2,7 @@
 
 The mapping in ``aortica/data/label_maps/ptbxl_scp.yaml`` was reconstructed
 by solving for the code sets that reproduce the per-class positive counts
-published in ``artifacts_combined/test_metrics.json``.  That reconstruction
+published in ``releases/v0.3.0/test_metrics.json``.  That reconstruction
 is the fragile part of this loader — the file I/O either works or raises,
 but a wrong code set silently trains the wrong thing.
 
@@ -32,7 +32,7 @@ from aortica.data.ptbxl import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-RELEASED_METRICS = REPO_ROOT / "artifacts_combined" / "test_metrics.json"
+RELEASED_METRICS = REPO_ROOT / "releases/v0.3.0" / "test_metrics.json"
 
 #: Point this at an extracted PTB-XL 1.0.3 distribution to run the tests that
 #: actually read waveforms.  They skip when it is unset.

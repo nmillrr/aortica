@@ -29,15 +29,22 @@ python -m venv aortica-fl
 source aortica-fl/bin/activate  # Linux/macOS
 # aortica-fl\Scripts\activate   # Windows
 
-# Install Aortica with federated learning extras
-pip install aortica[cli,federated]
+# Install Aortica with federated learning extras (from a repository clone)
+git clone https://github.com/nmillrr/aortica.git
+pip install -e "./aortica[cli,federated]"
 
 # Verify the installation
 aortica --version
 aortica federated --help
 ```
 
-The `[federated]` extra installs Flower (`flwr`), OpenDP, and TenSEAL for differential privacy and secure aggregation.
+The `[federated]` extra installs Flower (`flwr`).
+
+!!! warning "No differential privacy or secure aggregation"
+    Raw ECGs never leave your site, but model updates are sent to the FL
+    server **in plaintext** and are not differentially private. Model updates
+    can leak information about the records they were trained on. Review this
+    with your privacy office before joining a campaign.
 
 ---
 
@@ -87,17 +94,12 @@ sampling_rate: 500
 window_seconds: 10.0
 
 # Model configuration
-feature_dim: 256
+feature_dim: 240
 enabled_tasks:
   - rhythm
   - structural
   - ischaemia
   - risk
-
-# Privacy (optional — DP is enabled by default)
-# dp_epsilon: 1.0
-# dp_delta: 1.0e-5
-# dp_max_grad_norm: 1.0
 
 # Reproducibility
 seed: 42
@@ -114,7 +116,7 @@ seed: 42
 | `lr` | float | 0.001 | Learning rate |
 | `sampling_rate` | int | 500 | ECG sampling rate (Hz) |
 | `window_seconds` | float | 10.0 | Signal window length |
-| `feature_dim` | int | 256 | Backbone feature dimension |
+| `feature_dim` | int | 240 | Backbone feature dimension (must be divisible by 12) |
 | `enabled_tasks` | list | all four | Task heads to train |
 | `base_checkpoint` | string | null | Custom starting checkpoint |
 | `seed` | int | 42 | Random seed |
@@ -171,10 +173,9 @@ The client will:
 2. Connect to the FL server and wait for the round to begin
 3. Receive global model weights from the server
 4. Train locally on your data for `local_epochs` epochs
-5. Apply differential privacy noise to the weight updates
-6. Transmit the (privacy-protected) updates to the server
-7. Receive the new global model after aggregation
-8. Repeat for each configured round
+5. Transmit the weight updates to the server (unencrypted, no DP noise)
+6. Receive the new global model after aggregation
+7. Repeat for each configured round
 
 ### Monitoring Training
 
@@ -200,12 +201,11 @@ The client logs per-round metrics to stdout:
 | `Connection refused` | Server not running / wrong port | Verify `server_address`, check firewall |
 | `Timeout waiting for server` | Slow network or server overloaded | Increase `--timeout`, check bandwidth |
 | `CUDA out of memory` | Batch size too large for GPU | Reduce `batch_size` in config |
-| `Privacy budget exhausted` | ε fully spent | Reduce `local_epochs` or increase ε |
 | `Parameter count mismatch` | Model architecture differs | Ensure `feature_dim` and `enabled_tasks` match server config |
 
 ### Getting Help
 
-- **Documentation:** [https://aortica.io/docs/federated](https://aortica.io/docs/federated)
+- **Documentation:** [https://nmillrr.github.io/aortica/docs/federated/ONBOARDING/](https://nmillrr.github.io/aortica/docs/federated/ONBOARDING/)
 - **Issues:** [https://github.com/nmillrr/aortica/issues](https://github.com/nmillrr/aortica/issues)
 - **Coordinator contact:** Provided in your executed DUA
 
@@ -219,8 +219,7 @@ Before going live, confirm:
 - [ ] IRB / ethics board approval obtained
 - [ ] Virtual environment isolated from other applications
 - [ ] Firewall configured to allow only FL server traffic
-- [ ] Differential privacy enabled (default ε = 1.0)
-- [ ] Secure aggregation enabled (if available)
+- [ ] Privacy office has reviewed that model updates are sent without DP or secure aggregation
 - [ ] Local data stored on encrypted volume
 - [ ] `aortica federated test-connection` passes
 - [ ] Coordinator notified of your readiness to join

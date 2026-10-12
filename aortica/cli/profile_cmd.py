@@ -155,9 +155,9 @@ def _render_profile_json(profile: InferenceProfile) -> None:
 @click.option(
     "--duration-samples",
     type=int,
-    default=5000,
+    default=1000,
     show_default=True,
-    help="Number of samples (at 500 Hz = 10s) in synthetic input.",
+    help="Number of samples (1000 = 10 s at the model's 100 Hz) in synthetic input.",
 )
 def profile_cmd(
     model_path: str,

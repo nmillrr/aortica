@@ -46,13 +46,16 @@ Flash **Raspberry Pi OS (64-bit Lite)** to the microSD card using [Raspberry Pi 
 sudo apt update && sudo apt install -y python3-pip python3-venv libatlas-base-dev
 python3 -m venv ~/aortica-env
 source ~/aortica-env/bin/activate
-pip install "aortica[cli,edge]"
+git clone https://github.com/nmillrr/aortica.git
+pip install -e "./aortica[cli,edge]"
 ```
 
-### 3. Download Edge Model
+### 3. Locate the Edge Model
+
+The INT8 edge model ships in the repository — no download step:
 
 ```bash
-python -c "from aortica.models.registry import load_pretrained; load_pretrained('latest', variant='edge')"
+ls aortica/releases/v0.3.0/aortica_edge_int8_v0.3.0.onnx
 ```
 
 ### 4. First-Run Verification

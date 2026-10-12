@@ -29,6 +29,7 @@ import pathlib
 import shutil
 from dataclasses import asdict, dataclass, field
 from typing import Any, Optional, Union
+from aortica.signal.preprocess import MODEL_NUM_SAMPLES
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +68,9 @@ DEFAULT_TASK_HEADS: list[dict[str, object]] = [
 #: Input tensor specification for the edge model.
 DEFAULT_INPUT_SPEC: dict[str, object] = {
     "name": "ecg_input",
-    "shape": [1, 12, 5000],
+    "shape": [1, 12, MODEL_NUM_SAMPLES],
     "dtype": "float32",
-    "description": "ECG signal: [batch, leads, samples] at 500 Hz",
+    "description": "ECG signal: [batch, leads, samples] at 100 Hz, µV, 10 s",
 }
 
 
@@ -155,7 +156,7 @@ def _validate_onnx_model(model_path: pathlib.Path) -> dict[str, object]:
             "name": input_info.name,
             "shape": input_info.shape,
             "dtype": input_info.type,
-            "description": "ECG signal: [batch, leads, samples] at 500 Hz",
+            "description": "ECG signal: [batch, leads, samples] at 100 Hz, µV, 10 s",
         }
 
         output_specs = []

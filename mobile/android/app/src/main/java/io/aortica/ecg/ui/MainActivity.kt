@@ -130,7 +130,9 @@ class MainActivity : AppCompatActivity() {
                     signal = ecgData.signal,
                     numLeads = ecgData.numLeads,
                     numSamples = ecgData.numSamples,
-                    sourceSampleRate = ecgData.sampleRate
+                    sourceSampleRate = ecgData.sampleRate,
+                    // EcgFileReader returns millivolts; the model takes µV.
+                    sourceUnits = "mV"
                 )
 
                 // Run inference

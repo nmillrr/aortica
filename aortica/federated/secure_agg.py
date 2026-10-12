@@ -3,8 +3,20 @@
 Provides :class:`SecureAggregator` which encrypts model weight updates
 using the CKKS scheme (via TenSEAL) for privacy-preserving aggregation.
 
-When TenSEAL is not available, falls back to a plaintext mock mode
-for development and testing.
+With ``use_mock=True`` (tests only) it runs a plaintext mock; otherwise it
+requires TenSEAL.
+
+.. warning::
+   **Experimental and not wired into the federated pipeline.**  Neither
+   :class:`~aortica.federated.fl_client.AorticaFlowerClient`, the Flower
+   server, the strategies nor the ``aortica federated`` CLI use this module,
+   so federated training as shipped provides **no** secure aggregation.  Aortica makes
+   no secure-aggregation claim; do not describe a deployment as having one on the
+   strength of this module.  Note also that a single CKKS context whose
+   secret key is held by the aggregator does not hide an individual site's
+   update from that aggregator, which is the property secure aggregation
+   exists to provide; a real deployment would need a protocol such as
+   Flower's SecAgg+.
 
 Example::
 

@@ -48,12 +48,7 @@ data/
 feedback.db
 
 # Development artifacts
-.agents
-deep-research-report.md
-project-plan.md
-progress.txt
-PRD.md
-PRD-2.md
+docs/archive/
 
 # CI/CD
 .github/

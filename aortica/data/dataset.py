@@ -23,9 +23,9 @@ from aortica.data.augmentations import (
     apply_gaussian_noise,
     apply_lead_dropout,
     apply_time_shift,
-    pad_or_truncate,
 )
 from aortica.io.ecg_record import ECGRecord
+from aortica.signal.preprocess import window_signals
 
 # Optional dependencies support
 try:
@@ -166,7 +166,7 @@ class ECGDataset(Dataset):
 
         if self.window_seconds > 0:
             target_samples = int(round(record.sample_rate * self.window_seconds))
-            signals = pad_or_truncate(signals, target_samples)
+            signals = window_signals(signals, target_samples)
 
         x = torch.from_numpy(signals).float()
         y = torch.as_tensor(self.labels[idx]).float()
@@ -260,7 +260,7 @@ def create_tf_dataset(
 
             if window_seconds > 0:
                 target_samples = int(round(record.sample_rate * window_seconds))
-                signals = pad_or_truncate(signals, target_samples)
+                signals = window_signals(signals, target_samples)
 
             yield signals.astype(np.float32), y_arr[i]
 

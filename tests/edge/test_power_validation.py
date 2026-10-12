@@ -58,7 +58,7 @@ def test_compute_sustained_power_validates_inputs(
 
 def test_resolve_input_shape_dynamic_dims() -> None:
     assert _resolve_input_shape(["N", 12, 5000]) == (1, 12, 5000)
-    assert _resolve_input_shape([None, None, None]) == (1, 12, 5000)
+    assert _resolve_input_shape([None, None, None]) == (1, 12, 1000)
     assert _resolve_input_shape([2, 6, 1000]) == (2, 6, 1000)
 
 

@@ -12,7 +12,7 @@
 # The original mapping was lost with the loader (see aortica/data/ptbxl.py).
 # It was not re-invented here -- it was *recovered* by solving for it.
 #
-# artifacts_combined/test_metrics.json records, for each of the 26 outputs
+# releases/v0.3.0/test_metrics.json records, for each of the 26 outputs
 # PTB-XL can label, the number of positive examples in the v0.3.0 test set
 # ("test_pos").  PTB-XL's test set is stratification fold 10, a fixed set of
 # 2,198 records.  So for each Aortica class there is a known integer that any
@@ -26,7 +26,7 @@
 # report them.
 #
 # Recovered:  2026-09-10
-# Verified against: artifacts_combined/test_metrics.json (v0.3.0)
+# Verified against: releases/v0.3.0/test_metrics.json (v0.3.0)
 # Source vocabulary: scp_statements.csv, PTB-XL 1.0.3 (71 codes)
 
 version: 1

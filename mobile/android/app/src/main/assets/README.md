@@ -5,7 +5,7 @@
 builds an APK that works offline — which is the point of the Android client.
 
 Do not edit it by hand. It is a copy of the current release artifact in
-`artifacts_combined/`, kept in sync by:
+`releases/v0.3.0/`, kept in sync by:
 
 ```
 python3 scripts/sync_release_artifacts.py

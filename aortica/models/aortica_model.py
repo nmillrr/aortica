@@ -87,7 +87,8 @@ class AorticaModel(nn.Module):
 
     Args:
         in_channels: Number of ECG leads.  Default ``12``.
-        feature_dim: Backbone feature dimension.  Default ``256``.
+        feature_dim: Backbone feature dimension; must be divisible by
+            ``num_leads``.  Default ``240``.
         num_leads: Number of leads for cross-lead attention.  Default ``12``.
         num_heads: Attention heads.  Default ``4``.
         head_dim: Per-head attention dimension.  Default ``64``.
@@ -100,7 +101,7 @@ class AorticaModel(nn.Module):
     Example::
 
         model = AorticaModel(in_channels=12)
-        x = torch.randn(4, 12, 5000)
+        x = torch.randn(4, 12, 1000)  # 10 s at 100 Hz
         output = model(x)
         output.rhythm    # [4, 28]
         output.risk      # [4, 6]
@@ -115,7 +116,9 @@ class AorticaModel(nn.Module):
     def __init__(
         self,
         in_channels: int = 12,
-        feature_dim: int = 256,
+        # Must divide by num_leads (CrossLeadAttention splits it per lead);
+        # 240 is what every released checkpoint uses.
+        feature_dim: int = 240,
         num_leads: int = 12,
         num_heads: int = 4,
         head_dim: int = 64,

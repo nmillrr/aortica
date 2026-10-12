@@ -18,8 +18,9 @@ import numpy as np
 from pydantic import BaseModel, Field
 
 from aortica.io import UnsupportedFormatError, read_ecg
-from aortica.models.output_gating import kept_indices
+from aortica.models.output_gating import is_positive, kept_indices, operating_points
 from aortica.signal import denoise, score_quality
+from aortica.signal.preprocess import model_record
 
 
 # ---------------------------------------------------------------------------
@@ -75,6 +76,14 @@ class TaskPrediction(BaseModel):
         description=(
             "Outputs withheld because the checkpoint never trained them. "
             "These heads emit noise, not predictions."
+        ),
+    )
+    thresholds: List[Optional[float]] = Field(
+        default_factory=list,
+        description=(
+            "Per-class operating point, aligned with class_names.  A finding "
+            "is positive when its probability reaches its own threshold; raw "
+            "probabilities are not comparable across classes."
         ),
     )
 
@@ -134,6 +143,13 @@ class XAIAttributionResponse(BaseModel):
         default_factory=dict,
         description="Per-lead segment boundaries (sample indices)",
     )
+    sample_rate: float = Field(
+        default=100.0,
+        description=(
+            "Rate, in Hz, that attribution and boundary indices are expressed "
+            "in — the model's input rate, not the uploaded file's."
+        ),
+    )
 
 
 class SuggestionEntry(BaseModel):
@@ -143,6 +159,13 @@ class SuggestionEntry(BaseModel):
     prompt: str = Field(..., description="Short clinical cue")
     urgency: str = Field(..., description="Urgency level")
     rationale: str = Field(..., description="Clinical justification")
+    probability: Optional[float] = Field(
+        default=None, description="Model probability for this condition"
+    )
+    threshold: Optional[float] = Field(
+        default=None,
+        description="Per-class operating point the probability cleared",
+    )
 
 
 class SimilarCaseEntry(BaseModel):
@@ -285,9 +308,13 @@ def run_inference_pipeline(
     Steps:
       1. Write bytes to a temp file (preserving the original extension).
       2. ``read_ecg()`` — auto-detect / explicit format.
-      3. ``denoise()`` — clean the signal.
+      3. ``denoise()`` — clean the signal for quality scoring.
       4. ``score_quality()`` — assess signal quality.
-      5. Model inference (if a model is loaded).
+      5. Model inference (if a model is loaded) on
+         :func:`~aortica.signal.preprocess.model_record` of the record *as
+         read* — 100 Hz, 10 s, µV, not denoised — which is exactly what the
+         checkpoint was trained on.  Attribution and retrieval use the same
+         record so their sample indices match the scored tensor.
       6. Optionally wrap with conformal prediction / uncertainty.
 
     Parameters
@@ -331,14 +358,21 @@ def run_inference_pipeline(
         if format_override:
             read_kwargs["format"] = format_override
 
-        ecg_record = read_ecg(tmp_path, **read_kwargs)
+        raw_record = read_ecg(tmp_path, **read_kwargs)
 
-        # ── 3. Denoise ───────────────────────────────────────────────
-        ecg_record = denoise(ecg_record)
+        # ── 3. Denoise (quality scoring only) ────────────────────────
+        # The model never sees this signal: it was trained on unfiltered
+        # records, so filtering here would be a train/serve mismatch.
+        denoised_record = denoise(raw_record)
 
         # ── 4. Quality scoring ───────────────────────────────────────
-        quality = score_quality(ecg_record)
+        quality = score_quality(denoised_record)
         quality_resp = _quality_report_to_response(quality)
+
+        # What the model is fed — and what attribution and retrieval
+        # explain.  Built only when there is a model to feed, so a
+        # quality-only request does not fail on, say, a 3-lead upload.
+        ecg_record = model_record(raw_record) if model is not None else None
 
         # ── 5. Model inference ───────────────────────────────────────
         predictions: List[TaskPrediction] = []
@@ -350,7 +384,8 @@ def run_inference_pipeline(
             class_names = _get_task_class_names()
             tasks_to_run = enabled_tasks or model.enabled_tasks
 
-            # Prepare input tensor: [1, leads, samples]
+            # Prepare input tensor: [1, 12, 1000]
+            assert ecg_record is not None
             x = torch.from_numpy(
                 ecg_record.signals.astype(np.float32)
             ).unsqueeze(0)
@@ -391,6 +426,7 @@ def run_inference_pipeline(
             # property: an untrained risk head that reaches a triage UI can
             # escalate on noise, and "the caller forgot" must not be a way to
             # get there.  See aortica.models.output_gating.
+            thresholds = operating_points(model)
             for task_name, probs_tensor in preds_dict.items():
                 probs_list = probs_tensor[0].tolist()
                 names = class_names.get(task_name, [])
@@ -419,6 +455,7 @@ def run_inference_pipeline(
                         class_names=[names[i] for i in keep],
                         probabilities=[probs_list[i] for i in keep],
                         suppressed_classes=suppressed,
+                        thresholds=[thresholds.get(names[i]) for i in keep],
                     )
                 )
                 if uncertainty_resp is not None:
@@ -486,6 +523,7 @@ def run_inference_pipeline(
                             segment_attributions=seg_attrs,
                             top_features=top_feats,
                             segment_boundaries=seg_bounds,
+                            sample_rate=ecg_record.sample_rate,
                         )
                     )
                 except Exception:
@@ -497,22 +535,30 @@ def run_inference_pipeline(
         if include_suggestions and predictions:
             from aortica.api.clinical_suggestions import get_suggestion
 
+            # A finding is positive when it clears its own operating point,
+            # tuned per class on validation data.  A single cut-off does not
+            # work: rare classes peak far below common ones, so the old flat
+            # 0.30 missed most AVRT/AV-block/AF positives (operating points
+            # 0.05-0.10) and over-called STEMI/SVT (0.40-0.45).
             suggestion_entries = []
             for task_pred in predictions:
                 for class_name, prob in zip(
                     task_pred.class_names, task_pred.probabilities
                 ):
-                    if prob >= 0.30:  # Only suggest for positive findings
-                        suggestion = get_suggestion(class_name)
-                        if suggestion is not None:
-                            suggestion_entries.append(
-                                SuggestionEntry(
-                                    condition=class_name,
-                                    prompt=suggestion.prompt,
-                                    urgency=suggestion.urgency,
-                                    rationale=suggestion.rationale,
-                                )
+                    if not is_positive(class_name, prob, thresholds):
+                        continue
+                    suggestion = get_suggestion(class_name)
+                    if suggestion is not None:
+                        suggestion_entries.append(
+                            SuggestionEntry(
+                                condition=class_name,
+                                prompt=suggestion.prompt,
+                                urgency=suggestion.urgency,
+                                rationale=suggestion.rationale,
+                                probability=prob,
+                                threshold=thresholds.get(class_name),
                             )
+                        )
             if not suggestion_entries:
                 suggestion_entries = None
 

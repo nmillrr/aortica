@@ -49,7 +49,7 @@ def default_trained_outputs() -> frozenset[str]:
         raise MissingGatingArtifactError(
             f"Could not read {_TRAINED_OUTPUTS_PATH}. Without it, untrained "
             "model outputs cannot be identified and must not be served. "
-            "Reinstall the package or run scripts/sync_model_sidecars.py."
+            "Reinstall the package or run scripts/sync_release_artifacts.py."
         ) from exc
     if not names:
         raise MissingGatingArtifactError(
@@ -159,3 +159,61 @@ def activate_simplified_output_gating(
     )
     resolved = default_class_thresholds() if thresholds is None else thresholds
     set_class_thresholds(resolved or None)
+
+
+# ---------------------------------------------------------------------------
+# Per-class operating points
+# ---------------------------------------------------------------------------
+#
+# A trained output's raw probability is not on a common scale: rare classes
+# peak well below 0.5, and their measured operating points sit at 0.05-0.20.
+# A fixed cut-off (the suggestion layer used 0.30) therefore misses most
+# rare-class positives and over-calls common ones.  Every "is this finding
+# present?" decision goes through these helpers instead.
+
+#: Used only for a trained output that somehow has no operating point.
+FALLBACK_THRESHOLD = 0.5
+
+
+def operating_points(model: object = None) -> Dict[str, float]:
+    """Per-class thresholds for *model*.
+
+    A checkpoint loaded by :func:`aortica.models.checkpoint.load_checkpoint`
+    carries the thresholds tuned for it, as ``model.class_thresholds``; those
+    win.  Otherwise the packaged sidecar is used.
+    """
+    own = getattr(model, "class_thresholds", None)
+    if isinstance(own, dict) and own:
+        return {k: float(v) for k, v in own.items()}
+    return default_class_thresholds()
+
+
+def threshold_for(name: str, thresholds: Optional[Dict[str, float]] = None) -> float:
+    """Operating point for *name*, falling back to :data:`FALLBACK_THRESHOLD`."""
+    table = default_class_thresholds() if thresholds is None else thresholds
+    return float(table.get(name, FALLBACK_THRESHOLD))
+
+
+def is_positive(
+    name: str, probability: float, thresholds: Optional[Dict[str, float]] = None
+) -> bool:
+    """Whether *probability* clears *name*'s operating point."""
+    return probability >= threshold_for(name, thresholds)
+
+
+def calibrated_score(
+    name: str, probability: float, thresholds: Optional[Dict[str, float]] = None
+) -> float:
+    """Rescale so the class's operating point maps to 0.5.
+
+    Monotonic piecewise-linear (``[0, t] -> [0, 0.5]``, ``[t, 1] -> [0.5, 1]``),
+    the same mapping the CHW tier logic applies, so ranking and AUROC are
+    unchanged.  Use it wherever a probability is compared against a fixed
+    scale (severity bands, colour coding).
+    """
+    t = threshold_for(name, thresholds)
+    if not 0.0 < t < 1.0:
+        return probability
+    if probability <= t:
+        return 0.5 * probability / t
+    return 0.5 + 0.5 * (probability - t) / (1.0 - t)

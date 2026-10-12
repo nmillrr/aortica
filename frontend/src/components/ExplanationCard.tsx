@@ -116,7 +116,7 @@ const CLINICAL_REFERENCES: Record<string, string> = {
   'STEMI':                      'ST-elevation myocardial infarction indicates acute transmural ischaemia from coronary artery occlusion. Time-critical: door-to-balloon <90 minutes. Identify territory by lead distribution.',
   'ST Elevation (Lateral)':     'Lateral ST elevation (I, aVL, V5-V6) suggests LCx territory involvement. Activate emergent reperfusion pathway per local protocol.',
   'Posterior MI':               'Posterior MI is often missed on standard 12-lead, showing reciprocal changes (ST depression, tall R waves) in V1-V3. Posterior leads V7-V9 confirm the diagnosis.',
-  'Occlusive NSTEMI':           'Occlusive NSTEMI has acute coronary occlusion without classic ST elevation. Includes de Winter, Wellens, and aVR patterns. Requires urgent coronary intervention despite \"NSTEMI\" classification.',
+  'Occlusive NSTEMI':           'Occlusive NSTEMI has acute coronary occlusion without classic ST elevation. Includes de Winter, Wellens, and aVR patterns. Requires urgent coronary intervention despite "NSTEMI" classification.',
   'Old MI':                     'Pathological Q waves with normal ST segments indicate prior myocardial infarction. Compare with prior ECGs for chronology. Optimise secondary prevention.',
   'Hyperkalaemia':              'ECG changes correlate with serum K+: peaked T waves (>5.5), PR prolongation (>6.0), P-wave loss and QRS widening (>6.5), sine wave (>7.0). Each stage has life-threatening potential.',
   'Hypokalaemia':               'Low potassium flattens T waves, produces U waves, prolongs QT interval, and causes ST depression. Increases digitalis toxicity risk. Replace K+ and Mg²⁺ concurrently.',

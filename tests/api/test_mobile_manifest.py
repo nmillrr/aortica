@@ -117,10 +117,10 @@ class TestBuildModelManifest:
         assert manifest.latest_version == "0.9.9"
 
     def test_download_url_template_includes_version(self) -> None:
-        """Default HuggingFace download URL includes the version string."""
+        """Default download URL points at the public repo and the version."""
         manifest = build_model_manifest(version="0.4.0")
         assert "0.4.0" in manifest.download_url
-        assert "huggingface.co" in manifest.download_url
+        assert manifest.download_url.startswith("https://github.com/nmillrr/aortica/")
 
 
 # ---------------------------------------------------------------------------
