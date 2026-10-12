@@ -18,6 +18,34 @@ compared against the published Ribeiro et al. (2020) model.
 
 **Results: [`RESULTS.md`](RESULTS.md)** (generated from the JSON files here).
 
+## Key findings
+
+Numbers from [`RESULTS.md`](RESULTS.md); macro-AUROC over classes with ≥10 positives.
+
+- **Internal:** 0.941 [0.929, 0.951] on PTB-XL fold 10, 0.975 [0.970, 0.979]
+  on the Chapman test split — in line with v0.3.0's published 0.943 / 0.969.
+- **External (Georgia, 10,338 ECGs):** 0.894 [0.885, 0.902]. The drop is
+  consistent across sex and age bands (0.89–0.90).
+- **Baseline:** on the six findings shared with Ribeiro et al. (2020), mean
+  Georgia AUROC is 0.967 for both. Aortica leads on sinus bradycardia
+  (+0.043); Ribeiro leads by 0.001–0.014 on 1st-degree AV block, RBBB, LBBB
+  and sinus tachycardia; AF is tied.
+- **Label semantics matter.** Aortica's RBBB is far less precise than
+  Ribeiro's on Georgia (AUPRC 0.53 vs 0.81) because PTB-XL's training label
+  includes incomplete RBBB; counting incomplete blocks as positive raises
+  Georgia RBBB AUROC from 0.949 to 0.955.
+- **Operating points do not transfer for every class.** Validation-tuned
+  thresholds keep high specificity on Georgia but sensitivity falls sharply
+  for QTc prolongation (0.11), LA enlargement (0.08) and early
+  repolarisation (0.06), although AUROC stays 0.69–0.85. Site-level
+  recalibration would be needed before any threshold-based use.
+- **Pooled thresholds favour one corpus.** Thresholds are tuned on the
+  pooled validation set, so some classes score well on one corpus and badly
+  on the other at the same threshold (Chapman AF F1 0.09 at AUROC 0.93;
+  Chapman RBBB F1 0.13 at AUROC 0.99).
+- **Quantization costs more out of distribution.** The v0.3.0 INT8 edge model
+  scores 0.860 on Georgia vs 0.895 for its FP32 counterpart.
+
 ## Files
 
 | File | Contents |
