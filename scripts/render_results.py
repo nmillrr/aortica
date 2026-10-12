@@ -171,7 +171,8 @@ def render(release: Path) -> tuple[str, Dict[str, str]]:
                   f"{_ci(v['delta_auprc_ci95'])} |")
             w(f"| **Mean** | | **{_f(body['mean_auroc']['aortica'])}** | "
               f"**{_f(body['mean_auroc']['ribeiro'])}** | | "
-              f"**{_f(body['mean_auprc']['aortica'])}** | **{_f(body['mean_auprc']['ribeiro'])}** | |")
+              f"**{_f(body['mean_auprc']['aortica'])}** | "
+              f"**{_f(body['mean_auprc']['ribeiro'])}** | |")
             w("")
         g = base["cohorts"]["georgia"]
         head["BASELINE_A"] = _f(g["mean_auroc"]["aortica"])
