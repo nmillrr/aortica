@@ -33,6 +33,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from aortica.signal.preprocess import MODEL_NUM_SAMPLES
 
 logger = logging.getLogger(__name__)
 
@@ -516,7 +517,7 @@ def _step_onnx_export(
         int8_path = output_dir / int8_name
         n_cal = max(1, config.calibration_samples)
         cal_data = [
-            np.random.randn(1, 12, 5000).astype(np.float32)
+            np.random.randn(1, 12, MODEL_NUM_SAMPLES).astype(np.float32)
             for _ in range(n_cal)
         ]
         quantize_int8(str(onnx_path), cal_data, str(int8_path))

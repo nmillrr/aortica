@@ -100,7 +100,7 @@ class AorticaModel(nn.Module):
     Example::
 
         model = AorticaModel(in_channels=12)
-        x = torch.randn(4, 12, 5000)
+        x = torch.randn(4, 12, 1000)  # 10 s at 100 Hz
         output = model(x)
         output.rhythm    # [4, 28]
         output.risk      # [4, 6]

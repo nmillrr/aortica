@@ -218,16 +218,16 @@ class TestInputShape:
     """Tests for input shape determination from mode."""
 
     def test_12_lead(self) -> None:
-        assert _input_shape_for_mode("12-lead") == (1, 12, 5000)
+        assert _input_shape_for_mode("12-lead") == (1, 12, 1000)
 
     def test_6_lead(self) -> None:
-        assert _input_shape_for_mode("6-lead") == (1, 6, 5000)
+        assert _input_shape_for_mode("6-lead") == (1, 6, 1000)
 
     def test_single_lead(self) -> None:
-        assert _input_shape_for_mode("single-lead") == (1, 1, 5000)
+        assert _input_shape_for_mode("single-lead") == (1, 1, 1000)
 
     def test_default_is_12_lead(self) -> None:
-        assert _input_shape_for_mode("unknown") == (1, 12, 5000)
+        assert _input_shape_for_mode("unknown") == (1, 12, 1000)
 
 
 # ---------------------------------------------------------------------------

@@ -23,18 +23,22 @@ def integration_group() -> None:
 
 def _build_processor() -> Any:
     """Build the AI-processing callable (lazy torch import)."""
-    import numpy as np
     import torch
 
     from aortica.api.predict import _get_task_class_names
+    from aortica.models.output_gating import filter_task_outputs
     from aortica.models.registry import load_pretrained
+    from aortica.signal.preprocess import model_input
 
     model = load_pretrained("latest")
     model.eval()
     class_names = _get_task_class_names()
 
     def _processor(payload: Any) -> dict:
-        x = torch.from_numpy(payload.signals.astype(np.float32)).unsqueeze(0)
+        # Same input contract and output gating as the predict endpoint: a
+        # 100 Hz model fed native-rate samples scores near chance, and an
+        # untrained head emits noise.
+        x = torch.from_numpy(model_input(payload)).unsqueeze(0)
         with torch.no_grad():
             output = model(x)
         result: dict = {}
@@ -42,11 +46,9 @@ def _build_processor() -> Any:
             if probs is None:
                 continue
             names = class_names.get(task, [])
-            values = probs[0].tolist()
-            result[task] = {
-                (names[i] if i < len(names) else f"{task}_{i}"): float(v)
-                for i, v in enumerate(values)
-            }
+            kept, values, _ = filter_task_outputs(names, probs[0].tolist())
+            if kept:
+                result[task] = {n: float(v) for n, v in zip(kept, values)}
         return result
 
     return _processor

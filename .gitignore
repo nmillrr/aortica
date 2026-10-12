@@ -51,6 +51,9 @@ htmlcov/
 *.hea
 *.dat
 *.mat
+# ...except the few real records the regression tests run on.
+!tests/fixtures/**/*.hea
+!tests/fixtures/**/*.dat
 
 # Model checkpoints
 /checkpoints/
@@ -89,4 +92,4 @@ local.properties
 *.aab
 
 # Reference-run scratch (full checkpoints with optimizer state)
-releases/*/_work/
+releases/*/_work*

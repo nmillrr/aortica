@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 from aortica.io import UnsupportedFormatError, read_ecg
 from aortica.models.output_gating import kept_indices
 from aortica.signal import denoise, score_quality
+from aortica.signal.preprocess import model_record
 
 
 # ---------------------------------------------------------------------------
@@ -133,6 +134,13 @@ class XAIAttributionResponse(BaseModel):
     segment_boundaries: Dict[str, List[Dict[str, int]]] = Field(
         default_factory=dict,
         description="Per-lead segment boundaries (sample indices)",
+    )
+    sample_rate: float = Field(
+        default=100.0,
+        description=(
+            "Rate, in Hz, that attribution and boundary indices are expressed "
+            "in — the model's input rate, not the uploaded file's."
+        ),
     )
 
 
@@ -285,9 +293,13 @@ def run_inference_pipeline(
     Steps:
       1. Write bytes to a temp file (preserving the original extension).
       2. ``read_ecg()`` — auto-detect / explicit format.
-      3. ``denoise()`` — clean the signal.
+      3. ``denoise()`` — clean the signal for quality scoring.
       4. ``score_quality()`` — assess signal quality.
-      5. Model inference (if a model is loaded).
+      5. Model inference (if a model is loaded) on
+         :func:`~aortica.signal.preprocess.model_record` of the record *as
+         read* — 100 Hz, 10 s, µV, not denoised — which is exactly what the
+         checkpoint was trained on.  Attribution and retrieval use the same
+         record so their sample indices match the scored tensor.
       6. Optionally wrap with conformal prediction / uncertainty.
 
     Parameters
@@ -331,14 +343,21 @@ def run_inference_pipeline(
         if format_override:
             read_kwargs["format"] = format_override
 
-        ecg_record = read_ecg(tmp_path, **read_kwargs)
+        raw_record = read_ecg(tmp_path, **read_kwargs)
 
-        # ── 3. Denoise ───────────────────────────────────────────────
-        ecg_record = denoise(ecg_record)
+        # ── 3. Denoise (quality scoring only) ────────────────────────
+        # The model never sees this signal: it was trained on unfiltered
+        # records, so filtering here would be a train/serve mismatch.
+        denoised_record = denoise(raw_record)
 
         # ── 4. Quality scoring ───────────────────────────────────────
-        quality = score_quality(ecg_record)
+        quality = score_quality(denoised_record)
         quality_resp = _quality_report_to_response(quality)
+
+        # What the model is fed — and what attribution and retrieval
+        # explain.  Built only when there is a model to feed, so a
+        # quality-only request does not fail on, say, a 3-lead upload.
+        ecg_record = model_record(raw_record) if model is not None else None
 
         # ── 5. Model inference ───────────────────────────────────────
         predictions: List[TaskPrediction] = []
@@ -350,7 +369,8 @@ def run_inference_pipeline(
             class_names = _get_task_class_names()
             tasks_to_run = enabled_tasks or model.enabled_tasks
 
-            # Prepare input tensor: [1, leads, samples]
+            # Prepare input tensor: [1, 12, 1000]
+            assert ecg_record is not None
             x = torch.from_numpy(
                 ecg_record.signals.astype(np.float32)
             ).unsqueeze(0)
@@ -486,6 +506,7 @@ def run_inference_pipeline(
                             segment_attributions=seg_attrs,
                             top_features=top_feats,
                             segment_boundaries=seg_bounds,
+                            sample_rate=ecg_record.sample_rate,
                         )
                     )
                 except Exception:

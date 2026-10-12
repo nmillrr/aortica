@@ -29,6 +29,8 @@ export interface XAIAttribution {
   segment_attributions: XAISegmentAttribution[];
   top_features: XAIFeatureContribution[];
   segment_boundaries: Record<string, SegmentBoundary[]>;
+  /** Rate the attribution and boundary indices are expressed in (Hz). */
+  sample_rate?: number;
 }
 
 /* ── Segment label formatting ─────────────────────────────── */

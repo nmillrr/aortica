@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import pathlib
 from typing import Optional, Union
+from aortica.signal.preprocess import MODEL_NUM_SAMPLES
 
 try:
     import torch
@@ -101,7 +102,7 @@ def export_onnx(
     output_path: Union[str, pathlib.Path],
     opset_version: int = 17,
     sample_leads: int = 12,
-    sample_length: int = 5000,
+    sample_length: int = MODEL_NUM_SAMPLES,
 ) -> pathlib.Path:
     """Export an :class:`~aortica.models.AorticaModel` to ONNX format.
 
@@ -114,7 +115,7 @@ def export_onnx(
         output_path: Destination file path for the ``.onnx`` model.
         opset_version: ONNX opset version.  Default ``17``.
         sample_leads: Number of ECG leads in the dummy input.  Default ``12``.
-        sample_length: Number of samples in the dummy input.  Default ``5000``.
+        sample_length: Number of samples in the dummy input.  Default 1000 (10 s at 100 Hz).
 
     Returns:
         Resolved :class:`~pathlib.Path` to the saved ONNX model.
@@ -172,7 +173,7 @@ def validate_onnx(
     onnx_path: Union[str, pathlib.Path],
     atol: float = 1e-4,
     sample_leads: int = 12,
-    sample_length: int = 5000,
+    sample_length: int = MODEL_NUM_SAMPLES,
     batch_size: int = 2,
     seed: Optional[int] = 42,
 ) -> dict[str, float]:
@@ -187,7 +188,7 @@ def validate_onnx(
         onnx_path: Path to the exported ``.onnx`` file.
         atol: Absolute tolerance for output comparison.  Default ``1e-4``.
         sample_leads: Number of ECG leads.  Default ``12``.
-        sample_length: Number of signal samples.  Default ``5000``.
+        sample_length: Number of signal samples.  Default 1000 (10 s at 100 Hz).
         batch_size: Batch size for validation input.  Default ``2``.
         seed: Random seed for reproducibility.  Default ``42``.
 

@@ -337,6 +337,10 @@ export function ECGWaveformChart({
     if (!xaiVisible || !xaiAttribution) return null;
 
     const overlays: React.ReactElement[] = [];
+    // Attributions are indexed at the model's input rate (100 Hz), not the
+    // displayed waveform's. Positioning them with the waveform rate would
+    // squeeze a 10 s explanation into the first 2 s of a 500 Hz strip.
+    const xaiRate = xaiAttribution.sample_rate ?? data.sample_rate;
 
     if (use3x4) {
       for (let row = 0; row < LAYOUT_3x4.length; row++) {
@@ -350,14 +354,14 @@ export function ECGWaveformChart({
 
           const baselineY = row * rowHeight + rowHeight / 2;
           const offsetX = col * colWidthPx;
-          const startSample = Math.floor((col * colDurationSec) * data.sample_rate);
-          const endSample = Math.floor(((col + 1) * colDurationSec) * data.sample_rate);
+          const startSample = Math.floor((col * colDurationSec) * xaiRate);
+          const endSample = Math.floor(((col + 1) * colDurationSec) * xaiRate);
 
           overlays.push(
             <HeatmapOverlay
               key={`hm-${leadName}`}
               attributions={attrs}
-              sampleRate={data.sample_rate}
+              sampleRate={xaiRate}
               effectivePPS={effectivePPS}
               offsetX={offsetX}
               baselineY={baselineY}
@@ -377,7 +381,7 @@ export function ECGWaveformChart({
                 <SegmentCallouts
                   key={`seg-${leadName}`}
                   boundaries={colBounds}
-                  sampleRate={data.sample_rate}
+                  sampleRate={xaiRate}
                   effectivePPS={effectivePPS}
                   offsetX={offsetX}
                   baselineY={baselineY}
@@ -404,7 +408,7 @@ export function ECGWaveformChart({
           <HeatmapOverlay
             key={`hm-${leadName}`}
             attributions={attrs}
-            sampleRate={data.sample_rate}
+            sampleRate={xaiRate}
             effectivePPS={effectivePPS}
             offsetX={0}
             baselineY={baselineY}
@@ -419,7 +423,7 @@ export function ECGWaveformChart({
             <SegmentCallouts
               key={`seg-${leadName}`}
               boundaries={bounds}
-              sampleRate={data.sample_rate}
+              sampleRate={xaiRate}
               effectivePPS={effectivePPS}
               offsetX={0}
               baselineY={baselineY}
