@@ -19,6 +19,14 @@
 
 ### 1.1 Product Overview
 
+> **Status of the current model (fill-in guidance).** The descriptions below
+> are of the intended device. The released model (v0.4.0) trains 28 of these
+> outputs — 18 rhythm/conduction, 4 structural, 6 ischaemia — and **no** risk
+> output; untrained outputs are suppressed. Temperature scaling and conformal
+> prediction are implemented but not fitted for the release. A submission must
+> describe the device actually being submitted; see
+> `releases/v0.4.0/RESULTS.md`.
+
 Aortica is an open-source, multi-task deep learning software system for 12-lead electrocardiogram (ECG) analysis. It performs simultaneous classification and risk prediction across four clinical task domains:
 
 - **Rhythm & Conduction** (28 classes): detection of arrhythmias, conduction abnormalities, and rare rhythm disorders including AF, VT, VF, Brugada, WPW, LBBB/RBBB, and AV blocks

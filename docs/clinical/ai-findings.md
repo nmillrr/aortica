@@ -5,9 +5,20 @@ Understanding Aortica's multi-task AI output and clinical context.
 !!! warning "Decision Support Only"
     Aortica is an AI decision-support tool — **not a diagnostic device**. All findings require clinician review and clinical correlation. AI predictions should never be the sole basis for treatment decisions.
 
+!!! danger "Most outputs are not trained"
+    The architecture has 72 outputs; the released model trains **28**:
+    AF, AFL, SVT, AVRT, sinus bradycardia/tachycardia, PAC, PVC,
+    1st/2nd/3rd-degree AV block, LBBB, RBBB, LAFB, LPFB, WPW, paced rhythm,
+    normal sinus rhythm, LVH, RVH, left/right atrial enlargement, STEMI,
+    posterior MI, old MI, QTc prolongation, digitalis effect and early
+    repolarisation. Every other output below — including VT/VF, Brugada,
+    cardiomyopathies, electrolyte disorders and all risk scores — is
+    untrained and is withheld from every response. Results for the trained
+    outputs: `releases/v0.4.0/RESULTS.md`.
+
 ## Task Heads
 
-### Rhythm & Conduction (22 classes)
+### Rhythm & Conduction (28 outputs, 18 trained)
 
 Detects rhythm abnormalities and conduction disorders:
 
@@ -24,7 +35,7 @@ Detects rhythm abnormalities and conduction disorders:
 | Pacemaker Rhythm | Ventricular pacing spikes |
 | Normal Sinus Rhythm | No abnormality detected |
 
-### Structural & Functional (15 classes)
+### Structural & Functional (19 outputs, 4 trained)
 
 Screens for structural heart disease:
 
@@ -37,7 +48,7 @@ Screens for structural heart disease:
 | Pericarditis / Myocarditis | Inflammatory patterns |
 | LA / RA Enlargement | Atrial dilation |
 
-### Ischaemia & Metabolic (10 classes)
+### Ischaemia & Metabolic (19 outputs, 6 trained)
 
 Detects acute and chronic ischaemic patterns:
 
@@ -49,7 +60,7 @@ Detects acute and chronic ischaemic patterns:
 | QTc Prolongation | Risk of Torsades de Pointes |
 | Digitalis Effect | Drug-related ST changes |
 
-### Risk Prediction (3 scores)
+### Risk Prediction (6 outputs, none trained)
 
 Continuous 0–1 risk scores:
 
