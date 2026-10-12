@@ -41,8 +41,9 @@ python scripts/train_reference.py --config releases/v0.4.0/config.yaml
 
 About four hours on an 8-thread x86 CPU. Determinism: fixed seeds for
 Python/NumPy/PyTorch and the DataLoader, `torch.use_deterministic_algorithms`,
-a fixed thread count and single-process data loading. On the same hardware and
-thread count, repeated runs produce byte-identical weights; on other CPUs,
+a fixed thread count and single-process data loading. A second full run on the same
+machine reproduced the weights bit for bit (same `state_dict_sha256` and
+`splits.csv` hash); on other CPUs,
 floating-point reduction order can differ, so expect metric agreement rather
 than identical bytes.
 

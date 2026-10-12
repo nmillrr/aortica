@@ -24,7 +24,7 @@ CLI, web UI, an offline edge model, and EHR integrations.
 | **Internal test** | Macro-AUROC 0.941 (PTB-XL fold 10) and 0.975 (Chapman test split), classes with ≥10 positives. |
 | **External test** | Macro-AUROC 0.894 on 10,338 ECGs from the Georgia cohort (Emory, US) — never trained or tuned on. |
 | **Baseline** | On the six findings it shares with Ribeiro et al. (2020) — a model trained on about 2.3 million ECGs — both score a mean AUROC of 0.967 on Georgia: Aortica is ahead on sinus bradycardia and slightly behind (by 0.001–0.014) on first-degree AV block, RBBB, LBBB and sinus tachycardia, with AF tied. |
-| **Reproducibility** | Seeded run with saved splits and a run manifest in [`releases/v0.4.0/`](releases/v0.4.0). Training is deterministic on fixed hardware and thread count (repeated reduced runs produce byte-identical weights). |
+| **Reproducibility** | Seeded run with saved splits and a run manifest in [`releases/v0.4.0/`](releases/v0.4.0). An independent rerun of the full 30-epoch config on the same machine reproduced the weights bit for bit (identical `state_dict_sha256`). |
 | **Distribution** | Not on PyPI, Docker Hub or a model hub. Install from source. |
 
 Full per-class results, confidence intervals and subgroups:
