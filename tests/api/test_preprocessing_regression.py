@@ -37,7 +37,7 @@ from aortica.signal.preprocess import (  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURES = REPO_ROOT / "tests" / "fixtures" / "ptbxl"
-ONNX_FP32 = REPO_ROOT / "artifacts_combined" / "aortica_edge_fp32_v0.3.0.onnx"
+ONNX_FP32 = REPO_ROOT / "releases/v0.3.0" / "aortica_edge_fp32_v0.3.0.onnx"
 RECORDS = ["00009", "00318", "00180", "00172"]
 TASKS = ["rhythm", "structural", "ischaemia", "risk"]
 

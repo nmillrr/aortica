@@ -8,12 +8,12 @@ heads, split on the corpus's own patient-disjoint stratification folds.
 
 The original implementation of this module was never committed — an
 unanchored ``data/`` rule in ``.gitignore`` matched ``aortica/data/`` at
-depth and excluded it — so the v0.3.0 weights in ``artifacts_combined/``
+depth and excluded it — so the v0.3.0 weights in ``releases/v0.3.0/``
 were produced by code that no longer existed anywhere in the repository.
 
 This is a rewrite, and the part that mattered was not the file I/O but the
 SCP-code to output-name mapping, which encodes clinical judgements that
-cannot be guessed.  It was not guessed: ``artifacts_combined/
+cannot be guessed.  It was not guessed: ``releases/v0.3.0/
 test_metrics.json`` records a positive count on fold 10 for each of the 26
 outputs PTB-XL labels, and fold 10 is a fixed set of 2,198 records, so each
 class has a known integer that a correct mapping must reproduce.  Candidate

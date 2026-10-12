@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copy the released edge model and sidecars to every place that loads them.
 
-``artifacts_combined/`` is the source of truth for a release.  Four other
+``releases/v0.3.0/`` is the source of truth for a release.  Four other
 places need a copy of part of it:
 
 ===================================================  ==========================
@@ -38,7 +38,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SOURCE_DIR = REPO_ROOT / "artifacts_combined"
+SOURCE_DIR = REPO_ROOT / "releases/v0.3.0"
 
 #: Refuse any ONNX smaller than this.  The real INT8 graph is ~418 KB; a
 #: quantised MobileNet-1D cannot plausibly be under 100 KB.

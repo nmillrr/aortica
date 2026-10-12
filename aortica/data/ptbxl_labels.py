@@ -27,7 +27,7 @@ from aortica.models.structural_head import STRUCTURAL_CLASSES
 
 #: Outputs with ground truth in PTB-XL 1.0.3 + Chapman-Shaoxing 1.0.0 (28 of
 #: 72).  Recovered from the ``trained_outputs.json`` sidecar written by the
-#: v0.3.0 training run; see ``artifacts_combined/README.md``.
+#: v0.3.0 training run; see ``releases/v0.3.0/README.md``.
 LABELABLE_OUTPUTS: frozenset[str] = frozenset({
     # rhythm (18 of 28)
     "AF", "AFL", "AVRT", "LBBB", "PAC", "PVC", "RBBB", "SVT", "WPW",

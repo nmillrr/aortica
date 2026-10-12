@@ -36,7 +36,7 @@ from aortica.data.chapman import (
 from aortica.data.label_mapping import load_label_map
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-RELEASED_METRICS = REPO_ROOT / "artifacts_combined" / "test_metrics.json"
+RELEASED_METRICS = REPO_ROOT / "releases/v0.3.0" / "test_metrics.json"
 
 #: Point this at an extracted Chapman 1.0.0 distribution to run the tests
 #: that read the corpus.  They skip when it is unset.

@@ -12,7 +12,7 @@
  * A quantised MobileNet-1D cannot be under 100 KB.
  *
  * Run `python3 scripts/sync_release_artifacts.py` from the repo root to
- * refresh it from `artifacts_combined/`.
+ * refresh it from `releases/v0.3.0/`.
  */
 import { statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

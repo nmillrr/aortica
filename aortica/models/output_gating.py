@@ -49,7 +49,7 @@ def default_trained_outputs() -> frozenset[str]:
         raise MissingGatingArtifactError(
             f"Could not read {_TRAINED_OUTPUTS_PATH}. Without it, untrained "
             "model outputs cannot be identified and must not be served. "
-            "Reinstall the package or run scripts/sync_model_sidecars.py."
+            "Reinstall the package or run scripts/sync_release_artifacts.py."
         ) from exc
     if not names:
         raise MissingGatingArtifactError(

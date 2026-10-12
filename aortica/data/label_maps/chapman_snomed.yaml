@@ -54,7 +54,7 @@
 # `implied_ratio` below as the evidence it is: supportive, not conclusive.
 #
 # Recovered:  2026-09-11
-# Verified against: artifacts_combined/test_metrics.json (v0.3.0, chapman/*)
+# Verified against: releases/v0.3.0/test_metrics.json (v0.3.0, chapman/*)
 # Source vocabulary: ConditionNames_SNOMED-CT.csv (55 concept ids, 63 acronyms)
 
 version: 1

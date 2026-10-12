@@ -55,8 +55,9 @@ htmlcov/
 !tests/fixtures/**/*.hea
 !tests/fixtures/**/*.dat
 
-# Model checkpoints
+# Model checkpoints (training writes ./checkpoints_* by default)
 /checkpoints/
+/checkpoints_*/
 *.pt
 *.pth
 *.h5
@@ -93,3 +94,9 @@ local.properties
 
 # Reference-run scratch (full checkpoints with optimizer state)
 releases/*/_work*
+
+# Runtime databases and local tool output
+/feedback.db
+*.db-journal
+/graphify-out/
+/test_output.txt

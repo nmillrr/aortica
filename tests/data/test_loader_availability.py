@@ -80,7 +80,7 @@ class TestPerTaskWeights:
 
         sidecar = (
             Path(__file__).resolve().parents[2]
-            / "artifacts_combined"
+            / "releases/v0.3.0"
             / "trained_outputs.json"
         )
         if not sidecar.exists():
