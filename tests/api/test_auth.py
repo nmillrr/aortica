@@ -448,7 +448,9 @@ class TestAppFactoryAuth:
         from aortica.api.app import create_app
 
         app = create_app()
-        paths = [r.path for r in app.routes]
+        from tests.conftest import route_paths
+
+        paths = route_paths(app)
         assert "/api/v1/auth/token" in paths
         assert "/api/v1/auth/refresh" in paths
         assert "/api/v1/auth/login/google" in paths

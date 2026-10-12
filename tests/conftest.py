@@ -19,3 +19,16 @@ def sample_ecg_record() -> ecg_record.ECGRecord:
         sample_rate=500.0,
         lead_names=lead_names,
     )
+
+
+def route_paths(app) -> set:  # type: ignore[no-untyped-def]
+    """Every path an app serves, independent of how routers were included.
+
+    FastAPI >= 0.13x wraps included routers in objects with no ``.path``, so
+    ``[r.path for r in app.routes]`` raises.  The OpenAPI schema lists every
+    included route; directly mounted routes (and any hidden from the schema)
+    are picked up from ``app.routes``.
+    """
+    paths = {getattr(r, "path") for r in app.routes if hasattr(r, "path")}
+    paths |= set(app.openapi().get("paths", {}))
+    return paths

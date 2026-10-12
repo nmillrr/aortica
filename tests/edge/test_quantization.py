@@ -26,6 +26,7 @@ from aortica.edge.quantization import (  # noqa: E402
     quantize_int8,
 )
 from aortica.models.aortica_model import AorticaModel  # noqa: E402
+from aortica.models.task_dims import TASK_NUM_OUTPUTS  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -388,8 +389,7 @@ class TestQuantizedModelValidation:
             np.float32,
         )
         results = sess.run(None, {"ecg_input": test_input})
-        # rhythm head: 22 outputs
-        assert results[0].shape == (1, 22)
+        assert results[0].shape == (1, TASK_NUM_OUTPUTS["rhythm"])
 
     def test_quantized_output_in_range(
         self, tmp_path: pathlib.Path,
@@ -478,12 +478,11 @@ class TestMultiTaskQuantization:
             np.float32,
         )
         results = sess.run(None, {"ecg_input": test_input})
-        # rhythm=22, structural=15, ischaemia=10, risk=3
         assert len(results) == 4
-        assert results[0].shape == (2, 22)
-        assert results[1].shape == (2, 15)
-        assert results[2].shape == (2, 10)
-        assert results[3].shape == (2, 3)
+        assert results[0].shape == (2, TASK_NUM_OUTPUTS["rhythm"])
+        assert results[1].shape == (2, TASK_NUM_OUTPUTS["structural"])
+        assert results[2].shape == (2, TASK_NUM_OUTPUTS["ischaemia"])
+        assert results[3].shape == (2, TASK_NUM_OUTPUTS["risk"])
 
 
 # ---------------------------------------------------------------------------
@@ -518,7 +517,7 @@ class TestEndToEnd:
             np.float32,
         )
         results = sess.run(None, {"ecg_input": test_input})
-        assert results[0].shape == (1, 22)
+        assert results[0].shape == (1, TASK_NUM_OUTPUTS["rhythm"])
 
     def test_quantized_file_smaller_or_different(
         self, tmp_path: pathlib.Path,

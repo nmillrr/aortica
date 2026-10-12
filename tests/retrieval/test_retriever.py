@@ -356,7 +356,9 @@ class TestRetrievalAPIEndpoint:
         from aortica.api.app import create_app
 
         app = create_app(enable_auth=False)
-        routes = [r.path for r in app.routes]
+        from tests.conftest import route_paths
+
+        routes = route_paths(app)
         assert "/api/v1/retrieve/similar" in routes
 
     def test_endpoint_no_index(self) -> None:

@@ -36,7 +36,14 @@ def _load_model(
             from aortica.models.registry import load_pretrained
 
             return load_pretrained("latest")
-        except Exception:
+        except Exception as exc:
+            click.echo(
+                f"Warning: no --model given and no pretrained model could be "
+                f"fetched ({type(exc).__name__}). Pretrained weights are not yet "
+                f"publicly hosted; pass --model path/to/checkpoint.pt. "
+                f"Reporting signal quality only.",
+                err=True,
+            )
             return None
 
     from aortica.models.checkpoint import load_checkpoint

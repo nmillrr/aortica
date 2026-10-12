@@ -244,14 +244,27 @@ class TestReleasePipeline:
 class TestGateAbort:
     """Test that pipeline aborts on gate failures."""
 
-    def test_equity_gate_failure_aborts(
+    def test_equity_gate_failure_fails_step(self, output_dir: Path) -> None:
+        """A failing equity gate marks its step failed with a reason."""
+        from aortica.evaluation.equity_gate import EquityGateResult
+        from aortica.federated.release_pipeline import _step_equity_gate
+
+        config = FederatedReleaseConfig(output_dir=str(output_dir))
+        with patch(
+            "aortica.evaluation.equity_gate.equity_gate",
+            return_value=EquityGateResult(passed=False),
+        ):
+            result, step = _step_equity_gate(object(), config)
+        assert result is not None and result.passed is False
+        assert step.passed is False
+        assert "Equity gate failed" in (step.error or "")
+
+    def test_equity_gate_skipped_without_benchmark(
         self,
         synthetic_weights: Path,
         output_dir: Path,
     ) -> None:
-        """Pipeline aborts when equity gate fails."""
-        from aortica.evaluation.equity_gate import EquityGateResult
-
+        """With no benchmark report the equity gate is skipped, not passed."""
         config = FederatedReleaseConfig(
             fl_round=50,
             output_dir=str(output_dir),
@@ -262,16 +275,6 @@ class TestGateAbort:
             skip_performance_card=True,
             skip_hub_push=True,
         )
-
-        # Mock equity gate to return failure
-        mock_result = EquityGateResult(passed=False)
-        with patch(
-            "aortica.federated.release_pipeline.equity_gate",
-            return_value=mock_result,
-        ):
-            # equity_gate is imported inside the step function, so we need
-            # to patch it at the import location
-            pass
 
         # The equity gate step should be skipped since benchmark report
         # will be None (benchmark is skipped)
@@ -529,7 +532,12 @@ class TestReleaseCLI:
             ],
         )
 
-        assert result.exit_code == 0
+        # Synthetic weights are untrained, so the regulatory gate rightly
+        # refuses them; what this test checks is the text report.
+        assert result.exit_code == 1
+        assert "Federated Release Pipeline: FAILED" in result.output
+        assert "v0.3.0-r10" in result.output
+        assert "regulatory_gate" in result.output
 
 
 # ---------------------------------------------------------------------------
