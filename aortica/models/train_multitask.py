@@ -60,7 +60,9 @@ class MultiTaskTrainConfig:
         batch_size: Training batch size.
         seed: Random seed for reproducibility.
         output_dir: Directory for checkpoints and metrics.
-        sampling_rate: ECG sampling rate (100 or 500 Hz).
+        sampling_rate: ECG sampling rate in Hz.  Must match
+            :data:`aortica.signal.preprocess.MODEL_SAMPLE_RATE_HZ` (100) for
+            the result to be servable.
         window_seconds: Window length in seconds.
         weight_decay: Weight decay for AdamW optimiser.
         num_workers: DataLoader worker processes.
@@ -91,7 +93,10 @@ class MultiTaskTrainConfig:
     batch_size: int = 64
     seed: int = 42
     output_dir: str = "./checkpoints_multitask"
-    sampling_rate: int = 500
+    # Every released checkpoint is 100 Hz, and inference resamples to
+    # aortica.signal.preprocess.MODEL_SAMPLE_RATE_HZ.  A 500 Hz default here
+    # trained a model inference could not feed correctly.
+    sampling_rate: int = 100
     window_seconds: float = 10.0
     weight_decay: float = 1e-4
     num_workers: int = 0

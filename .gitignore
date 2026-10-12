@@ -87,3 +87,6 @@ mobile/android/build/
 local.properties
 *.apk
 *.aab
+
+# Reference-run scratch (full checkpoints with optimizer state)
+releases/*/_work/
