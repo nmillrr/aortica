@@ -8,10 +8,8 @@ export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const { loginWithOAuth, loginWithApiKey, loginWithCredentials, isAuthenticated } = useAuth();
+  const { loginWithOAuth, loginWithApiKey, isAuthenticated } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,24 +22,6 @@ export function Login() {
     navigate(from, { replace: true });
     return null;
   }
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-    try {
-      const success = await loginWithCredentials(email, password);
-      if (success) {
-        navigate(from, { replace: true });
-      } else {
-        setError(t('login.invalidEmail'));
-      }
-    } catch {
-      setError(t('login.loginFailed'));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleOAuth = (provider: 'google' | 'github') => {
     loginWithOAuth(provider);
@@ -90,47 +70,6 @@ export function Login() {
               {error}
             </div>
           )}
-
-          <form onSubmit={handleLogin} className="login-form">
-            <div className="form-group">
-              <label htmlFor="email-input" className="form-label">{t('login.email')}</label>
-              <input
-                type="email"
-                id="email-input"
-                className="form-input"
-                placeholder="clinician@hospital.org"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password-input" className="form-label">{t('login.password')}</label>
-              <input
-                type="password"
-                id="password-input"
-                className="form-input"
-                placeholder="••••••••"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <button
-              type="submit"
-              className="btn btn-primary login-submit-btn"
-              id="login-submit-btn"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? t('login.signingIn') : t('login.signIn')}
-            </button>
-          </form>
-
-          <div className="login-divider">
-            <span>{t('login.orContinueWith')}</span>
-          </div>
 
           <div className="login-oauth">
             <button

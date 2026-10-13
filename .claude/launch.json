@@ -4,14 +4,31 @@
     {
       "name": "aortica-frontend",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "dev"
+      ],
       "port": 5173
     },
     {
       "name": "aortica-landing",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "4173", "--directory", "landing"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4173",
+        "--directory",
+        "landing"
+      ],
       "port": 4173
+    },
+    {
+      "name": "aortica-api",
+      "runtimeExecutable": ".venv/bin/aortica-server",
+      "runtimeArgs": [],
+      "port": 8000
     }
   ]
 }
