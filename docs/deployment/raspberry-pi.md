@@ -60,11 +60,27 @@ ls aortica/releases/v0.3.0/aortica_edge_int8_v0.3.0.onnx
 
 ### 4. First-Run Verification
 
+Score one ECG with the edge model by dropping it into an inbox:
+
 ```bash
-aortica predict test_ecg.dat
+mkdir -p ~/inbox ~/results
+cp aortica/tests/fixtures/ptbxl/records500/00318_hr.* ~/inbox/
+aortica edge watch --model aortica/releases/v0.3.0/aortica_edge_int8_v0.3.0.onnx \
+    --inbox ~/inbox --outbox ~/results --max-cycles 1
+cat ~/results/00318_hr.json
 ```
 
-You should see multi-task predictions (rhythm, structural, ischaemia, risk) printed to the terminal.
+The result lists positive findings at their per-class operating points (this
+record should show AF), an urgency tier, signal quality, and the outputs that
+were withheld because the model never trained them. The risk head is always
+among those.
+
+### 5. Run as a service
+
+`create_pi_image_script.sh` installs `aortica-edge.service`, which runs
+`aortica edge watch` on `/var/lib/aortica/data/inbox`, writes results to
+`/var/lib/aortica/data/results` and moves scored files to `processed/`.
+It signals readiness and pings the systemd watchdog after every poll.
 
 ## Deployment Profile Configuration
 
