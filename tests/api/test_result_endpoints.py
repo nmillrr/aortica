@@ -80,7 +80,7 @@ SAMPLE_RESULTS = [
     FakeStoredResult(
         id=1,
         ecg_hash="hash_001",
-        predictions={"rhythm": {"atrial_fibrillation": 0.92, "nsr": 0.08}},
+        predictions={"rhythm": {"AF": 0.92, "normal_sinus_rhythm": 0.08}},
         quality={"overall": 95, "classification": "good"},
         timestamp=1700000000.0,
         synced=True,
@@ -89,7 +89,7 @@ SAMPLE_RESULTS = [
     FakeStoredResult(
         id=2,
         ecg_hash="hash_002",
-        predictions={"rhythm": {"nsr": 0.97, "af": 0.03}},
+        predictions={"rhythm": {"normal_sinus_rhythm": 0.97, "AF": 0.03}},
         quality={"overall": 88, "classification": "good"},
         timestamp=1700001000.0,
         synced=False,
@@ -98,7 +98,7 @@ SAMPLE_RESULTS = [
     FakeStoredResult(
         id=3,
         ecg_hash="hash_003",
-        predictions={"ischaemia": {"stemi": 0.78, "nstemi": 0.12}},
+        predictions={"ischaemia": {"STEMI": 0.78, "old_MI": 0.12}},
         quality={"overall": 45, "classification": "poor"},
         timestamp=1700002000.0,
         synced=False,
@@ -107,7 +107,7 @@ SAMPLE_RESULTS = [
     FakeStoredResult(
         id=4,
         ecg_hash="hash_004",
-        predictions={"structural": {"lvh": 0.65, "rvh": 0.10}},
+        predictions={"structural": {"LVH": 0.65, "RVH": 0.10}},
         quality={"overall": 72, "classification": "marginal"},
         timestamp=1700003000.0,
         synced=True,
@@ -116,7 +116,7 @@ SAMPLE_RESULTS = [
     FakeStoredResult(
         id=5,
         ecg_hash="hash_005",
-        predictions={"rhythm": {"nsr": 0.99}},
+        predictions={"rhythm": {"normal_sinus_rhythm": 0.99}},
         quality={"overall": 98, "classification": "good"},
         timestamp=1700004000.0,
         synced=True,
@@ -158,37 +158,45 @@ def client_no_store(app_no_store: fastapi.FastAPI) -> TestClient:
 
 
 class TestClassifyUrgency:
-    """Tests for _classify_urgency helper."""
+    """_classify_urgency uses the worklist's tiering and per-class operating points."""
 
     def test_critical_stemi(self) -> None:
-        preds = {"ischaemia": {"stemi": 0.85}}
-        assert _classify_urgency(preds) == "critical"
+        assert _classify_urgency({"ischaemia": {"STEMI": 0.85}}) == "critical"
 
-    def test_critical_vt(self) -> None:
-        preds = {"rhythm": {"ventricular_tachycardia": 0.75}}
-        assert _classify_urgency(preds) == "critical"
+    def test_critical_complete_heart_block(self) -> None:
+        assert _classify_urgency({"rhythm": {"av_block_3rd": 0.60}}) == "critical"
 
-    def test_urgent_af(self) -> None:
-        preds = {"rhythm": {"atrial_fibrillation": 0.80}}
-        assert _classify_urgency(preds) == "urgent"
+    def test_urgent_af_at_its_operating_point(self) -> None:
+        # AF's operating point is 0.10; the old classifier only knew
+        # "atrial_fibrillation", a name no model output has.
+        assert _classify_urgency({"rhythm": {"AF": 0.20}}) == "urgent"
 
-    def test_urgent_lvh(self) -> None:
-        preds = {"structural": {"lvh": 0.60}}
-        assert _classify_urgency(preds) == "urgent"
+    def test_routine_lvh(self) -> None:
+        assert _classify_urgency({"structural": {"LVH": 0.60}}) == "routine"
 
-    def test_routine_moderate_finding(self) -> None:
-        preds = {"rhythm": {"some_finding": 0.35}}
-        assert _classify_urgency(preds) == "routine"
+    def test_early_repol_is_not_critical(self) -> None:
+        # Substring "stemi" used to match early_repol_vs_STEMI.
+        assert _classify_urgency({"ischaemia": {"early_repol_vs_STEMI": 0.90}}) != "critical"
+
+    def test_old_mi_is_not_critical(self) -> None:
+        # Substring "mi" used to match old_MI.
+        assert _classify_urgency({"ischaemia": {"old_MI": 0.90}}) != "critical"
+
+    def test_untrained_output_ignored(self) -> None:
+        assert _classify_urgency({"rhythm": {"VT": 0.99}}) == "normal"
+
+    def test_untrained_risk_ignored(self) -> None:
+        assert _classify_urgency({"risk": {"mortality_1y": 0.99}}) == "normal"
 
     def test_normal_low_probs(self) -> None:
-        preds = {"rhythm": {"nsr": 0.20, "af": 0.05}}
+        preds = {"rhythm": {"normal_sinus_rhythm": 0.90, "AF": 0.05}}
         assert _classify_urgency(preds) == "normal"
 
     def test_empty_predictions(self) -> None:
         assert _classify_urgency({}) == "normal"
 
     def test_non_dict_values_skipped(self) -> None:
-        preds = {"rhythm": "invalid", "structural": {"lvh": 0.1}}
+        preds = {"rhythm": "invalid", "structural": {"LVH": 0.1}}
         assert _classify_urgency(preds) == "normal"
 
 
@@ -393,7 +401,7 @@ class TestListResultsEndpoint:
             assert r["urgency_tier"] == "urgent"
 
     def test_filter_by_finding(self, client: TestClient) -> None:
-        resp = client.get("/api/v1/results?finding=atrial_fibrillation")
+        resp = client.get("/api/v1/results?finding=AF")
         data = resp.json()
         assert data["total"] >= 1
 
@@ -459,7 +467,7 @@ class TestGetResultEndpoint:
     def test_get_result_predictions(self, client: TestClient) -> None:
         resp = client.get("/api/v1/results/1")
         data = resp.json()
-        assert data["predictions"]["rhythm"]["atrial_fibrillation"] == 0.92
+        assert data["predictions"]["rhythm"]["AF"] == 0.92
 
     def test_get_nonexistent_result(self, client: TestClient) -> None:
         resp = client.get("/api/v1/results/999")

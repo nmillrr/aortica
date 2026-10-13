@@ -86,48 +86,33 @@ class BulkExportRequest(BaseModel):
 # Helper functions
 # ---------------------------------------------------------------------------
 
-# Urgency classification thresholds
-_CRITICAL_CONDITIONS = frozenset({
-    "stemi", "vt", "vf", "complete_heart_block", "torsades",
-    "ventricular_tachycardia", "ventricular_fibrillation",
-    "st_elevation", "brugada",
-})
-
-_URGENT_CONDITIONS = frozenset({
-    "atrial_fibrillation", "atrial_flutter", "wpw",
-    "lvh", "rvh", "mi", "ischaemia", "wellens",
-    "long_qt", "short_qt", "de_winter",
-})
+#: Worklist tiers -> the result browser's vocabulary.
+_TIER_TO_URGENCY = {
+    "critical": "critical",
+    "high": "urgent",
+    "moderate": "routine",
+    "low": "normal",
+}
 
 
 def _classify_urgency(predictions: dict[str, Any]) -> str:
-    """Derive urgency tier from predictions."""
-    # Flatten all prediction values
-    all_findings: dict[str, float] = {}
-    for task_preds in predictions.values():
-        if isinstance(task_preds, dict):
-            for name, prob in task_preds.items():
-                if isinstance(prob, (int, float)):
-                    all_findings[name.lower().replace(" ", "_")] = float(prob)
+    """Derive the urgency tier from stored predictions.
 
-    # Check for critical conditions with high probability
-    for name, prob in all_findings.items():
-        for critical in _CRITICAL_CONDITIONS:
-            if critical in name and prob > 0.5:
-                return "critical"
+    Delegates to :class:`~aortica.integration.worklist.WorklistPrioritizer`,
+    so the result browser and the worklist triage the same ECG the same way.
+    (This used to substring-match names such as ``"atrial_fibrillation"`` and
+    ``"vt"`` that no model output carries, while ``"mi"`` matched ``old_MI``,
+    all against a fixed 0.5.)
+    """
+    from aortica.integration.worklist import WorklistPrioritizer
 
-    # Check for urgent conditions
-    for name, prob in all_findings.items():
-        for urgent in _URGENT_CONDITIONS:
-            if urgent in name and prob > 0.5:
-                return "urgent"
-
-    # Check for any moderate findings
-    has_moderate = any(p > 0.3 for p in all_findings.values())
-    if has_moderate:
-        return "routine"
-
-    return "normal"
+    task_preds = {
+        task: {k: float(v) for k, v in preds.items() if isinstance(v, (int, float))}
+        for task, preds in predictions.items()
+        if isinstance(preds, dict)
+    }
+    _, tier, _ = WorklistPrioritizer()._score_single(task_preds)
+    return _TIER_TO_URGENCY[tier]
 
 
 def _extract_top_finding(predictions: dict[str, Any]) -> tuple[Optional[str], Optional[float]]:

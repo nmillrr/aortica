@@ -282,13 +282,41 @@ class TestWorklistPrioritizer:
         wl = p.prioritize([_make_critical_result()], ecg_ids=["c1"])
         assert len(wl.items[0].active_findings) > 0
 
+    def test_untrained_risk_never_escalates(self) -> None:
+        """No released checkpoint trains the risk head; its noise is ignored."""
+        result = {"rhythm": {"normal_sinus_rhythm": 0.90}, "risk": {"mortality_1y": 0.99}}
+        wl = WorklistPrioritizer().prioritize([result], ecg_ids=["r1"])
+        assert wl.items[0].urgency_tier == "low"
+
+    def test_untrained_classification_output_never_escalates(self) -> None:
+        wl = WorklistPrioritizer().prioritize([{"rhythm": {"VT": 0.99}}], ecg_ids=["r1"])
+        assert wl.items[0].urgency_tier == "low"
+
+    def test_rare_finding_escalates_at_its_operating_point(self) -> None:
+        """av_block_2nd's operating point is 0.05; the old fixed rule was 0.50."""
+        wl = WorklistPrioritizer().prioritize([{"rhythm": {"av_block_2nd": 0.10}}],
+                                              ecg_ids=["r1"])
+        assert wl.items[0].urgency_tier == "high"
+
+    def test_checkpoint_operating_points_override_packaged(self) -> None:
+        result = {"rhythm": {"AF": 0.20}}
+        assert WorklistPrioritizer().prioritize([result]).items[0].urgency_tier == "high"
+        strict = WorklistPrioritizer(thresholds={"AF": 0.60})
+        assert strict.prioritize([result]).items[0].urgency_tier == "low"
+
+    def test_explicit_rule_threshold_still_honoured(self) -> None:
+        rules = UrgencyRules(high_conditions={"AF": 0.90})
+        p = WorklistPrioritizer(rules=rules)
+        assert p.prioritize([{"rhythm": {"AF": 0.80}}]).items[0].urgency_tier == "low"
+        assert p.prioritize([{"rhythm": {"AF": 0.95}}]).items[0].urgency_tier == "high"
+
     def test_risk_score_escalation_critical(self) -> None:
-        """Risk scores above critical threshold escalate tier."""
+        """Risk scores above critical threshold escalate tier — once trained."""
         result = {
             "rhythm": {"normal_sinus_rhythm": 0.90},
             "risk": {"mortality_1y": 0.85},
         }
-        p = WorklistPrioritizer()
+        p = _prioritizer_with_trained_risk()
         wl = p.prioritize([result], ecg_ids=["r1"])
         assert wl.items[0].urgency_tier == "critical"
 
@@ -297,7 +325,7 @@ class TestWorklistPrioritizer:
             "rhythm": {"normal_sinus_rhythm": 0.90},
             "risk": {"mortality_1y": 0.55},
         }
-        p = WorklistPrioritizer()
+        p = _prioritizer_with_trained_risk()
         wl = p.prioritize([result], ecg_ids=["r1"])
         assert wl.items[0].urgency_tier == "high"
 
@@ -306,7 +334,7 @@ class TestWorklistPrioritizer:
             "rhythm": {"normal_sinus_rhythm": 0.90},
             "risk": {"mortality_1y": 0.35},
         }
-        p = WorklistPrioritizer()
+        p = _prioritizer_with_trained_risk()
         wl = p.prioritize([result], ecg_ids=["r1"])
         assert wl.items[0].urgency_tier == "moderate"
 
@@ -457,3 +485,12 @@ class TestWorklistAPI:
         # Verify sorted descending
         scores = [i["urgency_score"] for i in data["items"]]
         assert scores == sorted(scores, reverse=True)
+
+
+def _prioritizer_with_trained_risk() -> WorklistPrioritizer:
+    """A prioritizer for a hypothetical checkpoint that trained mortality_1y."""
+    from aortica.models.output_gating import default_trained_outputs
+
+    return WorklistPrioritizer(
+        trained_outputs=set(default_trained_outputs()) | {"mortality_1y"}
+    )
