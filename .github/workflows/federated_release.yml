@@ -41,9 +41,9 @@ on:
           - fedprox
           - scaffold
       calibration_data:
-        description: 'Real ECGs for INT8 calibration (directory or [N,12,1000] .npy). Without it no INT8 model is produced and the release fails.'
+        description: 'Real ECGs for INT8 calibration (directory or [N,12,1000] .npy). Defaults to the committed PTB-XL validation-fold set.'
         required: false
-        default: ''
+        default: 'releases/calibration/ptbxl_fold9_calibration_100.npy'
         type: string
       push_to_hub:
         description: 'Push artifacts to HuggingFace Hub'

@@ -588,7 +588,8 @@ def client_cmd(
     type=click.Path(exists=True),
     default=None,
     help="Real ECGs for INT8 calibration: a directory of ECG files or an "
-    "[N, 12, 1000] .npy. Required for an INT8 model.",
+    "[N, 12, 1000] .npy. Required for an INT8 model; the repository ships "
+    "releases/calibration/ptbxl_fold9_calibration_100.npy.",
 )
 @click.option(
     "--format",

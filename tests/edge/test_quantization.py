@@ -578,3 +578,23 @@ class TestLoadCalibrationData:
         with pytest.raises(ValueError, match="No usable"):
             load_calibration_data(tmp_path)
 
+    def test_committed_calibration_set(self) -> None:
+        """The shipped set is intact, in the input contract, and real ECG."""
+        import hashlib
+        import json
+
+        from aortica.edge.quantization import load_calibration_data
+
+        root = pathlib.Path(__file__).resolve().parents[2] / "releases" / "calibration"
+        npy = root / "ptbxl_fold9_calibration_100.npy"
+        meta = json.loads((root / "ptbxl_fold9_calibration_100.json").read_text())
+        assert hashlib.sha256(npy.read_bytes()).hexdigest() == meta["sha256"]
+        assert len(meta["ecg_ids"]) == meta["n"] == 100
+
+        samples = load_calibration_data(npy)
+        assert len(samples) == 100
+        assert all(s.shape == (1, 12, 1000) and s.dtype == np.float32 for s in samples)
+        stacked = np.concatenate(samples)
+        assert np.isfinite(stacked).all()
+        assert 50 < float(np.abs(stacked).std()) < 2000  # micro-volts, not unit noise
+
