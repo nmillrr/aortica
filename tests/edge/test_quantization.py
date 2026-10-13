@@ -533,3 +533,68 @@ class TestEndToEnd:
         # Both files should exist and have content
         assert original_size > 0
         assert quantized_size > 0
+
+
+# ---------------------------------------------------------------------------
+# Real-ECG calibration data
+# ---------------------------------------------------------------------------
+
+_FIXTURES = pathlib.Path(__file__).resolve().parents[1] / "fixtures" / "ptbxl" / "records500"
+
+
+class TestLoadCalibrationData:
+    def test_directory_of_ecgs(self) -> None:
+        from aortica.edge.quantization import load_calibration_data
+
+        samples = load_calibration_data(_FIXTURES)
+        assert len(samples) == 4  # .hea entries; companion .dat skipped
+        assert all(s.shape == (1, 12, 1000) and s.dtype == np.float32 for s in samples)
+        # Micro-volt ECGs, not unit-variance noise.
+        assert max(float(np.abs(s).max()) for s in samples) > 100
+
+    def test_max_samples(self) -> None:
+        from aortica.edge.quantization import load_calibration_data
+
+        assert len(load_calibration_data(_FIXTURES, max_samples=2)) == 2
+
+    def test_npy_array(self, tmp_path: pathlib.Path) -> None:
+        from aortica.edge.quantization import load_calibration_data
+
+        path = tmp_path / "cal.npy"
+        np.save(path, np.ones((3, 12, 1000), dtype=np.float32))
+        assert len(load_calibration_data(path)) == 3
+
+    def test_npy_wrong_shape(self, tmp_path: pathlib.Path) -> None:
+        from aortica.edge.quantization import load_calibration_data
+
+        path = tmp_path / "cal.npy"
+        np.save(path, np.ones((3, 12, 5000), dtype=np.float32))
+        with pytest.raises(ValueError, match="12, 1000"):
+            load_calibration_data(path)
+
+    def test_empty_directory(self, tmp_path: pathlib.Path) -> None:
+        from aortica.edge.quantization import load_calibration_data
+
+        with pytest.raises(ValueError, match="No usable"):
+            load_calibration_data(tmp_path)
+
+    def test_committed_calibration_set(self) -> None:
+        """The shipped set is intact, in the input contract, and real ECG."""
+        import hashlib
+        import json
+
+        from aortica.edge.quantization import load_calibration_data
+
+        root = pathlib.Path(__file__).resolve().parents[2] / "releases" / "calibration"
+        npy = root / "ptbxl_fold9_calibration_100.npy"
+        meta = json.loads((root / "ptbxl_fold9_calibration_100.json").read_text())
+        assert hashlib.sha256(npy.read_bytes()).hexdigest() == meta["sha256"]
+        assert len(meta["ecg_ids"]) == meta["n"] == 100
+
+        samples = load_calibration_data(npy)
+        assert len(samples) == 100
+        assert all(s.shape == (1, 12, 1000) and s.dtype == np.float32 for s in samples)
+        stacked = np.concatenate(samples)
+        assert np.isfinite(stacked).all()
+        assert 50 < float(np.abs(stacked).std()) < 2000  # micro-volts, not unit noise
+

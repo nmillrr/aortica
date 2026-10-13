@@ -3,9 +3,14 @@
 # This file configures how multi-task ECG findings map to urgency tiers
 # for the AI-driven worklist prioritization module.
 #
-# Each condition has a confidence threshold (0.0–1.0). When the AI
-# confidence for a condition exceeds its threshold, that ECG is escalated
-# to the corresponding urgency tier.
+# Each condition maps to the confidence (0.0–1.0) that escalates an ECG to
+# that tier, or to null to use the class's own validation-tuned operating
+# point shipped with the model (the default). A fixed number overrides the
+# operating point for that class.
+#
+# Only outputs the loaded model actually trained can escalate an ECG.
+# Entries for untrained outputs (VT, Brugada, every risk score, ...) are
+# inert today; they record the intended tier for when a model trains them.
 #
 # Urgency tiers and score bands:
 #   critical: 80–100 — life-threatening, immediate review
@@ -15,83 +20,83 @@
 
 critical_conditions:
   # Life-threatening arrhythmias
-  VT: 0.40
-  VF: 0.30
-  av_block_3rd: 0.50
-  CPVT: 0.40
+  VT: null
+  VF: null
+  av_block_3rd: null
+  CPVT: null
   # Acute coronary syndromes
-  STEMI: 0.40
-  posterior_MI: 0.50
-  occlusive_NSTEMI: 0.50
+  STEMI: null
+  posterior_MI: null
+  occlusive_NSTEMI: null
   # Metabolic emergencies
-  hyperkalaemia: 0.40
-  hyperkalaemia_severity_grade: 0.40
+  hyperkalaemia: null
+  hyperkalaemia_severity_grade: null
   # STEMI mimics — high urgency
-  de_Winter_T_wave: 0.40
-  aVR_ST_elevation: 0.40
+  de_Winter_T_wave: null
+  aVR_ST_elevation: null
   # Drug toxicity
-  TCA_toxicity: 0.40
+  TCA_toxicity: null
 
 high_conditions:
   # Dangerous arrhythmias / conduction
-  AF: 0.50
-  AFL: 0.50
-  WPW: 0.40
-  brugada_pattern: 0.40
-  short_QT_syndrome: 0.40
-  fascicular_VT: 0.40
-  av_block_2nd: 0.50
+  AF: null
+  AFL: null
+  WPW: null
+  brugada_pattern: null
+  short_QT_syndrome: null
+  fascicular_VT: null
+  av_block_2nd: null
   # STEMI mimics — high concern
-  Wellens_syndrome: 0.40
-  Sgarbossa_criteria: 0.40
+  Wellens_syndrome: null
+  Sgarbossa_criteria: null
   # Structural — acute
-  Takotsubo_pattern: 0.40
-  RV_strain_PE: 0.40
-  LVSD: 0.40
-  myocarditis: 0.50
-  pericarditis: 0.50
+  Takotsubo_pattern: null
+  RV_strain_PE: null
+  LVSD: null
+  myocarditis: null
+  pericarditis: null
 
 moderate_conditions:
   # Arrhythmias — moderate concern
-  SVT: 0.50
-  AVNRT: 0.50
-  AVRT: 0.50
-  idioventricular: 0.50
-  sinus_brady: 0.60
-  sinus_tachy: 0.60
-  atypical_atrial_flutter: 0.50
-  inappropriate_sinus_tachy: 0.60
+  SVT: null
+  AVNRT: null
+  AVRT: null
+  idioventricular: null
+  sinus_brady: null
+  sinus_tachy: null
+  atypical_atrial_flutter: null
+  inappropriate_sinus_tachy: null
   # Structural — moderate
-  LVH: 0.60
-  RVH: 0.60
-  HCM: 0.50
-  ARVC: 0.50
-  DCM: 0.50
-  amyloidosis: 0.50
-  aortic_stenosis: 0.50
-  pulmonary_HTN: 0.50
-  HFpEF_risk: 0.60
-  mitral_regurgitation: 0.60
-  LA_enlargement: 0.60
-  RA_enlargement: 0.60
-  LV_strain_grade: 0.50
-  infiltrative_cardiomyopathy_strain: 0.50
+  LVH: null
+  RVH: null
+  HCM: null
+  ARVC: null
+  DCM: null
+  amyloidosis: null
+  aortic_stenosis: null
+  pulmonary_HTN: null
+  HFpEF_risk: null
+  mitral_regurgitation: null
+  LA_enlargement: null
+  RA_enlargement: null
+  LV_strain_grade: null
+  infiltrative_cardiomyopathy_strain: null
   # Ischaemia — non-acute
-  old_MI: 0.50
-  early_repol_vs_STEMI: 0.50
-  QTc_prolongation: 0.50
-  hypokalaemia: 0.50
-  hypercalcaemia: 0.50
-  digitalis_effect: 0.50
-  hypothyroidism_pattern: 0.60
-  hypothermia_osborn_waves: 0.50
-  digoxin_effect_vs_toxicity: 0.50
+  old_MI: null
+  early_repol_vs_STEMI: null
+  QTc_prolongation: null
+  hypokalaemia: null
+  hypercalcaemia: null
+  digitalis_effect: null
+  hypothyroidism_pattern: null
+  hypothermia_osborn_waves: null
+  digoxin_effect_vs_toxicity: null
   # Conduction
-  av_block_1st: 0.60
-  LBBB: 0.60
-  RBBB: 0.60
-  LAFB: 0.60
-  LPFB: 0.60
+  av_block_1st: null
+  LBBB: null
+  RBBB: null
+  LAFB: null
+  LPFB: null
 
 risk_thresholds:
   mortality_1y:

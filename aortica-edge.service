@@ -4,13 +4,23 @@ After=network.target
 Wants=network-online.target
 
 [Service]
-Type=simple
+# `aortica edge watch` reports READY=1 and pings WATCHDOG=1 after every poll
+# (see aortica/edge/watch_service.py), so systemd can restart a hung service.
+Type=notify
+NotifyAccess=main
 User=aortica
 Group=aortica
 Environment=AORTICA_DATA_DIR=/var/lib/aortica/data
 Environment=AORTICA_LOG_DIR=/var/log/aortica
 Environment=ORT_NUM_THREADS=4
-ExecStart=/usr/bin/env aortica predict --watch /var/lib/aortica/data/inbox --model ~/.cache/aortica/aortica_edge_int8.onnx
+# Absolute paths: systemd does not expand `~`. Paths match
+# create_pi_image_script.sh.
+ExecStart=/opt/aortica/venv/bin/aortica edge watch \
+    --model /home/aortica/.cache/aortica/aortica_edge_int8.onnx \
+    --inbox /var/lib/aortica/data/inbox \
+    --outbox /var/lib/aortica/data/results \
+    --processed /var/lib/aortica/data/processed \
+    --interval 5
 Restart=on-failure
 RestartSec=5
 WatchdogSec=60

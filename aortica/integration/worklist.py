@@ -33,7 +33,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 try:
     import yaml
@@ -88,90 +88,102 @@ _RISK_OUTPUTS: list[str] = [
 # Default urgency rules
 # ---------------------------------------------------------------------------
 
+# Each condition maps to the probability that triggers its tier, or ``None``
+# to use the class's own validation-tuned operating point (the default for
+# every entry). Fixed cut-offs here used to be 0.4-0.6 for every class while
+# the measured operating points run 0.05-0.65, so rare findings rarely
+# escalated and common ones over-escalated.
+#
+# Only outputs the loaded checkpoint actually trained can escalate a case;
+# entries for untrained outputs (VT, Brugada, the risk head, ...) are inert
+# until a model trains them, and are kept so the clinical tiering is
+# already decided when one does. The tier each finding belongs to is a
+# clinical judgement, not a modelling one.
+
 #: Conditions triggering **critical** urgency (score 80–100).
-_DEFAULT_CRITICAL_CONDITIONS: dict[str, float] = {
+_DEFAULT_CRITICAL_CONDITIONS: dict[str, Optional[float]] = {
     # Life-threatening arrhythmias
-    "VT": 0.40,
-    "VF": 0.30,
-    "av_block_3rd": 0.50,
-    "CPVT": 0.40,
+    "VT": None,
+    "VF": None,
+    "av_block_3rd": None,
+    "CPVT": None,
     # Acute coronary syndromes
-    "STEMI": 0.40,
-    "posterior_MI": 0.50,
-    "occlusive_NSTEMI": 0.50,
+    "STEMI": None,
+    "posterior_MI": None,
+    "occlusive_NSTEMI": None,
     # Metabolic emergencies
-    "hyperkalaemia": 0.40,
-    "hyperkalaemia_severity_grade": 0.40,
+    "hyperkalaemia": None,
+    "hyperkalaemia_severity_grade": None,
     # STEMI mimics — high urgency
-    "de_Winter_T_wave": 0.40,
-    "aVR_ST_elevation": 0.40,
+    "de_Winter_T_wave": None,
+    "aVR_ST_elevation": None,
     # Drug toxicity
-    "TCA_toxicity": 0.40,
+    "TCA_toxicity": None,
 }
 
 #: Conditions triggering **high** urgency (score 60–79).
-_DEFAULT_HIGH_CONDITIONS: dict[str, float] = {
+_DEFAULT_HIGH_CONDITIONS: dict[str, Optional[float]] = {
     # Dangerous arrhythmias / conduction
-    "AF": 0.50,
-    "AFL": 0.50,
-    "WPW": 0.40,
-    "brugada_pattern": 0.40,
-    "short_QT_syndrome": 0.40,
-    "fascicular_VT": 0.40,
-    "av_block_2nd": 0.50,
+    "AF": None,
+    "AFL": None,
+    "WPW": None,
+    "brugada_pattern": None,
+    "short_QT_syndrome": None,
+    "fascicular_VT": None,
+    "av_block_2nd": None,
     # STEMI mimics — high concern
-    "Wellens_syndrome": 0.40,
-    "Sgarbossa_criteria": 0.40,
+    "Wellens_syndrome": None,
+    "Sgarbossa_criteria": None,
     # Structural — acute
-    "Takotsubo_pattern": 0.40,
-    "RV_strain_PE": 0.40,
-    "LVSD": 0.40,
-    "myocarditis": 0.50,
-    "pericarditis": 0.50,
+    "Takotsubo_pattern": None,
+    "RV_strain_PE": None,
+    "LVSD": None,
+    "myocarditis": None,
+    "pericarditis": None,
 }
 
 #: Conditions triggering **moderate** urgency (score 40–59).
-_DEFAULT_MODERATE_CONDITIONS: dict[str, float] = {
+_DEFAULT_MODERATE_CONDITIONS: dict[str, Optional[float]] = {
     # Arrhythmias — moderate concern
-    "SVT": 0.50,
-    "AVNRT": 0.50,
-    "AVRT": 0.50,
-    "idioventricular": 0.50,
-    "sinus_brady": 0.60,
-    "sinus_tachy": 0.60,
-    "atypical_atrial_flutter": 0.50,
-    "inappropriate_sinus_tachy": 0.60,
+    "SVT": None,
+    "AVNRT": None,
+    "AVRT": None,
+    "idioventricular": None,
+    "sinus_brady": None,
+    "sinus_tachy": None,
+    "atypical_atrial_flutter": None,
+    "inappropriate_sinus_tachy": None,
     # Structural — moderate concern
-    "LVH": 0.60,
-    "RVH": 0.60,
-    "HCM": 0.50,
-    "ARVC": 0.50,
-    "DCM": 0.50,
-    "amyloidosis": 0.50,
-    "aortic_stenosis": 0.50,
-    "pulmonary_HTN": 0.50,
-    "HFpEF_risk": 0.60,
-    "mitral_regurgitation": 0.60,
-    "LA_enlargement": 0.60,
-    "RA_enlargement": 0.60,
-    "LV_strain_grade": 0.50,
-    "infiltrative_cardiomyopathy_strain": 0.50,
+    "LVH": None,
+    "RVH": None,
+    "HCM": None,
+    "ARVC": None,
+    "DCM": None,
+    "amyloidosis": None,
+    "aortic_stenosis": None,
+    "pulmonary_HTN": None,
+    "HFpEF_risk": None,
+    "mitral_regurgitation": None,
+    "LA_enlargement": None,
+    "RA_enlargement": None,
+    "LV_strain_grade": None,
+    "infiltrative_cardiomyopathy_strain": None,
     # Ischaemia — non-acute
-    "old_MI": 0.50,
-    "early_repol_vs_STEMI": 0.50,
-    "QTc_prolongation": 0.50,
-    "hypokalaemia": 0.50,
-    "hypercalcaemia": 0.50,
-    "digitalis_effect": 0.50,
-    "hypothyroidism_pattern": 0.60,
-    "hypothermia_osborn_waves": 0.50,
-    "digoxin_effect_vs_toxicity": 0.50,
+    "old_MI": None,
+    "early_repol_vs_STEMI": None,
+    "QTc_prolongation": None,
+    "hypokalaemia": None,
+    "hypercalcaemia": None,
+    "digitalis_effect": None,
+    "hypothyroidism_pattern": None,
+    "hypothermia_osborn_waves": None,
+    "digoxin_effect_vs_toxicity": None,
     # Conduction
-    "av_block_1st": 0.60,
-    "LBBB": 0.60,
-    "RBBB": 0.60,
-    "LAFB": 0.60,
-    "LPFB": 0.60,
+    "av_block_1st": None,
+    "LBBB": None,
+    "RBBB": None,
+    "LAFB": None,
+    "LPFB": None,
 }
 
 #: Risk score thresholds for urgency escalation.
@@ -207,7 +219,8 @@ class UrgencyRules:
 
     Attributes:
         critical_conditions: Condition name → confidence threshold for
-            critical urgency (score 80–100).
+            critical urgency (score 80–100), or ``None`` for the class's
+            per-class operating point.
         high_conditions: Condition name → confidence threshold for
             high urgency (score 60–79).
         moderate_conditions: Condition name → confidence threshold for
@@ -217,13 +230,13 @@ class UrgencyRules:
         actions: Mapping of urgency tier → recommended action string.
     """
 
-    critical_conditions: dict[str, float] = field(
+    critical_conditions: dict[str, Optional[float]] = field(
         default_factory=lambda: dict(_DEFAULT_CRITICAL_CONDITIONS),
     )
-    high_conditions: dict[str, float] = field(
+    high_conditions: dict[str, Optional[float]] = field(
         default_factory=lambda: dict(_DEFAULT_HIGH_CONDITIONS),
     )
-    moderate_conditions: dict[str, float] = field(
+    moderate_conditions: dict[str, Optional[float]] = field(
         default_factory=lambda: dict(_DEFAULT_MODERATE_CONDITIONS),
     )
     risk_thresholds: dict[str, dict[str, float]] = field(
@@ -415,15 +428,18 @@ def load_urgency_rules(yaml_path: str | Path) -> UrgencyRules:
     rules = UrgencyRules()
     if "critical_conditions" in data:
         rules.critical_conditions = {
-            str(k): float(v) for k, v in data["critical_conditions"].items()
+            str(k): (None if v is None else float(v))
+            for k, v in data["critical_conditions"].items()
         }
     if "high_conditions" in data:
         rules.high_conditions = {
-            str(k): float(v) for k, v in data["high_conditions"].items()
+            str(k): (None if v is None else float(v))
+            for k, v in data["high_conditions"].items()
         }
     if "moderate_conditions" in data:
         rules.moderate_conditions = {
-            str(k): float(v) for k, v in data["moderate_conditions"].items()
+            str(k): (None if v is None else float(v))
+            for k, v in data["moderate_conditions"].items()
         }
     if "risk_thresholds" in data:
         rules.risk_thresholds = {}
@@ -467,13 +483,48 @@ class WorklistPrioritizer:
         self,
         rules: Optional[UrgencyRules] = None,
         rules_yaml: Optional[str | Path] = None,
+        *,
+        thresholds: Optional[dict[str, float]] = None,
+        trained_outputs: Optional[Iterable[str]] = None,
     ) -> None:
+        """
+        Args:
+            rules: Urgency rules; defaults to the built-in tiering.
+            rules_yaml: Load rules from YAML instead.
+            thresholds: Per-class operating points for conditions whose rule
+                threshold is ``None``. Defaults to the packaged sidecar; pass
+                ``operating_points(model)`` to use a checkpoint's own.
+            trained_outputs: Outputs allowed to escalate. Defaults to the
+                packaged allowlist; untrained outputs emit noise.
+        """
+        from aortica.models.output_gating import (
+            default_class_thresholds,
+            default_trained_outputs,
+        )
+
         if rules is not None:
             self.rules = rules
         elif rules_yaml is not None:
             self.rules = load_urgency_rules(rules_yaml)
         else:
             self.rules = UrgencyRules()
+        self.thresholds = (
+            dict(thresholds) if thresholds is not None else default_class_thresholds()
+        )
+        self.trained_outputs = frozenset(
+            trained_outputs if trained_outputs is not None else default_trained_outputs()
+        )
+
+    def _fires(self, class_name: str, confidence: float,
+               rule_threshold: Optional[float]) -> bool:
+        """Whether *class_name* at *confidence* meets its tier's threshold."""
+        if class_name not in self.trained_outputs:
+            return False
+        if rule_threshold is None:
+            from aortica.models.output_gating import is_positive
+
+            return is_positive(class_name, confidence, self.thresholds)
+        return confidence >= rule_threshold
 
     def _score_single(
         self,
@@ -494,7 +545,7 @@ class WorklistPrioritizer:
                 # Check critical conditions first
                 if class_name in self.rules.critical_conditions:
                     threshold = self.rules.critical_conditions[class_name]
-                    if confidence >= threshold:
+                    if self._fires(class_name, confidence, threshold):
                         max_tier_level = max(max_tier_level, 3)
                         active_findings.append({
                             "class_name": class_name,
@@ -507,7 +558,7 @@ class WorklistPrioritizer:
                 # Check high conditions
                 if class_name in self.rules.high_conditions:
                     threshold = self.rules.high_conditions[class_name]
-                    if confidence >= threshold:
+                    if self._fires(class_name, confidence, threshold):
                         max_tier_level = max(max_tier_level, 2)
                         active_findings.append({
                             "class_name": class_name,
@@ -520,7 +571,7 @@ class WorklistPrioritizer:
                 # Check moderate conditions
                 if class_name in self.rules.moderate_conditions:
                     threshold = self.rules.moderate_conditions[class_name]
-                    if confidence >= threshold:
+                    if self._fires(class_name, confidence, threshold):
                         max_tier_level = max(max_tier_level, 1)
                         active_findings.append({
                             "class_name": class_name,
@@ -532,6 +583,10 @@ class WorklistPrioritizer:
         # Check risk scores
         risk_preds = predictions.get("risk", {})
         for risk_name, score in risk_preds.items():
+            # No released checkpoint trains a risk output; an untrained one
+            # must never escalate a case on noise.
+            if risk_name not in self.trained_outputs:
+                continue
             thresholds = self.rules.risk_thresholds.get(risk_name, {})
             critical_thresh = thresholds.get("critical", 1.0)
             high_thresh = thresholds.get("high", 1.0)

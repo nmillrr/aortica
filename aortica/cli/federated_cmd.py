@@ -583,6 +583,15 @@ def client_cmd(
     help="Skip ONNX export and INT8 quantization.",
 )
 @click.option(
+    "--calibration-data",
+    "calibration_data",
+    type=click.Path(exists=True),
+    default=None,
+    help="Real ECGs for INT8 calibration: a directory of ECG files or an "
+    "[N, 12, 1000] .npy. Required for an INT8 model; the repository ships "
+    "releases/calibration/ptbxl_fold9_calibration_100.npy.",
+)
+@click.option(
     "--format",
     "output_format",
     type=click.Choice(["text", "json"], case_sensitive=False),
@@ -600,6 +609,7 @@ def release_cmd(
     aggregation_strategy: str,
     push_to_hub: bool,
     skip_onnx: bool,
+    calibration_data: Optional[str],
     output_format: str,
 ) -> None:
     """Run the federated model release pipeline.
@@ -644,6 +654,7 @@ def release_cmd(
         output_dir=output_dir,
         push_to_hub=push_to_hub,
         skip_onnx_export=skip_onnx,
+        calibration_data_path=calibration_data,
         skip_hub_push=not push_to_hub,
     )
 

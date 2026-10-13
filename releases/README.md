@@ -10,6 +10,9 @@ live here.
 | [`v0.3.0/`](v0.3.0/) | Edge release: distilled MobileNet-1D student, FP32 and INT8 ONNX, trained on PTB-XL + Chapman. | **Shipped edge model** — PWA offline fallback, Android app, Raspberry Pi. Its teacher weights were not preserved and its Chapman split is not recoverable. |
 | [`v0.2.0/`](v0.2.0/) | First edge release, PTB-XL only (26 outputs). | Superseded. |
 
+[`calibration/`](calibration/) holds 100 PTB-XL validation-fold ECGs for INT8
+calibration (quantizing on noise yields a model that scores near chance).
+
 `scripts/sync_release_artifacts.py` copies the shipped edge model and its
 sidecars from `v0.3.0/` to the frontend, the Android assets and
 `aortica/models/artifacts/`; CI fails if they drift.

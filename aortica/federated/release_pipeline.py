@@ -33,7 +33,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from aortica.signal.preprocess import MODEL_NUM_SAMPLES
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +57,12 @@ class FederatedReleaseConfig:
         push_to_hub: Whether to upload artifacts to HuggingFace Hub.
         hub_repo_id: HuggingFace Hub repository ID.
         regulatory_targets_yaml: Path to regulatory performance targets.
-        calibration_samples: Number of calibration samples for INT8
-            quantization.  Default ``20``.
+        calibration_data_path: Real ECGs for INT8 calibration — a directory of
+            ECG files or an ``[N, 12, 1000]`` ``.npy`` (see
+            :func:`aortica.edge.quantization.load_calibration_data`). Without
+            it the FP32 ONNX is still exported but no INT8 model is produced:
+            noise calibration yields a model that scores near chance.
+        calibration_samples: Maximum calibration ECGs to use.  Default ``100``.
         skip_benchmark: Skip the benchmark step (for testing).
         skip_equity_gate: Skip the equity gate step (for testing).
         skip_regulatory_gate: Skip the regulatory gate step.
@@ -77,7 +80,8 @@ class FederatedReleaseConfig:
     push_to_hub: bool = False
     hub_repo_id: str = "nmillrr/aortica"
     regulatory_targets_yaml: Optional[str] = None
-    calibration_samples: int = 20
+    calibration_data_path: Optional[str] = None
+    calibration_samples: int = 100
     skip_benchmark: bool = False
     skip_equity_gate: bool = False
     skip_regulatory_gate: bool = False
@@ -496,7 +500,6 @@ def _step_onnx_export(
         return step
 
     try:
-        import numpy as np
 
         from aortica.edge.onnx_export import export_onnx
         from aortica.edge.quantization import quantize_int8
@@ -507,21 +510,32 @@ def _step_onnx_export(
         export_onnx(model, onnx_path)
         logger.info("ONNX export: %s", onnx_path)
 
-        # Quantize INT8
+        step.details = {"onnx_path": str(onnx_path)}
+
+        # Quantize INT8 — on real ECGs only. Calibrated on Gaussian noise
+        # (as this step once did), the v0.3.0 student scores macro-AUROC
+        # 0.527 on PTB-XL fold 10 instead of 0.916.
+        if not config.calibration_data_path:
+            step.passed = False
+            step.error = (
+                "INT8 model not produced: no calibration_data_path. Static "
+                "quantization needs real ECGs (noise calibration scores near "
+                "chance). FP32 ONNX was exported."
+            )
+            return step
+
+        from aortica.edge.quantization import load_calibration_data
+
+        cal_data = load_calibration_data(
+            config.calibration_data_path,
+            max_samples=max(1, config.calibration_samples),
+        )
         int8_name = federated_int8_filename(base_version, config.fl_round)
         int8_path = output_dir / int8_name
-        n_cal = max(1, config.calibration_samples)
-        cal_data = [
-            np.random.randn(1, 12, MODEL_NUM_SAMPLES).astype(np.float32)
-            for _ in range(n_cal)
-        ]
         quantize_int8(str(onnx_path), cal_data, str(int8_path))
-        logger.info("INT8 quantization: %s", int8_path)
-
-        step.details = {
-            "onnx_path": str(onnx_path),
-            "int8_path": str(int8_path),
-        }
+        logger.info("INT8 quantization: %s (%d calibration ECGs)", int8_path, len(cal_data))
+        step.details["int8_path"] = str(int8_path)
+        step.details["calibration_samples"] = len(cal_data)
 
     except Exception as exc:
         step.passed = False

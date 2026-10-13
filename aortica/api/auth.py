@@ -354,6 +354,8 @@ def create_auth_router(api_key_store: APIKeyStore) -> Any:
     """Build a FastAPI APIRouter with authentication endpoints.
 
     Endpoints:
+      - ``GET  /api/v1/auth/me`` — the authenticated identity (requires JWT
+        or API key); what a client calls to check credentials
       - ``POST /api/v1/auth/token``  — generate API key (requires JWT)
       - ``POST /api/v1/auth/refresh`` — refresh JWT with refresh token
       - ``GET  /api/v1/auth/login/google`` — redirect to Google OAuth
@@ -364,6 +366,16 @@ def create_auth_router(api_key_store: APIKeyStore) -> Any:
     from fastapi import APIRouter
 
     router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
+
+    # ── Who am I (protected) ─────────────────────────────────────────
+    # The web UI used to "validate" an API key by calling /info, which is
+    # public, so any string logged in. Credential checks must hit an
+    # endpoint that actually authenticates.
+
+    @router.get("/me", response_model=UserInfo, summary="Authenticated identity")
+    async def whoami(user: Any = Depends(require_auth)) -> UserInfo:
+        """Return the identity behind the presented JWT or API key."""
+        return user
 
     # ── API key generation (protected) ───────────────────────────────
 

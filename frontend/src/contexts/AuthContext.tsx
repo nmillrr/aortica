@@ -24,7 +24,6 @@ interface AuthContextType {
   isLoading: boolean;
   loginWithOAuth: (provider: 'google' | 'github') => void;
   loginWithApiKey: (apiKey: string) => Promise<boolean>;
-  loginWithCredentials: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   getAuthHeader: () => Record<string, string>;
 }
@@ -168,13 +167,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithApiKey = useCallback(async (apiKey: string): Promise<boolean> => {
     try {
-      // Validate API key by calling a protected endpoint
-      const resp = await fetch(`${API_BASE}/info`, {
+      // Validate against an endpoint that authenticates. (This used to call
+      // /info, which is public, so any string signed in.)
+      const resp = await fetch(`${API_BASE}/api/v1/auth/me`, {
         headers: { 'X-API-Key': apiKey },
       });
       if (resp.ok) {
+        const me = (await resp.json()) as Partial<AuthUser>;
         const authUser: AuthUser = {
-          sub: 'api_key_user',
+          sub: me.sub ?? 'api_key_user',
+          email: me.email,
+          name: me.name,
           provider: 'api_key',
         };
         const authTokens: AuthTokens = {
@@ -192,28 +195,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   }, []);
 
-  const loginWithCredentials = useCallback(
-    async (_email: string, _password: string): Promise<boolean> => {
-      // For self-hosted deployments, credentials are validated locally.
-      // In this implementation we create a local JWT session.
-      const authUser: AuthUser = {
-        sub: `local:${_email}`,
-        email: _email,
-        provider: 'local',
-      };
-      // In a real deployment, this would call a backend endpoint.
-      // For now, we accept any credentials for the self-hosted model.
-      const authTokens: AuthTokens = {
-        accessToken: 'local-session',
-        expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-      };
-      setUser(authUser);
-      setTokens(authTokens);
-      storeAuth(authTokens, authUser);
-      return true;
-    },
-    []
-  );
+  // There is no email/password sign-in: the backend has no password store.
+  // An earlier version accepted any credentials and minted a local session.
 
   const logout = useCallback(() => {
     setUser(null);
@@ -238,7 +221,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         loginWithOAuth,
         loginWithApiKey,
-        loginWithCredentials,
         logout,
         getAuthHeader,
       }}

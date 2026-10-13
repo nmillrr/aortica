@@ -298,6 +298,29 @@ class TestRequireAuth:
         resp = client.get("/info")
         assert resp.status_code == 200
 
+    # /me is what clients use to check credentials. /info is public, so a
+    # client that "validated" against it accepted any key.
+
+    def test_me_401_without_credentials(self, client: TestClient) -> None:
+        assert client.get("/api/v1/auth/me").status_code == 401
+
+    def test_me_401_with_unknown_api_key(self, client: TestClient) -> None:
+        resp = client.get("/api/v1/auth/me", headers={"X-API-Key": "ak_not_a_real_key"})
+        assert resp.status_code == 401
+
+    def test_me_returns_api_key_owner(self, client: TestClient, app_with_auth: Any) -> None:
+        raw_key, _ = app_with_auth.state.api_key_store.generate("ui", "user:42")
+        resp = client.get("/api/v1/auth/me", headers={"X-API-Key": raw_key})
+        assert resp.status_code == 200
+        assert resp.json()["sub"] == "user:42"
+        assert resp.json()["provider"] == "api_key"
+
+    def test_me_returns_jwt_subject(self, client: TestClient) -> None:
+        token = create_access_token(UserInfo(sub="oauth:7", email="a@b.org", provider="github"))
+        resp = client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 200
+        assert resp.json()["sub"] == "oauth:7"
+
 
 # ---------------------------------------------------------------------------
 # Auth disabled mode

@@ -53,7 +53,7 @@ sudo install -o aortica -g aortica -m 0644 \
 
 # ---- 6. Create data/log directories ----
 echo "[6/7] Creating data and log directories..."
-sudo mkdir -p /var/lib/aortica/data/inbox
+sudo mkdir -p /var/lib/aortica/data/inbox /var/lib/aortica/data/results /var/lib/aortica/data/processed
 sudo mkdir -p /var/log/aortica
 sudo chown -R aortica:aortica /var/lib/aortica/data
 sudo chown -R aortica:aortica /var/log/aortica

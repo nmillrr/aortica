@@ -485,10 +485,11 @@ def create_app(
 
         try:
             from aortica.integration.worklist import WorklistPrioritizer
+            from aortica.models.output_gating import operating_points
 
-            worklist = WorklistPrioritizer().prioritize(
-                [findings], ecg_ids=[filename]
-            )
+            worklist = WorklistPrioritizer(
+                thresholds=operating_points(app.state.model)  # type: ignore[attr-defined]
+            ).prioritize([findings], ecg_ids=[filename])
             app.state.worklist_store.add_from_prioritized(worklist)  # type: ignore[attr-defined]
         except Exception:  # noqa: BLE001 - worklist ingestion must not break predict
             logger.exception("Worklist ingestion failed")

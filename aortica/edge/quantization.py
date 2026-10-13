@@ -7,13 +7,18 @@ After quantization, the function validates that the quantized model runs
 successfully via ONNX Runtime and reports the maximum absolute difference
 between the original and quantized model outputs.
 
+Calibration data must be **real ECGs** prepared exactly as the model sees
+them (:func:`aortica.signal.preprocess.model_input`). Static quantization
+fixes each activation's range from these samples; calibrated on Gaussian
+noise, the v0.3.0 student scores macro-AUROC 0.527 on PTB-XL fold 10 instead
+of 0.916 (FP32: 0.943), because unit-variance noise looks nothing like
+micro-volt ECGs. Use :func:`load_calibration_data`.
+
 Example::
 
-    import numpy as np
-    from aortica.edge import quantize_int8
+    from aortica.edge.quantization import load_calibration_data, quantize_int8
 
-    # Generate representative calibration data (or use real ECG samples)
-    calibration_data = [np.random.randn(1, 12, 1000).astype(np.float32) for _ in range(100)]
+    calibration_data = load_calibration_data("path/to/ecgs/", max_samples=100)
     report = quantize_int8("model.onnx", calibration_data, "model_int8.onnx")
     print(f"Max diff: {report.max_abs_diff:.6f}")
 
@@ -57,6 +62,63 @@ except ImportError:
 
 
 logger = logging.getLogger(__name__)
+
+
+def load_calibration_data(
+    path: Union[str, pathlib.Path],
+    max_samples: int = 100,
+) -> list[np.ndarray]:
+    """Load real ECGs as INT8 calibration samples, each ``[1, 12, 1000]``.
+
+    Args:
+        path: Either a ``.npy`` file holding an ``[N, 12, 1000]`` float array
+            already prepared with :func:`~aortica.signal.preprocess.model_input`,
+            or a directory of ECG files in any format :func:`aortica.io.read_ecg`
+            reads (WFDB records are entered through their ``.hea``).
+        max_samples: Use at most this many records.
+
+    Returns:
+        Calibration samples in the model's input contract (100 Hz, 10 s, µV).
+
+    Raises:
+        ValueError: The array has the wrong shape, or no usable ECG was found.
+        FileNotFoundError: *path* does not exist.
+    """
+    from aortica.signal.preprocess import MODEL_NUM_SAMPLES, model_input
+
+    src = pathlib.Path(path)
+    if not src.exists():
+        raise FileNotFoundError(f"Calibration data not found: {src}")
+    expected = (12, MODEL_NUM_SAMPLES)
+
+    if src.is_file():
+        arr = np.load(src)
+        if arr.ndim != 3 or tuple(arr.shape[1:]) != expected:
+            raise ValueError(
+                f"{src}: expected an [N, 12, {MODEL_NUM_SAMPLES}] array, got {arr.shape}"
+            )
+        samples = [arr[i : i + 1].astype(np.float32) for i in range(min(len(arr), max_samples))]
+    else:
+        from aortica.io.dispatcher import _EXTENSION_MAP, read_ecg
+
+        samples = []
+        for f in sorted(src.iterdir()):
+            if len(samples) >= max_samples:
+                break
+            suffix = f.suffix.lower()
+            if not f.is_file() or suffix not in _EXTENSION_MAP:
+                continue
+            if suffix == ".dat" and f.with_suffix(".hea").exists():
+                continue
+            try:
+                samples.append(model_input(read_ecg(f))[np.newaxis])
+            except Exception:  # noqa: BLE001 - skip what cannot be read
+                logger.warning("Skipping unreadable calibration file %s", f, exc_info=True)
+
+    if not samples:
+        raise ValueError(f"No usable calibration ECGs in {src}")
+    logger.info("Loaded %d calibration ECGs from %s", len(samples), src)
+    return samples
 
 
 def _check_dependencies() -> None:
