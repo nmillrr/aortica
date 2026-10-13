@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -377,6 +378,52 @@ class TestFederatedReleaseConfig:
 # ---------------------------------------------------------------------------
 # Model card generation tests
 # ---------------------------------------------------------------------------
+
+
+class TestInt8Calibration:
+    """INT8 is calibrated on real ECGs or not produced at all."""
+
+    @staticmethod
+    def _config(output_dir: Path, **kw: Any) -> FederatedReleaseConfig:
+        return FederatedReleaseConfig(
+            fl_round=7, output_dir=str(output_dir), skip_benchmark=True,
+            skip_equity_gate=True, skip_regulatory_gate=True,
+            skip_performance_card=True, skip_hub_push=True, **kw,
+        )
+
+    def test_no_calibration_data_exports_fp32_only(
+        self, synthetic_weights: Path, output_dir: Path,
+    ) -> None:
+        pytest.importorskip("onnxruntime")
+        result = release_pipeline(str(synthetic_weights), "0.3.0",
+                                  self._config(output_dir))
+        step = next(s for s in result.steps if s.name == "onnx_export")
+        assert step.passed is False
+        assert "calibration" in (step.error or "")
+        assert result.onnx_filename and not result.int8_filename
+        assert (output_dir / result.onnx_filename).exists()
+        assert not list(output_dir.glob("*int8*"))
+
+    def test_real_calibration_produces_int8(
+        self, synthetic_weights: Path, output_dir: Path, tmp_path: Path,
+    ) -> None:
+        pytest.importorskip("onnxruntime")
+        import shutil
+
+        fixtures = Path(__file__).resolve().parents[1] / "fixtures" / "ptbxl" / "records500"
+        cal_dir = tmp_path / "cal"
+        cal_dir.mkdir()
+        for f in fixtures.iterdir():
+            shutil.copy(f, cal_dir / f.name)
+
+        result = release_pipeline(
+            str(synthetic_weights), "0.3.0",
+            self._config(output_dir, calibration_data_path=str(cal_dir)),
+        )
+        step = next(s for s in result.steps if s.name == "onnx_export")
+        assert step.passed, step.error
+        assert step.details["calibration_samples"] == 4
+        assert (output_dir / result.int8_filename).exists()
 
 
 class TestModelCard:

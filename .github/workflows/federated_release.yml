@@ -40,6 +40,11 @@ on:
           - fedavg
           - fedprox
           - scaffold
+      calibration_data:
+        description: 'Real ECGs for INT8 calibration (directory or [N,12,1000] .npy). Without it no INT8 model is produced and the release fails.'
+        required: false
+        default: ''
+        type: string
       push_to_hub:
         description: 'Push artifacts to HuggingFace Hub'
         required: false
@@ -89,6 +94,7 @@ jobs:
               site_count=${{ inputs.site_count }},
               total_samples=${{ inputs.total_samples }},
               aggregation_strategy='${{ inputs.aggregation_strategy }}',
+              calibration_data_path='${{ inputs.calibration_data }}' or None,
               output_dir='release_artifacts',
               push_to_hub=${{ inputs.push_to_hub }},
               skip_hub_push=not ${{ inputs.push_to_hub }},
