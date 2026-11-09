@@ -57,8 +57,12 @@ validated (for example AVRT, 2nd/3rd-degree AV block, RA enlargement). Check
 Each class has its own operating point, tuned on validation data and shipped
 with the checkpoint. Raw probabilities are not comparable across classes —
 rare findings peak far below common ones — so every "is this present?"
-decision (clinical suggestions, CLI severity, the CHW tiers) uses the
-per-class threshold, and API responses return it alongside each probability.
+decision (clinical suggestions, CLI severity, the CHW tiers, worklist
+urgency) uses the per-class threshold, and API responses return it alongside
+each probability. Urgency rules in
+[`data/urgency_rules.yaml`](data/urgency_rules.yaml) default to the class's
+operating point (a number there overrides it), and only trained outputs can
+escalate a case.
 
 ### Input contract
 
@@ -177,14 +181,20 @@ versions, thread count, data checksums and the SHA-256 of the weights.
 - **Interfaces** — FastAPI REST + gRPC, Click CLI, React PWA (12-lead viewer,
   findings panel with clinical suggestions, second-reader mode, batch mode).
 - **Edge** — distilled MobileNet-1D student, INT8 ONNX (0.42 MB, v0.3.0) for
-  ARM devices and an in-browser fallback. On-device latency has not been
+  ARM devices and an in-browser fallback, calibrated on 100 real PTB-XL
+  validation ECGs ([`releases/calibration/`](releases/calibration)).
+  `aortica edge watch` scores an inbox folder with the ONNX model and writes
+  one JSON result per ECG; it runs as a systemd service on a Raspberry Pi
+  ([guide](docs/deployment/raspberry-pi.md)). On-device latency has not been
   measured on hardware.
 - **Integration** — FHIR R4, HL7 v2 ORU, DICOM SR, DIMSE, serial capture,
   SMART on FHIR; PDF/JSON-LD/CSV reports.
 - **Federated learning** — Flower client/server with FedAvg, FedProx and
   SCAFFOLD; raw ECGs stay on site. Model updates are sent **without
   differential privacy or secure aggregation** (the `dp` and `secure_agg`
-  modules are experimental and not wired in).
+  modules are experimental and not wired in). `aortica federated release`
+  produces an INT8 model only when given real calibration ECGs
+  (`--calibration-data`); calibrating on noise drops the INT8 model to chance.
 - **Evaluation & governance** — per-class metrics with bootstrap CIs,
   demographic subgroups, equity gate, performance cards, and templates for
   IEC 80601-2-86, FDA pre-submission, CE-MDR and TRIPOD/STARD/CONSORT-AI.
@@ -200,7 +210,8 @@ aortica/
 │                Georgia loaders         ├── retrieval/    similar-case search
 ├── evaluation/  metrics, gates          └── validation/   prospective tooling
 └── xai/         attributions
-releases/        v0.2.0, v0.3.0 (edge), v0.4.0 (reference) — metrics, splits, manifests
+releases/        v0.2.0, v0.3.0 (edge), v0.4.0 (reference) — metrics, splits, manifests;
+                 calibration/ — real-ECG INT8 calibration set
 frontend/        React + Vite PWA        mobile/android/   Kotlin app
 docs/            MkDocs site             scripts/          training & evaluation
 ```
