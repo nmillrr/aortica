@@ -375,11 +375,41 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.finding-bar-track {
+  flex: 1;
   height: 6px;
   background: var(--color-bg-primary);
   border-radius: var(--radius-full);
   position: relative;
-  overflow: visible;
+}
+
+/* The class's own operating point — positives are judged against this,
+   not against a shared scale. */
+.finding-threshold {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  background: var(--color-text-secondary);
+  border-radius: 1px;
+}
+
+.finding-threshold-label {
+  color: var(--color-text-tertiary);
+  font-weight: normal;
+}
+
+.finding-positive-tag {
+  margin-left: var(--space-2);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
 }
 
 .finding-bar {
@@ -400,7 +430,7 @@
 .finding-prob {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);
-  min-width: 32px;
+  min-width: 64px;
   text-align: right;
   font-weight: var(--font-weight-medium);
   font-variant-numeric: tabular-nums;
@@ -570,4 +600,38 @@
   .finding-info {
     min-width: 100%;
   }
+}
+
+/* ── Empty state, waveform note, not-assessed list ─────────── */
+
+.results-empty {
+  padding: var(--space-6);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.results-waveform-note {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.results-not-assessed {
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.results-not-assessed summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-medium);
+}
+
+.results-not-assessed-list {
+  color: var(--color-text-tertiary);
+  line-height: 1.6;
 }

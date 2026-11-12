@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import type { Finding } from '../services/predictions';
 import './SecondReaderMode.css';
 
 /* ---------- Types -------------------------------------------------------- */
@@ -25,8 +26,8 @@ interface CompareResponse {
 }
 
 interface SecondReaderModeProps {
-  /** AI predictions per task, as returned by the predict API */
-  aiPredictions: Record<string, number[]>;
+  /** Model findings (trained outputs only), each judged at its own threshold */
+  aiFindings: Finding[];
   /** Whether the component is visible */
   visible: boolean;
   /** Toggle visibility */
@@ -99,6 +100,7 @@ const FINDING_CATEGORIES = {
       { name: 'hypothyroidism_pattern', label: 'Hypothyroidism Pattern' },
       { name: 'digitalis_effect', label: 'Digitalis Effect' },
       { name: 'QTc_prolongation', label: 'QTc Prolongation' },
+      { name: 'early_repol_vs_STEMI', label: 'Early Repolarisation vs STEMI' },
     ],
   },
 };
@@ -111,28 +113,15 @@ const FINDING_CATEGORIES = {
  */
 function compareLocally(
   selectedFindings: Set<string>,
-  aiPredictions: Record<string, number[]>,
-  threshold: number,
+  aiFindings: Finding[],
 ): CompareResponse {
-  const allClasses: Record<string, string[]> = {
-    rhythm: FINDING_CATEGORIES.rhythm.items.map(i => i.name),
-    structural: FINDING_CATEGORIES.structural.items.map(i => i.name),
-    ischaemia: FINDING_CATEGORIES.ischaemia.items.map(i => i.name),
-  };
-
-  // Build AI positive set
+  // A finding is AI-positive at its own operating point — never a shared cut-off.
   const aiPositive = new Map<string, { prob: number; task: string }>();
   const aiAll = new Map<string, { prob: number; task: string }>();
 
-  for (const [task, classes] of Object.entries(allClasses)) {
-    const probs = aiPredictions[task] || [];
-    classes.forEach((className, i) => {
-      const prob = probs[i] ?? 0;
-      aiAll.set(className, { prob, task });
-      if (prob >= threshold) {
-        aiPositive.set(className, { prob, task });
-      }
-    });
+  for (const f of aiFindings) {
+    aiAll.set(f.name, { prob: f.prob, task: f.task });
+    if (f.positive) aiPositive.set(f.name, { prob: f.prob, task: f.task });
   }
 
   const agreements: DiscrepancyItem[] = [];
@@ -280,7 +269,7 @@ function DiscrepancyRow({ item }: { item: DiscrepancyItem }) {
 
 /* ---------- Main component ----------------------------------------------- */
 
-export function SecondReaderMode({ aiPredictions, visible, onToggle }: SecondReaderModeProps) {
+export function SecondReaderMode({ aiFindings, visible, onToggle }: SecondReaderModeProps) {
   const [selectedFindings, setSelectedFindings] = useState<Set<string>>(new Set());
   const [freeText, setFreeText] = useState('');
   const [comparisonResult, setComparisonResult] = useState<CompareResponse | null>(null);
@@ -307,9 +296,13 @@ export function SecondReaderMode({ aiPredictions, visible, onToggle }: SecondRea
   }, []);
 
   const handleCompare = useCallback(() => {
-    const result = compareLocally(selectedFindings, aiPredictions, 0.50);
+    const result = compareLocally(selectedFindings, aiFindings);
     setComparisonResult(result);
-  }, [selectedFindings, aiPredictions]);
+  }, [selectedFindings, aiFindings]);
+
+  // Offer only conditions the model assessed: comparing against an output it
+  // was never trained on would report every clinician finding as AI-missed.
+  const assessed = useMemo(() => new Set(aiFindings.map(f => f.name)), [aiFindings]);
 
   const handleClear = useCallback(() => {
     setSelectedFindings(new Set());
@@ -362,7 +355,7 @@ export function SecondReaderMode({ aiPredictions, visible, onToggle }: SecondRea
               </button>
               {expandedCategories.has(key) && (
                 <div className="sr-category-items">
-                  {cat.items.map(item => (
+                  {cat.items.filter(item => assessed.has(item.name)).map(item => (
                     <label
                       key={item.name}
                       className={`sr-checkbox-item ${selectedFindings.has(item.name) ? 'sr-checkbox-item--selected' : ''}`}

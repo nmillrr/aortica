@@ -7,6 +7,16 @@
  *   3. Annotate result with inference_mode so the UI knows which path was used
  */
 
+import {
+  gateEdgeOutputs,
+  parseQualityReport,
+  parseSuggestions,
+  parseTaskPredictions,
+  type QualityReport,
+  type Suggestion,
+  type TaskPrediction,
+} from './predictions';
+
 /* ---------- Types -------------------------------------------------------- */
 
 export type InferenceMode = 'server' | 'edge_wasm';
@@ -14,11 +24,13 @@ export type InferenceMode = 'server' | 'edge_wasm';
 export interface PredictionResult {
   /** Which inference path produced this result */
   inference_mode: InferenceMode;
-  /** Quality report from the pipeline */
-  quality?: Record<string, unknown>;
-  /** Per-task predictions */
-  predictions?: Record<string, unknown>;
-  /** Uncertainty / conformal prediction data */
+  /** Per-task predictions — trained outputs only, with operating points */
+  predictions: TaskPrediction[];
+  /** Signal quality report (server only) */
+  quality: QualityReport | null;
+  /** Clinical suggestions for positive findings (server only) */
+  suggestions: Suggestion[];
+  /** Uncertainty / conformal prediction data (server only) */
   uncertainty?: Record<string, unknown>;
   /** XAI attribution data (when include_xai=true) */
   xai?: unknown[];
@@ -33,6 +45,20 @@ export interface InferenceClientConfig {
   timeoutMs?: number;
   /** Path to the ONNX edge model (relative to public/) */
   modelPath?: string;
+}
+
+/** Build a PredictionResult from one /api/v1/predict response body. */
+export function fromServerResponse(data: unknown): PredictionResult {
+  const d = (data ?? {}) as Record<string, unknown>;
+  return {
+    inference_mode: 'server',
+    raw: data,
+    predictions: parseTaskPredictions(d.predictions),
+    quality: parseQualityReport(d.quality_report),
+    suggestions: parseSuggestions(d.suggestions),
+    uncertainty: d.uncertainty as Record<string, unknown> | undefined,
+    xai: Array.isArray(d.xai) ? d.xai : undefined,
+  };
 }
 
 /* ---------- Constants ---------------------------------------------------- */
@@ -97,7 +123,7 @@ async function inferServer(
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${serverUrl}/api/v1/predict`, {
+    const response = await fetch(`${serverUrl}/api/v1/predict?include_suggestions=true`, {
       method: 'POST',
       body: formData,
       signal: controller.signal,
@@ -107,16 +133,7 @@ async function inferServer(
       throw new Error(`Server returned ${response.status}`);
     }
 
-    const data: unknown = await response.json();
-
-    return {
-      inference_mode: 'server',
-      raw: data,
-      predictions: (data as Record<string, unknown>).predictions as Record<string, unknown> | undefined,
-      quality: (data as Record<string, unknown>).quality as Record<string, unknown> | undefined,
-      uncertainty: (data as Record<string, unknown>).uncertainty as Record<string, unknown> | undefined,
-      xai: (data as Record<string, unknown>).xai as unknown[] | undefined,
-    };
+    return fromServerResponse(await response.json());
   } finally {
     clearTimeout(timer);
   }
@@ -152,15 +169,17 @@ async function inferEdge(
   const typedSession = session as { run: (feeds: Record<string, unknown>) => Promise<Record<string, { data: Float32Array }>> };
   const results = await typedSession.run({ [INPUT_NAME]: inputTensor });
 
-  // Collect outputs
-  const predictions: Record<string, unknown> = {};
+  // Name and gate the raw head outputs the way the server does.
+  const outputs: Record<string, number[]> = {};
   for (const [key, value] of Object.entries(results)) {
-    predictions[key.replace('_output', '')] = Array.from(value.data);
+    outputs[key.replace(/_output$/, '')] = Array.from(value.data);
   }
 
   return {
     inference_mode: 'edge_wasm',
-    predictions,
+    predictions: gateEdgeOutputs(outputs),
+    quality: null,
+    suggestions: [],
     raw: results,
   };
 }
@@ -282,16 +301,16 @@ export async function predictBatch(
     }
 
     const data = await response.json() as Record<string, unknown>;
-    const results = (data['results'] as unknown[]) ?? [];
+    const results = Array.isArray(data['results']) ? data['results'] : [];
 
-    return results.map(r => ({
-      inference_mode: 'server' as InferenceMode,
-      raw: r,
-      predictions: (r as Record<string, unknown>)['predictions'] as Record<string, unknown> | undefined,
-      quality: (r as Record<string, unknown>)['quality'] as Record<string, unknown> | undefined,
-      uncertainty: (r as Record<string, unknown>)['uncertainty'] as Record<string, unknown> | undefined,
-      xai: (r as Record<string, unknown>)['xai'] as unknown[] | undefined,
-    }));
+    // Each entry is a BatchFileResult; the prediction itself is under `result`.
+    return results.map(r => {
+      const entry = (r ?? {}) as Record<string, unknown>;
+      if (entry['status'] !== 'success' || !entry['result']) {
+        throw new Error(String(entry['error'] ?? 'Batch item failed'));
+      }
+      return fromServerResponse(entry['result']);
+    });
   } catch {
     // Fall back to sequential single-file inference
     clearTimeout(timer);
@@ -299,20 +318,11 @@ export async function predictBatch(
     clearTimeout(timer);
   }
 
-  // Sequential fallback — process each file independently
+  // Sequential fallback — process each file independently. A failure
+  // propagates rather than producing an empty result that reads as "normal".
   const results: PredictionResult[] = [];
   for (const f of files) {
-    try {
-      const result = await predict(f, config);
-      results.push(result);
-    } catch {
-      results.push({
-        inference_mode: 'edge_wasm',
-        raw: null,
-        predictions: undefined,
-        quality: undefined,
-      });
-    }
+    results.push(await predict(f, config));
   }
   return results;
 }

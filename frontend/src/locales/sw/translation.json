@@ -1,7 +1,7 @@
 {
   "common": {
     "appName": "Aortica",
-    "version": "v0.2.0",
+    "version": "v0.4.0",
     "loading": "Inapakia…",
     "cancel": "Ghairi",
     "submit": "Wasilisha",
@@ -46,7 +46,7 @@
     "uploadBtn": "↑ Pakia ECG",
     "recentEcgs": "ECG za Hivi Karibuni",
     "multiTaskEngine": "Injini ya Kazi Nyingi",
-    "modelBadge": "Modeli v0.2.0 — usahihi kamili",
+    "modelBadge": "Modeli v0.4.0 — usahihi kamili",
     "classes": "madarasa {{count}}",
     "stats": {
       "ecgsAnalyzed": "ECG Zilizochambuliwa",

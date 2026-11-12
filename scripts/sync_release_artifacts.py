@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copy the released edge model and sidecars to every place that loads them.
 
-``releases/v0.3.0/`` is the source of truth for a release.  Four other
+``releases/v0.3.0/`` is the source of truth for a release.  Six other
 places need a copy of part of it:
 
 ===================================================  ==========================
@@ -11,6 +11,8 @@ Destination                                          Loaded by
 ``mobile/android/app/src/main/assets/model.onnx``    Android OnnxInferenceEngine
 ``aortica/models/artifacts/trained_outputs.json``    Output gating
 ``aortica/models/artifacts/class_thresholds.json``   Probability calibration
+``frontend/src/data/trained_outputs.json``           PWA offline output gating
+``frontend/src/data/class_thresholds.json``          PWA offline positives
 ===================================================  ==========================
 
 Keeping those in sync by hand did not work: the PWA shipped a **two-byte**
@@ -82,6 +84,10 @@ def _targets() -> List[Tuple[Path, Path, int]]:
          REPO_ROOT / "aortica/models/artifacts/trained_outputs.json", 1),
         (SOURCE_DIR / "class_thresholds.json",
          REPO_ROOT / "aortica/models/artifacts/class_thresholds.json", 1),
+        (SOURCE_DIR / "trained_outputs.json",
+         REPO_ROOT / "frontend/src/data/trained_outputs.json", 1),
+        (SOURCE_DIR / "class_thresholds.json",
+         REPO_ROOT / "frontend/src/data/class_thresholds.json", 1),
     ]
 
 

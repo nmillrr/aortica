@@ -92,33 +92,46 @@ const CONDITION_SUGGESTIONS: Record<string, ClinicalSuggestion> = {
  * Look up a clinical suggestion for a condition name.
  * Falls back to a generic suggestion if no match is found.
  */
-function getSuggestion(conditionName: string): ClinicalSuggestion | null {
+/** Model class names whose suggestion is filed under a display name. */
+const MODEL_NAME_ALIASES: Record<string, string> = {
+  sinus_brady: 'Sinus Brady',
+  sinus_tachy: 'Sinus Tachy',
+  av_block_1st: '1st AVB',
+  av_block_2nd: '2nd AVB',
+  av_block_3rd: '3rd AVB',
+  pacemaker_rhythm: 'Pacemaker',
+  normal_sinus_rhythm: 'Normal Sinus Rhythm',
+  LA_enlargement: 'LA Enlargement',
+  RA_enlargement: 'RA Enlargement',
+  posterior_MI: 'Posterior MI',
+  old_MI: 'Old MI',
+  digitalis_effect: 'Digitalis Effect',
+  QTc_prolongation: 'QTc Prolongation',
+};
+
+function getSuggestion(name: string): ClinicalSuggestion | null {
+  const conditionName = MODEL_NAME_ALIASES[name] ?? name;
   // Direct lookup
   if (CONDITION_SUGGESTIONS[conditionName]) {
     return CONDITION_SUGGESTIONS[conditionName];
   }
-  // Partial match (for names like "ST Elevation (Lateral)" matching "STEMI")
-  for (const [key, val] of Object.entries(CONDITION_SUGGESTIONS)) {
-    if (conditionName.toLowerCase().includes(key.toLowerCase()) ||
-        key.toLowerCase().includes(conditionName.toLowerCase())) {
-      return val;
-    }
-  }
+  // No substring matching: it sent 'early_repol_vs_STEMI' to the STEMI cue
+  // and 'old_MI' to acute-MI ones. Names come from the model and match exactly.
   return null;
 }
 
 /* ── Severity classification ──────────────────────── */
 
+/**
+ * Severity of a finding that is already positive at its own operating
+ * point. Raw probability is not comparable across classes, so severity
+ * follows the condition's clinical urgency, not the score.
+ */
 function classifyCopilotSeverity(
-  confidence: number,
   urgency: string | undefined,
 ): 'critical' | 'warning' | 'info' {
-  // ≥90% on emergent/urgent conditions = critical
-  if (confidence >= 0.90 && (urgency === 'emergent' || urgency === 'urgent')) return 'critical';
-  // ≥80% on any condition = critical
-  if (confidence >= 0.90) return 'critical';
-  // ≥50% = warning
-  if (confidence >= 0.50) return 'warning';
+  if (urgency === 'emergent' || urgency === 'urgent') return 'critical';
+  if (urgency === 'prompt') return 'warning';
   return 'info';
 }
 
@@ -126,7 +139,7 @@ function classifyCopilotSeverity(
 
 interface CopilotPanelProps {
   /** All findings from classification task heads (rhythm, structural, ischaemia) */
-  findings: { name: string; prob: number; task: string; predictionSetSize?: number }[];
+  findings: { name: string; prob: number; task: string; label?: string; predictionSetSize?: number }[];
   /** Threshold for showing findings — default 0.30 (30%) */
   confidenceThreshold?: number;
   /** Callback when a finding is clicked — used to scroll waveform + activate XAI */
@@ -145,7 +158,8 @@ export function CopilotPanel({
 }: CopilotPanelProps) {
   const { t } = useTranslation();
   // Localized condition display name, falling back to the raw name from the model.
-  const conditionName = (name: string) => t(`conditions.${name}`, { defaultValue: name });
+  const labels = useMemo(() => new Map(findings.map(f => [f.name, f.label ?? f.name])), [findings]);
+  const conditionName = (name: string) => t(`conditions.${name}`, { defaultValue: labels.get(name) ?? name });
   // Localized clinical suggestion text, falling back to the guideline default.
   const suggestionText = (name: string, fallback: string) =>
     t(`suggestions.${name}`, { defaultValue: fallback });
@@ -157,7 +171,7 @@ export function CopilotPanel({
       .sort((a, b) => b.prob - a.prob)
       .map(f => {
         const suggestion = getSuggestion(f.name);
-        const severity = classifyCopilotSeverity(f.prob, suggestion?.urgency);
+        const severity = classifyCopilotSeverity(suggestion?.urgency);
         return {
           ...f,
           confidence: f.prob,

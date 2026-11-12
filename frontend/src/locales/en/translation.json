@@ -1,7 +1,7 @@
 {
   "common": {
     "appName": "Aortica",
-    "version": "v0.2.0",
+    "version": "v0.4.0",
     "loading": "Loading…",
     "cancel": "Cancel",
     "submit": "Submit",
@@ -46,7 +46,7 @@
     "uploadBtn": "↑ Upload ECG",
     "recentEcgs": "Recent ECGs",
     "multiTaskEngine": "Multi-Task Engine",
-    "modelBadge": "Model v0.2.0 — full precision",
+    "modelBadge": "Model v0.4.0 — full precision",
     "classes": "{{count}} classes",
     "stats": {
       "ecgsAnalyzed": "ECGs Analyzed",

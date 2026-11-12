@@ -190,8 +190,12 @@ const EXPLANATION_CARDS: Record<string, ExplanationCardData> = {
 /* ── Component props ─────────────────────────────────── */
 
 interface EdgeCaseSpotlightProps {
-  /** All findings from classification task heads */
-  findings: { name: string; prob: number; task: string }[];
+  /**
+   * Findings from the classification heads. When a finding carries
+   * `positive` (judged at its own operating point), that decides whether it
+   * is flagged; `minConfidence` applies only to findings without it.
+   */
+  findings: { name: string; prob: number; task: string; positive?: boolean }[];
   /** Custom edge-case list (defaults to DEFAULT_EDGE_CASES) */
   edgeCases?: EdgeCaseCondition[];
   /** Callback when an edge case is clicked */
@@ -213,7 +217,8 @@ export function EdgeCaseSpotlight({
 
     for (const ec of edgeCases) {
       const finding = findings.find(f => f.name === ec.className);
-      if (finding && finding.prob >= ec.minConfidence) {
+      const flaggedHere = finding && (finding.positive ?? finding.prob >= ec.minConfidence);
+      if (finding && flaggedHere) {
         result.push({
           condition: ec,
           confidence: finding.prob,

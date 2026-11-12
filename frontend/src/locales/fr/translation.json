@@ -1,7 +1,7 @@
 {
   "common": {
     "appName": "Aortica",
-    "version": "v0.2.0",
+    "version": "v0.4.0",
     "loading": "Chargement…",
     "cancel": "Annuler",
     "submit": "Soumettre",
@@ -46,7 +46,7 @@
     "uploadBtn": "↑ Téléverser un ECG",
     "recentEcgs": "ECG récents",
     "multiTaskEngine": "Moteur multi-tâche",
-    "modelBadge": "Modèle v0.2.0 — pleine précision",
+    "modelBadge": "Modèle v0.4.0 — pleine précision",
     "classes": "{{count}} classes",
     "stats": {
       "ecgsAnalyzed": "ECG analysés",

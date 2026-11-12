@@ -1,12 +1,13 @@
 import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { predictBatch } from '../services/InferenceClient';
+import { predictBatch, type PredictionResult } from '../services/InferenceClient';
+import { toFindings } from '../services/predictions';
 import './Batch.css';
 
 /* ── Types ─────────────────────────────────────────────────── */
 
 type FileStatus = 'queued' | 'processing' | 'done' | 'error';
-type SortKey = 'filename' | 'quality' | 'rhythm' | 'structural' | 'riskMort' | 'riskHF' | 'status';
+type SortKey = 'filename' | 'quality' | 'rhythm' | 'structural' | 'ischaemia' | 'status';
 type SortDir = 'asc' | 'desc';
 
 interface BatchRow {
@@ -19,8 +20,7 @@ interface BatchRow {
   qualityLabel: string;
   rhythm: string;
   structural: string;
-  riskMort: number | null;
-  riskHF: number | null;
+  ischaemia: string;
   errorMsg: string | null;
   /** The raw prediction result stored for navigation */
   predictionResult: unknown;
@@ -46,52 +46,33 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function extractTopFinding(predictions: unknown, taskKey: string): string {
-  if (!predictions || typeof predictions !== 'object') return '—';
-  const preds = predictions as Record<string, unknown>;
-  const task = preds[taskKey];
-  if (!task || typeof task !== 'object') return '—';
-  const entries = Object.entries(task as Record<string, number>);
-  if (entries.length === 0) return '—';
-  const [name] = entries.sort((a, b) => b[1] - a[1])[0];
-  return name.replace(/_/g, ' ');
+/**
+ * Positive findings for one task, each judged at its own operating point.
+ * Raw probabilities are not comparable across classes, so the "top" class by
+ * score is not shown. Risk outputs are untrained in v0.4.0 and not listed.
+ */
+function positiveFindings(result: PredictionResult, task: string): string {
+  const names = toFindings(result.predictions)
+    .filter(f => f.task === task && f.positive)
+    .map(f => f.label);
+  return names.length ? names.join(', ') : 'None';
 }
 
-function extractRisk(predictions: unknown, idx: number): number | null {
-  if (!predictions || typeof predictions !== 'object') return null;
-  const preds = predictions as Record<string, unknown>;
-  const risk = preds['risk'];
-  if (!Array.isArray(risk) || risk.length <= idx) return null;
-  const val = risk[idx] as unknown;
-  return typeof val === 'number' ? val : null;
-}
-
-function extractQuality(quality: unknown): { score: number; label: string } {
-  if (!quality || typeof quality !== 'object') return { score: 0, label: 'unknown' };
-  const q = quality as Record<string, unknown>;
-  const score = typeof q['overall_score'] === 'number' ? q['overall_score'] : 0;
-  const label =
-    score >= 70 ? 'good' :
-    score >= 40 ? 'marginal' : 'poor';
-  return { score: Math.round(score), label };
-}
-
-function rowFromResult(result: unknown): Partial<BatchRow> {
-  const r = result as Record<string, unknown> | null;
-  if (!r) return {};
-  const { score, label } = extractQuality(r['quality']);
+function rowFromResult(result: PredictionResult | null): Partial<BatchRow> {
+  if (!result) return {};
+  const q = result.quality;
+  const score = q ? Math.round(q.overall) : null;
   return {
     quality: score,
-    qualityLabel: label,
-    rhythm: extractTopFinding(r['predictions'], 'rhythm'),
-    structural: extractTopFinding(r['predictions'], 'structural'),
-    riskMort: extractRisk(r['predictions'], 0),
-    riskHF: extractRisk(r['predictions'], 1),
+    qualityLabel: q ? q.classification : 'unknown',
+    rhythm: positiveFindings(result, 'rhythm'),
+    structural: positiveFindings(result, 'structural'),
+    ischaemia: positiveFindings(result, 'ischaemia'),
   };
 }
 
 function exportCSV(rows: BatchRow[]): void {
-  const header = ['Filename', 'Size', 'Status', 'Quality', 'Top Rhythm', 'Top Structural', 'Mortality Risk (%)', 'HF Risk (%)'];
+  const header = ['Filename', 'Size', 'Status', 'Quality', 'Rhythm findings', 'Structural findings', 'Ischaemia findings'];
   const lines = rows.map(r => [
     r.filename,
     formatBytes(r.fileSize),
@@ -99,8 +80,7 @@ function exportCSV(rows: BatchRow[]): void {
     r.quality != null ? String(r.quality) : '',
     r.rhythm,
     r.structural,
-    r.riskMort != null ? (r.riskMort * 100).toFixed(1) : '',
-    r.riskHF != null ? (r.riskHF * 100).toFixed(1) : '',
+    r.ischaemia,
   ].map(v => `"${v.replace(/"/g, '""')}"`).join(','));
 
   const csv = [header.join(','), ...lines].join('\n');
@@ -122,8 +102,7 @@ function sortRows(rows: BatchRow[], key: SortKey, dir: SortDir): BatchRow[] {
       case 'quality':    av = a.quality ?? -1; bv = b.quality ?? -1; break;
       case 'rhythm':     av = a.rhythm;        bv = b.rhythm;        break;
       case 'structural': av = a.structural;    bv = b.structural;    break;
-      case 'riskMort':   av = a.riskMort ?? -1; bv = b.riskMort ?? -1; break;
-      case 'riskHF':     av = a.riskHF ?? -1;  bv = b.riskHF ?? -1;   break;
+      case 'ischaemia':  av = a.ischaemia;     bv = b.ischaemia;     break;
       case 'status':     av = a.status;        bv = b.status;        break;
     }
     if (av < bv) return dir === 'asc' ? -1 : 1;
@@ -198,8 +177,7 @@ export function Batch() {
                 qualityLabel: extracted.qualityLabel ?? 'unknown',
                 rhythm: extracted.rhythm ?? '—',
                 structural: extracted.structural ?? '—',
-                riskMort: extracted.riskMort ?? null,
-                riskHF: extracted.riskHF ?? null,
+                ischaemia: extracted.ischaemia ?? '—',
               }
             : r
         ));
@@ -233,8 +211,7 @@ export function Batch() {
         qualityLabel: 'unknown',
         rhythm: '—',
         structural: '—',
-        riskMort: null,
-        riskHF: null,
+        ischaemia: '—',
         errorMsg: null,
         predictionResult: null,
       };
@@ -450,16 +427,13 @@ export function Batch() {
                     Quality <SortIcon col="quality" />
                   </th>
                   <th onClick={() => handleSort('rhythm')} id="col-rhythm">
-                    Top Rhythm <SortIcon col="rhythm" />
+                    Rhythm findings <SortIcon col="rhythm" />
                   </th>
                   <th onClick={() => handleSort('structural')} id="col-structural">
-                    Top Structural <SortIcon col="structural" />
+                    Structural findings <SortIcon col="structural" />
                   </th>
-                  <th onClick={() => handleSort('riskMort')} id="col-risk-mort">
-                    Mortality Risk <SortIcon col="riskMort" />
-                  </th>
-                  <th onClick={() => handleSort('riskHF')} id="col-risk-hf">
-                    HF Risk <SortIcon col="riskHF" />
+                  <th onClick={() => handleSort('ischaemia')} id="col-ischaemia">
+                    Ischaemia findings <SortIcon col="ischaemia" />
                   </th>
                   <th onClick={() => handleSort('status')} id="col-status">
                     Status <SortIcon col="status" />
@@ -522,23 +496,8 @@ export function Batch() {
                     {/* Top structural */}
                     <td className="batch-finding">{row.structural}</td>
 
-                    {/* Mortality risk */}
-                    <td>
-                      {row.riskMort != null ? (
-                        <span className={`risk-cell risk-cell--${row.riskMort > 0.4 ? 'high' : row.riskMort > 0.2 ? 'medium' : 'low'}`}>
-                          {(row.riskMort * 100).toFixed(1)}%
-                        </span>
-                      ) : <span className="batch-dash">—</span>}
-                    </td>
-
-                    {/* HF risk */}
-                    <td>
-                      {row.riskHF != null ? (
-                        <span className={`risk-cell risk-cell--${row.riskHF > 0.4 ? 'high' : row.riskHF > 0.2 ? 'medium' : 'low'}`}>
-                          {(row.riskHF * 100).toFixed(1)}%
-                        </span>
-                      ) : <span className="batch-dash">—</span>}
-                    </td>
+                    {/* Ischaemia */}
+                    <td className="batch-finding">{row.ischaemia}</td>
 
                     {/* Status */}
                     <td>
